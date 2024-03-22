@@ -16,6 +16,11 @@ const app = express();
 // Database connection
 mongoose.connect(process.env.MONGO_URI);
 
+// View engine setup
+app.set('view engine', 'ejs');
+app.set('views', __dirname + '/views');
+
+
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
