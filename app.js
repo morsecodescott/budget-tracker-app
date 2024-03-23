@@ -14,7 +14,28 @@ require('dotenv').config();
 const app = express();
 
 // Database connection
-mongoose.connect(process.env.MONGO_URI);
+const db = mongoose.connect(process.env.MONGO_URI);
+
+// Event handlers for MongoDB connection
+db.on('connected', () => {
+  console.log(`Connected to MongoDB at ${dbURI}`);
+});
+
+db.on('error', (err) => {
+  console.error(`Error in MongoDB connection: ${err.message}`);
+});
+
+db.on('disconnected', () => {
+  console.log('Disconnected from MongoDB');
+});
+
+// Close the MongoDB connection when Node.js process is terminated
+process.on('SIGINT', () => {
+  db.close(() => {
+      console.log('MongoDB connection closed due to app termination');
+      process.exit(0);
+  });
+});
 
 // View engine setup
 app.set('view engine', 'ejs');
