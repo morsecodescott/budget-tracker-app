@@ -59,6 +59,9 @@ app.use(flash());
 // Routes
 app.use('/auth', authRoutes);
 app.use('/budget', budgetRoutes);
+app.get("/", (req, res) => {
+  res.send('Welcome to the budget tracker on root');
+});
 
 // Server setup
 const PORT = process.env.PORT || 3000;
