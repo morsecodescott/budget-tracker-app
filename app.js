@@ -14,8 +14,8 @@ require('dotenv').config();
 const app = express();
 
 // Database connection
-const db = mongoose.connect(process.env.MONGO_URI);
-
+mongoose.connect(process.env.MONGO_URI);
+const db = mongoose.connection
 // Event handlers for MongoDB connection
 db.on('connected', () => {
   console.log(`Connected to MongoDB at ${dbURI}`);
