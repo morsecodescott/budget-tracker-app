@@ -18,7 +18,7 @@ mongoose.connect(process.env.MONGO_URI);
 const db = mongoose.connection
 // Event handlers for MongoDB connection
 db.on('connected', () => {
-  console.log(`Connected to MongoDB at ${dbURI}`);
+  console.log(`Connected to MongoDB at ${process.env.MONGO_URI}`);
 });
 
 db.on('error', (err) => {
