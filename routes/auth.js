@@ -2,6 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
+const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const User = require('../models/User');
 
 // Registration page - GET
@@ -17,10 +18,14 @@ router.post('/register', (req, res) => {
             req.flash('error_msg', 'Username already exists');
             res.redirect('/auth/register');
         } else {
-            const newUser = new User({ username, password });
-            newUser.save().then(() => {
-                req.flash('success_msg', 'You are now registered and can log in');
-                res.redirect('/auth/login');
+            // Hash the password before saving
+            bcrypt.hash(password, 10, (err, hash) => {
+                if (err) throw err;
+                const newUser = new User({ username, password: hash }); // Store hashed password
+                newUser.save().then(() => {
+                    req.flash('success_msg', 'You are now registered and can log in');
+                    res.redirect('/auth/login');
+                }).catch(err => console.error(err));
             });
         }
     });
