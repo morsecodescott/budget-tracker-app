@@ -64,6 +64,13 @@ app.use(flash());
 app.use('/auth', authRoutes);
 app.use('/budget', budgetRoutes);
 
+
+app.get('/', (req, res) => {
+  // Render the index page
+  console.log("/ is getting called");
+  res.render('index'); // Assuming your index file is named index.ejs
+});
+
 // Dashboard route - GET
 app.get('/dashboard', (req, res) => {
   // Render the dashboard page
