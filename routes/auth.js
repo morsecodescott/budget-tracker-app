@@ -48,8 +48,10 @@ router.post(
 
 // Logout route - GET
 router.get('/logout', (req, res) => {
-    req.logout(); // This function is provided by Passport.js to clear the login session
-    res.redirect('/'); // Redirect to the landing page
+    req.logout(() => {
+        res.redirect('/'); // Redirect to the landing page
+    });
 });
+
 
 module.exports = router;
