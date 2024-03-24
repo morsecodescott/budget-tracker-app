@@ -7,21 +7,12 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1 class="logo"><a href="/"><%= appName %></a></h1>
-            <p class="slogan"><%= appSlogan %></p>
-            <nav>
-                <ul>
-                    <li><a href="/auth/login">Login</a></li>
-                </ul>
-            </nav>
-        </div>
-    </header>
+    <!-- Header Template-->
+    <% include header.ejs %>
 
     <div class="container">
         <!-- Flash messages -->
-<!-- Flash messages -->
+
 <% if (messages.error) { %>
     <div class="error-message">
         <p class="error-text"><%= messages.error %></p>
