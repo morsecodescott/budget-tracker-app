@@ -41,7 +41,7 @@ process.on('SIGINT', () => {
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
-
+app.use(express.static('public'));
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
