@@ -8,13 +8,10 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <nav>
-        <h1 class="logo"><a href="/"><%= appName %></a></h1>
-        <p class="slogan"><%= appSlogan %></p>
-        <ul class="nav-links">
-            <li><a href="/auth/login">Login</a></li>
-        </ul>
-    </nav>
+    <!-- Header Template-->
+    <% include header.ejs %>
+
+    
     <div class="container">
         <h2>User Registration</h2>
         <form action="/auth/register" method="POST">

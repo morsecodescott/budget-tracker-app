@@ -8,15 +8,8 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-    <header>
-        <nav>
-            <h1 class="logo"><%= appName %></h1>
-            <p class="slogan"><%= appSlogan %></p>
-            <ul class="nav-links">
-                <li><a href="/auth/logout">Logout</a></li>
-            </ul>
-        </nav>
-    </header>
+    <!-- Header Template-->
+    <% include header.ejs %>
 
     <div class="container">
         <h2>Welcome to your Dashboard</h2>
