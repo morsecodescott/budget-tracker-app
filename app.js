@@ -1,4 +1,7 @@
 // app.js
+// Assume that your app.js file is in the root directory of your project
+
+// Import necessary modules
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -10,13 +13,14 @@ const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budget');
 require('./config/passport')(passport);
 require('dotenv').config();
-const path = require('path'); // Import path module
 
+// Create an Express application
 const app = express();
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI);
-const db = mongoose.connection
+const db = mongoose.connection;
+
 // Event handlers for MongoDB connection
 db.on('connected', () => {
   console.log(`Connected to MongoDB at ${process.env.MONGO_URI}`);
@@ -56,12 +60,15 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-
 // Routes
 app.use('/auth', authRoutes);
 app.use('/budget', budgetRoutes);
+
+// Dashboard route - GET
+app.get('/dashboard', (req, res) => {
+  // Render the dashboard page
+  res.render('dashboard'); // Assuming you have a dashboard.ejs file in your views folder
+});
 
 // Server setup
 const PORT = process.env.PORT || 3000;
