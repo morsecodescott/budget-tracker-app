@@ -4,7 +4,7 @@ const router = express.Router();
 const Budget = require('../models/Budget');
 
 router.get('/', (req, res) => {
-  res.send('Welcome to the budget tracker');
+  res.send('Welcome to the budget tracker budget list');
 });
 
 // Add more routes for budget management here
