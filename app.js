@@ -67,7 +67,7 @@ app.use('/budget', budgetRoutes);
 // Dashboard route - GET
 app.get('/dashboard', (req, res) => {
   // Render the dashboard page
-  res.render('dashboard'); // Assuming you have a dashboard.ejs file in your views folder
+  res.render('dashboard'); // 
 });
 
 // Server setup
