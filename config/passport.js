@@ -1,5 +1,7 @@
 // config/passport.js
 const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require('bcrypt'); // Add bcrypt for password hashing
+
 const User = require('../models/User');
 
 module.exports = function(passport) {
@@ -10,11 +12,15 @@ module.exports = function(passport) {
                     if (!user) {
                         return done(null, false, { message: 'Username not found' });
                     }
-                    // Match password
-                    if (user.password !== password) {
-                        return done(null, false, { message: 'Password incorrect' });
-                    }
-                    return done(null, user);
+                    // Compare hashed passwords
+                    bcrypt.compare(password, user.password, (err, isMatch) => {
+                        if (err) throw err;
+                        if (isMatch) {
+                            return done(null, user);
+                        } else {
+                            return done(null, false, { message: 'Password incorrect' });
+                        }
+                    });
                 })
                 .catch(err => done(err));
         })
