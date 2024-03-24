@@ -33,8 +33,9 @@ router.post('/register', (req, res) => {
 
 // Login page - GET
 router.get('/login', (req, res) => {
-    res.render('login.ejs');
+    res.render('login.ejs', { messages: req.flash() });
 });
+
 
 // Login form submission - POST
 router.post(
