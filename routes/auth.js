@@ -6,7 +6,7 @@ const User = require('../models/User');
 
 // Registration page - GET
 router.get('/register', (req, res) => {
-    res.sendFile('register.html', { root: 'views' });
+    res.sendFile('register.ejs', { root: 'views' });
 });
 
 // Registration form submission - POST
@@ -28,7 +28,7 @@ router.post('/register', (req, res) => {
 
 // Login page - GET
 router.get('/login', (req, res) => {
-    res.sendFile('login.html', { root: 'views' });
+    res.sendFile('login.ejs', { root: 'views' });
 });
 
 // Login form submission - POST
