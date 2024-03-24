@@ -1,3 +1,4 @@
+// app.js
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -7,7 +8,7 @@ const User = require('./models/User');
 const Budget = require('./models/Budget');
 const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budget');
-const passportConfig = require('./config/passport');
+const passportConfig = require('./config/passport')(passport); // Pass passport instance
 require('dotenv').config();
 
 const app = express();
