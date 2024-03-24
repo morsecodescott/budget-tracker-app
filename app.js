@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budget');
 require('./config/passport')(passport);
 require('dotenv').config();
+const path = require('path'); // Import path module
 
 const app = express();
 
@@ -41,7 +42,6 @@ process.on('SIGINT', () => {
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 
-app.use(express.static('public'));
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
@@ -56,12 +56,12 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 
+// Serve static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 // Routes
 app.use('/auth', authRoutes);
 app.use('/budget', budgetRoutes);
-app.get("/", (req, res) => {
-  res.send('Welcome to the budget tracker on root');
-});
 
 // Server setup
 const PORT = process.env.PORT || 3000;
