@@ -11,14 +11,26 @@ const budgetRoutes = require('./routes/budget');
 const passportConfig = require('./config/passport')(passport); // Pass passport instance
 require('dotenv').config();
 
+// Define app name and slogan
+const appName = 'ChaChing';
+const appSlogan = 'Make Every Dollar Count';
+
 const app = express();
+
+
+// Set locals
+app.use((req, res, next) => {
+  res.locals.appName = appName;
+  res.locals.appSlogan = appSlogan;
+  next();
+});
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI);
 const db = mongoose.connection;
 
 // MongoDB event handlers
-db.on('connected', () => console.log(`Connected to MongoDB at ${process.env.MONGO_URI}`));
+db.on('connected', () => console.log(`Connected to MongoDB.`));
 db.on('error', (err) => console.error(`Error in MongoDB connection: ${err.message}`));
 db.on('disconnected', () => console.log('Disconnected from MongoDB'));
 
