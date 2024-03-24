@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Budget Tracker</title>
+    <title>Login</title>
     <link rel="stylesheet" href="/css/style.css">
-
 </head>
 <body>
     <header>
@@ -20,13 +19,25 @@
     </header>
 
     <div class="container">
-        <h2>Login</h2>
-        <form action="/auth/login" method="POST">
-            <input type="text" name="username" placeholder="Username" required>
-            <input type="password" name="password" placeholder="Password" required>
+        <!-- Flash messages -->
+        <% if (messages.error) { %>
+            <div class="error-message">
+                <%= messages.error %>
+            </div>
+        <% } %>
+
+        <!-- Login form -->
+        <form action="/auth/login" method="post">
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username">
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password">
+            </div>
             <button type="submit">Login</button>
         </form>
-        <p>Don't have an account? <a href="/auth/register">Register here</a></p>
     </div>
 </body>
 </html>
