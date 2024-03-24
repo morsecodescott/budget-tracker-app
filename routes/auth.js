@@ -28,7 +28,7 @@ router.post('/register', (req, res) => {
 
 // Login page - GET
 router.get('/login', (req, res) => {
-    res.send('Login Page');
+    res.sendFile('login.html', { root: 'views' });
 });
 
 // Login form submission - POST
