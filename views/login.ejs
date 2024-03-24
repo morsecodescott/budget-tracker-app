@@ -20,11 +20,13 @@
 
     <div class="container">
         <!-- Flash messages -->
-        <% if (messages.error) { %>
-            <div class="error-message">
-                <%= messages.error %>
-            </div>
-        <% } %>
+<!-- Flash messages -->
+<% if (messages.error) { %>
+    <div class="error-message">
+        <p class="error-text"><%= messages.error %></p>
+    </div>
+<% } %>
+
 
         <!-- Login form -->
         <form action="/auth/login" method="post">
