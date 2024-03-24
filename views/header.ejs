@@ -6,6 +6,9 @@
         <nav>
             <ul>
                 <li><a href="/auth/login">Login</a></li>
+                <% if (currentUser) { %>
+                    <li><a href="/auth/logout">Logout</a></li>
+                <% } %>
             </ul>
         </nav>
     </div>
