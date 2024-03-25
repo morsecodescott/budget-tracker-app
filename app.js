@@ -9,6 +9,7 @@ const Budget = require('./models/Budget');
 const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budget');
 const passportConfig = require('./config/passport')(passport); // Pass passport instance
+const crypto = require('crypto'); // Import crypto module for generating session secret
 require('dotenv').config();
 
 // Define app name and slogan
@@ -17,15 +18,16 @@ const appSlogan = 'Make Every Dollar Count';
 
 const app = express();
 
+// Generate a random session secret
+const sessionSecret = crypto.randomBytes(64).toString('hex');
 
 // Set locals
 app.use((req, res, next) => {
   res.locals.appName = appName;
   res.locals.appSlogan = appSlogan;
-  //res.locals.currentUser = req.user; // Set currentUser from req.user
+  res.locals.currentUser = req.user; // Set currentUser from req.user
   next();
 });
-
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI);
@@ -38,10 +40,9 @@ db.on('disconnected', () => console.log('Disconnected from MongoDB'));
 
 // Close MongoDB connection on app termination
 process.on('SIGINT', () => {
-  db.close(() => {
-    console.log('MongoDB connection closed due to app termination');
-    process.exit(0);
-  });
+  db.close();
+  console.log('MongoDB connection closed due to app termination');
+  process.exit(0);
 });
 
 // Middleware setup
@@ -49,7 +50,7 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(session({ secret: 'secret', resave: true, saveUninitialized: true }));
+app.use(session({ secret: sessionSecret, resave: true, saveUninitialized: true }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());

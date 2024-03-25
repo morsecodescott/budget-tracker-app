@@ -1,6 +1,16 @@
+:root {
+    --light-shades: #F9FAFB; /* Athen Gray */
+    --light-accent: #EDBB32; /* Tulip Tree */
+    --main-brand: #A1B8BE; /* Tower Gray */
+    --dark-accent: #CA6C7A; /* Contessa */
+    --dark-shade: #35A998; /* Keppel */
+  }
+
+
+
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: var(--main-brand);
     margin: 0;
     padding: 0;
 }
@@ -12,8 +22,8 @@ body {
 }
 
 header {
-    background-color: #ff9800;
-    color: #fff;
+    background-color: var(--dark-shade);
+    color: var(--light-accent);
     padding: 20px 0;
     text-align: center;
 }
@@ -30,7 +40,7 @@ header h1.logo {
 
 header p.slogan {
     font-size: 18px;
-    color: #fff;
+    color: var(--dark-accent);
     margin: 10px 0;
 }
 
