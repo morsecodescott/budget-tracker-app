@@ -38,14 +38,35 @@ router.get('/login', (req, res) => {
 
 
 // Login form submission - POST
-router.post(
+/*router.post(
     '/login',
     passport.authenticate('local', {
         successRedirect: '/dashboard',
         failureRedirect: '/auth/login',
         failureFlash: true,
     })
-);
+); */
+
+router.post('/login', (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+        if (err) { 
+            return next(err); 
+        }
+        if (!user) {
+            req.flash('error_msg', info.message);
+            return res.redirect('/auth/login');
+        }
+        req.logIn(user, (err) => {
+            if (err) {
+                return next(err);
+            }
+            console.log('User logged in:', user); // Log the logged-in user
+            return res.redirect('/dashboard');
+        });
+    })(req, res, next);
+});
+
+
 
 // Logout route - GET
 router.get('/logout', (req, res) => {
