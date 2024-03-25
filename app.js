@@ -22,8 +22,10 @@ const app = express();
 app.use((req, res, next) => {
   res.locals.appName = appName;
   res.locals.appSlogan = appSlogan;
+  //res.locals.currentUser = req.user; // Set currentUser from req.user
   next();
 });
+
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI);
