@@ -61,6 +61,7 @@ router.post('/login', (req, res, next) => {
                 return next(err);
             }
             console.log('User logged in:', user); // Log the logged-in user
+            
             return res.redirect('/dashboard');
         });
     })(req, res, next);
