@@ -56,6 +56,26 @@ app.use(passport.session());
 app.use(flash());
 app.use(express.static('public')); // Serve static files from 'public' directory
 
+// Define a middleware function to check authentication
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) {
+      // If user is authenticated, proceed to the next middleware or route handler
+      return next();
+  }
+  // If user is not authenticated, redirect to the login page or send an error response
+  res.redirect('/auth/login'); // Redirect to the login page
+}
+
+// Middleware to ensure authentication
+app.use((req, res, next) => {
+  if (req.originalUrl === '/' || req.originalUrl === '/auth/login' || req.originalUrl === '/auth/register') {
+      // Skip authentication for the routes above
+      return next();
+  }
+  ensureAuthenticated(req, res, next); // Apply ensureAuthenticated middleware to all other routes
+});
+
+
 // Routes
 app.use('/auth', authRoutes);
 app.use('/budget', budgetRoutes);
