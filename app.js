@@ -21,13 +21,7 @@ const app = express();
 // Generate a random session secret
 const sessionSecret = crypto.randomBytes(64).toString('hex');
 
-// Set locals
-app.use((req, res, next) => {
-  res.locals.appName = appName;
-  res.locals.appSlogan = appSlogan;
-  res.locals.currentUser = req.user; // Set currentUser from req.user
-  next();
-});
+
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI);
@@ -55,6 +49,16 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
 app.use(express.static('public')); // Serve static files from 'public' directory
+
+// Set locals
+app.use((req, res, next) => {
+  res.locals.appName = appName;
+  res.locals.appSlogan = appSlogan;
+  res.locals.currentUser = req.user; // Set currentUser from req.user
+  console.log("res.locals: ", res.locals);
+
+  next();
+});
 
 // Define a middleware function to check authentication
 function ensureAuthenticated(req, res, next) {
