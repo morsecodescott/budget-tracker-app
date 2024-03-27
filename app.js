@@ -67,6 +67,7 @@ function ensureAuthenticated(req, res, next) {
       return next();
   }
   // If user is not authenticated, redirect to the login page or send an error response
+  console.log('User is not authenticated');
   res.redirect('/auth/login'); // Redirect to the login page
 }
 
