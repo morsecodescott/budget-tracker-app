@@ -36,7 +36,7 @@ module.exports = function(passport) {
     );
 
     passport.serializeUser((user, done) => {
-        console.log('Serializing user:', user);
+       // console.log('Serializing user:', user);
         done(null, user.id);
     });
 
@@ -47,7 +47,7 @@ module.exports = function(passport) {
                     console.log('User not found during deserialization');
                     return done(null, false, { message: 'User not found' });
                 }
-                console.log('Deserializing user:', user);
+                //console.log('Deserializing user:', user);
                 return done(null, user);
             })
             .catch(err => {

@@ -33,6 +33,7 @@ router.post('/register', (req, res) => {
 
 // Login page - GET
 router.get('/login', (req, res) => {
+    console.log('login flash messages:',req.flash());
     res.render('login.ejs', { messages: req.flash() });
 });
 
