@@ -33,20 +33,10 @@ router.post('/register', (req, res) => {
 
 // Login page - GET
 router.get('/login', (req, res) => {
-    console.log('login flash messages:',req.flash());
-    res.render('login.ejs', { messages: req.flash() });
+    
+    res.render('login.ejs');
 });
 
-
-// Login form submission - POST
-/*router.post(
-    '/login',
-    passport.authenticate('local', {
-        successRedirect: '/dashboard',
-        failureRedirect: '/auth/login',
-        failureFlash: true,
-    })
-); */
 
 router.post('/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
