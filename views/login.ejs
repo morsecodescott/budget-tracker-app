@@ -9,17 +9,9 @@
 <body>
     <!-- Header Template-->
     <%- include('header'); -%>
-
+    <%- include('partials/flashMessages') %>
     <div class="container">
         <!-- Flash messages -->
-
-<% if (messages.error) { %>
-    <div class="error-message">
-        <p class="error-text"><%= messages.error %></p>
-    </div>
-<% } %>
-
-
         <!-- Login form -->
         <form action="/auth/login" method="post">
             <div>

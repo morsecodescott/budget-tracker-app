@@ -1,0 +1,16 @@
+<% if (locals.error_msg) { %>
+    <% error_msg.forEach(function(msg) { %>
+      <div class="flash-message error-message">
+        <%= msg %>
+      </div>
+    <% }); %>
+  <% } %>
+  
+  <% if (locals.success_msg) { %>
+    <% success_msg.forEach(function(msg) { %>
+      <div class="flash-message success-message">
+        <%= msg %>
+      </div>
+    <% }); %>
+  <% } %>
+  
