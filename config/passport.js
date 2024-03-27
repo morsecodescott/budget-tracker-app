@@ -20,7 +20,7 @@ module.exports = function(passport) {
                             return done(err);
                         }
                         if (isMatch) {
-                            console.log('User authenticated:', user);
+                            console.log('User authenticated:', user.username);
                             return done(null, user);
                         } else {
                             console.log('Incorrect password');
