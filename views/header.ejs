@@ -5,13 +5,15 @@
         <p class="slogan"><%= appSlogan %></p>
         <nav>
             <ul>
-                <li><a href="/auth/login">Login</a></li>
                 <% if (currentUser) { %>
                     <li><a href="/auth/logout">Logout</a></li>
-                <% } %>
+                    <li>Welcome, <%= currentUser.username %></li>
+                <% } else { %>
+                    <li><a href="/auth/login">Login</a></li>
+                <% } %>    
             </ul>
         </nav>
     </div>
 </header>
-<% console.log('currentUser in header:', currentUser); %>
+
 

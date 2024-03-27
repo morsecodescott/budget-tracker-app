@@ -55,8 +55,8 @@ app.use((req, res, next) => {
   res.locals.appName = appName;
   res.locals.appSlogan = appSlogan;
   res.locals.currentUser = req.user; // Set currentUser from req.user
-  console.log("res.locals: ", res.locals);
-
+  res.locals.error_msg = req.flash('error_msg');
+  console.log('app,js flash messages: ', req.flash());
   next();
 });
 
