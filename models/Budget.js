@@ -5,8 +5,30 @@ const budgetSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
+    required: true,
   },
-  // Add your budget fields here
+  type: {
+    type: String,
+    enum: ['income', 'expense'],
+    required: true,
+  },
+  amount: {
+    type: Number,
+    required: true,
+  },
+  frequency: {
+    type: String,
+    enum: ['weekly', 'monthly', 'biweekly', 'one-time'],
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model('Budget', budgetSchema);
