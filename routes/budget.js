@@ -18,16 +18,21 @@ router.post('/', async (req, res) => {
   const { type, amount, frequency, description } = req.body;
   try {
     const newBudgetItem = new Budget({
-      user: req.user._id,
+      user: req.user._id, // Make sure req.user is populated correctly by your authentication middleware
       type,
       amount,
       frequency,
       description,
     });
     await newBudgetItem.save();
-    res.status(201).send(newBudgetItem);
+
+    // If successful, set a flash message and redirect
+    req.flash('success_msg', 'Budget item was added successfully!');
+    res.redirect('/dashboard'); // Adjust the redirect location as needed
   } catch (err) {
-    res.status(500).send(err.message);
+    // If an error occurs, set a flash message with the error and redirect
+    req.flash('error_msg', 'Failed to add budget item. Error: ' + err.message);
+    res.redirect('/budget'); // Adjust as needed, e.g., to the form page
   }
 });
 

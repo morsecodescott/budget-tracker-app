@@ -167,3 +167,48 @@ p a:hover {
 .btn:hover {
     background-color: #45a049;
 }
+
+.budget-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.budget-items-table, .budget-items-thead th, .budget-items-tbody td {
+    border: 1px solid #ddd;
+}
+
+.budget-items-thead th {
+    background-color: #f4f4f4;
+    color: #333;
+    text-align: left;
+    padding: 10px;
+}
+
+.budget-items-tbody td {
+    padding: 8px;
+    text-align: left;
+}
+
+.budget-items-row:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.budget-items-actions a {
+    text-decoration: none;
+    color: #337ab7;
+    padding: 5px;
+}
+
+.budget-item-edit {
+    color: #5cb85c; /* Green */
+}
+
+.budget-item-delete {
+    color: #d9534f; /* Red */
+}
+
+.no-budget-items {
+    color: #999;
+    margin-top: 20px;
+}
