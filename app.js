@@ -91,4 +91,7 @@ app.get('/dashboard', (req, res) => res.render('dashboard'));
 
 // Server setup
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+//app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+const server = app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+module.exports = server; // Export the server for use in tests
+module.exports = app; // Export the Express app instance
