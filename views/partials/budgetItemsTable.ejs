@@ -1,0 +1,30 @@
+<% if (budgetItems && budgetItems.length > 0) { %>
+    <table class="budget-items-table">
+        <thead class="budget-items-thead">
+            <tr class="budget-items-header-row">
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Frequency</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody class="budget-items-tbody">
+            <% budgetItems.forEach(function(item) { %>
+                <tr class="budget-items-row">
+                    <td><%= item.type %></td>
+                    <td>$<%= item.amount.toFixed(2) %></td>
+                    <td><%= item.frequency %></td>
+                    <td><%= item.description %></td>
+                    <td class="budget-items-actions">
+                        <!-- Example actions -->
+                        <a href="/budget/edit/<%= item._id %>" class="budget-item-edit">Edit</a> |
+                        <a href="/budget/delete/<%= item._id %>" class="budget-item-delete" onclick="return confirm('Are you sure?');">Delete</a>
+                    </td>
+                </tr>
+            <% }); %>
+        </tbody>
+    </table>
+<% } else { %>
+    <p class="no-budget-items">No budget items found.</p>
+<% } %>
