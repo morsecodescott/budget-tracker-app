@@ -87,7 +87,27 @@ app.use('/budget', budgetRoutes);
 
 // Route handlers
 app.get('/', (req, res) => res.render('index'));
-app.get('/dashboard', (req, res) => res.render('dashboard'));
+//app.get('/dashboard', (req, res) => res.render('dashboard'));
+
+app.get('/dashboard', async (req, res) => {
+  try {
+    // Fetching budget items for the logged-in user
+    const budgetItems = await Budget.find({ user: req.user._id });
+
+    // Rendering the dashboard page and passing the budgetItems to it
+    res.render('dashboard', { 
+      budgetItems: budgetItems, 
+      user: req.user // Assuming you want to pass the user object as well
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).render('dashboard', { 
+      error: 'Failed to load budget items.', 
+      user: req.user 
+    });
+  }
+});
+
 
 // Server setup
 const PORT = process.env.PORT || 3000;

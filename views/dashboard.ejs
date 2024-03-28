@@ -16,7 +16,7 @@
         <!-- Add your dashboard components here -->
         <div class="budget-info">
             <h3>Your Budget Information</h3>
-            <!-- Display budget information here -->
+            <%- include('partials/budgetItemsTable') %>
         </div>
         <div class="account-details">
             <h3>Your Account Details</h3>
@@ -30,5 +30,21 @@
 </div>
 
     </div>
+
+    <script>
+        document.querySelectorAll('.budget-item-delete').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const itemId = this.getAttribute('data-id');
+                
+                if(confirm('Are you sure?')) {
+                    fetch(`/budget/delete/${itemId}`, {
+                        method: 'DELETE',
+                    })
+                    .then(res => window.location.reload()) // Reload the page to reflect changes
+                    .catch(err => console.error('Error:', err));
+                }
+            });
+        });
+        </script>
 </body>
 </html>
