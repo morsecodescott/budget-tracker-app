@@ -1,3 +1,5 @@
+<!-- views/budgetItemsTable.ejs -->
+
 <% if (budgetItems && budgetItems.length > 0) { %>
     <table class="budget-items-table">
         <thead class="budget-items-thead">
@@ -19,7 +21,8 @@
                     <td class="budget-items-actions">
                         <!-- Example actions -->
                         <a href="/budget/edit/<%= item._id %>" class="budget-item-edit">Edit</a> |
-                        <a href="/budget/delete/<%= item._id %>" class="budget-item-delete" onclick="return confirm('Are you sure?');">Delete</a>
+                        <!--<a href="/budget/delete/<%= item._id %>" class="budget-item-delete" onclick="return confirm('Are you sure?');">Delete</a>-->
+                        <button class="budget-item-delete" data-id="<%= item._id %>">Delete</button>
                     </td>
                 </tr>
             <% }); %>
@@ -28,3 +31,5 @@
 <% } else { %>
     <p class="no-budget-items">No budget items found.</p>
 <% } %>
+
+    

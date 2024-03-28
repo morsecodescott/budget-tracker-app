@@ -57,7 +57,7 @@ router.put('/:id', async (req, res) => {
 });
 
 // Route to delete a budget item
-router.delete('/:id', async (req, res) => {
+/*router.delete('/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const deletedBudgetItem = await Budget.findByIdAndDelete(id);
@@ -68,7 +68,24 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     res.status(500).send(err.message);
   }
+});*/
+
+router.delete('/delete/:id', async (req, res) => {
+  const itemId = req.params.id;
+  console.log(`Route triggered: DELETE /delete/${itemId}`);
+
+  try {
+    await Budget.findByIdAndDelete(itemId);
+    console.log('Success: Item was deleted successfully');
+    req.flash('success_msg', 'Item was deleted successfully');
+    res.redirect('/dashboard'); // or your success redirect path
+  } catch (err) {
+    console.error(`Error: Failed to delete item with ID ${itemId}`, err);
+    req.flash('error_msg', 'Failed to delete item');
+    res.redirect('/dashboard'); // or your error redirect path
+  }
 });
+
 
 module.exports = router;
 
