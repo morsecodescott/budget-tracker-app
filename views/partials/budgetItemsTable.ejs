@@ -27,54 +27,11 @@
                 </tr>
             <% }); %>
         </tbody>
+        <button onclick="openAddModal()" class="btn btn-primary">Add Item</button>
+
     </table>
 <% } else { %>
     <p class="no-budget-items">No budget items found.</p>
 <% } %>
-
-<!-- Edit Budget Item Modal -->
-<div id="editBudgetModal" class="modal" style="display:none;">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title">Edit Budget Item</h5>
-          <button type="button" class="close" onclick="closeEditModal()">×</button>
-        </div>
-        <div class="modal-body">
-          <form id="editBudgetForm">
-            <div class="form-group">
-              <label for="editType">Type:</label>
-              <select id="editType" name="type" required>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="editAmount">Amount:</label>
-              <input type="number" id="editAmount" name="amount" step="0.01" required>
-            </div>
-            <div class="form-group">
-              <label for="editFrequency">Frequency:</label>
-              <select id="editFrequency" name="frequency" required>
-                <option value="weekly">Weekly</option>
-                <option value="biweekly">Biweekly</option>
-                <option value="monthly">Monthly</option>
-                <option value="one-time">One-time</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="editDescription">Description:</label>
-              <input type="text" id="editDescription" name="description" required>
-            </div>
-            <input type="hidden" id="editItemId" name="itemId">
-          </form>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-primary" onclick="saveChanges()">Save changes</button>
-          <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
   
     
