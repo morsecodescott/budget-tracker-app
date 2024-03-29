@@ -20,8 +20,8 @@
                     <td><%= item.description %></td>
                     <td class="budget-items-actions">
                         <!-- Example actions -->
-                        <a href="/budget/edit/<%= item._id %>" class="budget-item-edit">Edit</a> |
-                        <!--<a href="/budget/delete/<%= item._id %>" class="budget-item-delete" onclick="return confirm('Are you sure?');">Delete</a>-->
+                        <!--<a href="/budget/edit/<%= item._id %>" class="budget-item-edit">Edit</a> |-->
+                        <button onclick="openEditModal('<%= item._id %>', '<%= item.type %>', '<%= item.amount %>', '<%= item.frequency %>', '<%= item.description %>')" class="budget-item-edit">Edit</button>
                         <button class="budget-item-delete" data-id="<%= item._id %>">Delete</button>
                     </td>
                 </tr>
