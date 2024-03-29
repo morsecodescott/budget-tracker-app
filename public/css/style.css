@@ -212,3 +212,87 @@ p a:hover {
     color: #999;
     margin-top: 20px;
 }
+
+
+
+.introduction, .features, .why-choose {
+    margin-bottom: 20px;
+    background-color: var(--light-shades);
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.introduction p, .why-choose p {
+    color: var(--dark-shade); /* Keppel for a calm, readable text */
+}
+
+.features ul, .why-choose ul {
+    padding-left: 20px;
+}
+
+.features li, .why-choose li {
+    line-height: 1.5;
+    color: var(--dark-accent); /* Contessa for items, for a nice contrast */
+}
+
+footer {
+    margin-top: 40px;
+    padding: 20px;
+    background-color: var(--main-brand); /* Tower Gray for footer background */
+    color: var(--light-accent); /* Tulip Tree for footer text */
+    text-align: center;
+    border-radius: 5px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+    .container, footer {
+        padding: 10px;
+    }
+
+    header h1, section h2 {
+        font-size: 1.5em;
+    }
+}
+
+/* Additional styles to ensure new content fits well with the existing design */
+.modal {
+    /* Add modal-specific styles here if needed, considering the --dark-shade for the background or --light-accent for highlights */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2; /* Ensure it sits above other content */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    display: none; /* Start hidden */
+    width: 90%;
+    max-width: 500px;
+}
+
+.modal .close {
+    float: right;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background-color: var(--light-accent); /* Use --light-accent for primary button backgrounds */
+    color: var(--dark-shades);
+}
+
+.btn-primary:hover {
+    background-color: darken(var(--light-accent), 10%); /* Slightly darken on hover */
+}
+
+.btn-secondary {
+    background-color: var(--dark-accent); /* Contessa for secondary buttons */
+    color: var(--light-shades);
+}
+
+.btn-secondary:hover {
+    background-color: darken(var(--dark-accent), 10%);
+}
