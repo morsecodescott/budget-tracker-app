@@ -45,6 +45,52 @@
                 }
             });
         });
+
+    function openEditModal(id, type, amount, frequency, description) {
+    // Populate the form fields with parameters
+    document.getElementById('editType').value = type;
+    document.getElementById('editAmount').value = amount;
+    document.getElementById('editFrequency').value = frequency;
+    document.getElementById('editDescription').value = description;
+    document.getElementById('editItemId').value = id;
+
+    // Show the modal
+    document.getElementById('editBudgetModal').style.display = 'block';
+    }
+
+    function closeEditModal() {
+    document.getElementById('editBudgetModal').style.display = 'none';
+    }
+
+    function saveChanges() {
+    const itemId = document.getElementById('editItemId').value;
+    const formData = {
+        type: document.getElementById('editType').value,
+        amount: document.getElementById('editAmount').value,
+        frequency: document.getElementById('editFrequency').value,
+        description: document.getElementById('editDescription').value,
+    };
+
+    fetch(`/budget/${itemId}`, {
+        method: 'PUT', // Use 'PUT' or 'PATCH' as per your backend implementation
+        headers: {
+        'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Success:', data);
+        closeEditModal();
+        // Refresh the part of the page that shows budget items, or redirect as needed
+        // window.location.reload(); // Uncomment if you want to reload the page or implement a more dynamic update
+    })
+    .catch((error) => {
+        console.error('Error:', error);
+    });
+    }
+
+
         </script>
 </body>
 </html>
