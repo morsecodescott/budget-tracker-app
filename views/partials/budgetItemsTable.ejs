@@ -12,7 +12,7 @@
         </thead>
         <tbody class="budget-items-tbody">
             <% budgetItems.forEach(function(item) { %>
-                <tr class="budget-items-row">
+                <tr class="budget-items-row" data-id="<%= item._id %>">
                     <td><%= item.type %></td>
                     <td>$<%= item.amount.toFixed(2) %></td>
                     <td><%= item.frequency %></td>

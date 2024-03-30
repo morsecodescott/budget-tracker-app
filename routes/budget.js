@@ -13,6 +13,40 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Route to add a new budget item
+router.post('/', async (req, res) => {
+  const { type, amount, frequency, description } = req.body;
+  try {
+    // Create a new Budget item using the request data
+    const newBudgetItem = new Budget({
+      user: req.user._id, // Make sure req.user is populated correctly by your authentication middleware
+      type,
+      amount,
+      frequency,
+      description,
+    });
+
+    // Save the new Budget item to the database
+    const savedItem = await newBudgetItem.save();
+
+    // If successful, return the saved item along with a success message
+    res.status(201).json({ 
+      success: true, 
+      message: 'Budget item was added successfully!', 
+      item: savedItem 
+    });
+  } catch (err) {
+    // If an error occurs, return the error message
+    res.status(400).json({ 
+      success: false, 
+      message: 'Failed to add budget item.', 
+      error: err.message 
+    });
+  }
+});
+
+
+
 
 // Route to update a budget item
 router.put('/:id', async (req, res) => {
@@ -26,43 +60,30 @@ router.put('/:id', async (req, res) => {
       description,
     }, { new: true }); // Return the updated document
     if (!updatedBudgetItem) {
-      return res.status(404).send('Budget item not found');
+      return res.status(404).json({ success: false, message: 'Budget item not found' });
     }
-    res.send(updatedBudgetItem);
+    res.status(200).json({ success: true, message: 'Item updated successfully', item: updatedBudgetItem });
   } catch (err) {
-    res.status(500).send(err.message);
+    res.status(500).json({ success: false, message: 'Error updating item', error: err.message });
   }
 });
 
-// Route to delete a budget item
-/*router.delete('/:id', async (req, res) => {
-  const { id } = req.params;
-  try {
-    const deletedBudgetItem = await Budget.findByIdAndDelete(id);
-    if (!deletedBudgetItem) {
-      return res.status(404).send('Budget item not found');
-    }
-    res.send('Budget item deleted successfully');
-  } catch (err) {
-    res.status(500).send(err.message);
-  }
-});*/
 
+
+//Route to delete a budget item.
 router.delete('/delete/:id', async (req, res) => {
   const itemId = req.params.id;
-  console.log(`Route triggered: DELETE /delete/${itemId}`);
-
   try {
-    await Budget.findByIdAndDelete(itemId);
-    console.log('Success: Item was deleted successfully');
-    req.flash('success_msg', 'Item was deleted successfully');
-    res.redirect('/dashboard'); // or your success redirect path
+    const deletedBudgetItem = await Budget.findByIdAndDelete(itemId);
+    if (!deletedBudgetItem) {
+      return res.status(404).json({ success: false, message: 'Item not found' });
+    }
+    res.status(200).json({ success: true, message: 'Item deleted successfully' });
   } catch (err) {
-    console.error(`Error: Failed to delete item with ID ${itemId}`, err);
-    req.flash('error_msg', 'Failed to delete item');
-    res.redirect('/dashboard'); // or your error redirect path
+    res.status(500).json({ success: false, message: 'Failed to delete item', error: err.message });
   }
 });
+
 
 
 module.exports = router;
