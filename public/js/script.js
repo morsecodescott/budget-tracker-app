@@ -145,3 +145,16 @@ function displayFlashMessage(message, type) {
     alert(`${type.toUpperCase()}: ${message}`); // Placeholder implementation
 }
 
+
+document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    var password = document.getElementById('password').value;
+    var confirmPassword = document.getElementById('confirmPassword').value;
+
+    if (password !== confirmPassword) {
+        e.preventDefault(); // Prevent form submission
+        alert('Passwords do not match.');
+        // Optionally, you might focus the password field again
+        document.getElementById('password').focus();
+    }
+});
+

@@ -6,12 +6,12 @@ const User = require('../models/User');
 
 module.exports = function(passport) {
     passport.use(
-        new LocalStrategy({ usernameField: 'username' }, (username, password, done) => {
-            User.findOne({ username: username })
+        new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
+            User.findOne({ email: email.toLowerCase() }) // Use email to find the user
                 .then(user => {
                     if (!user) {
                         console.log('User not found');
-                        return done(null, false, { message: 'Username not found' });
+                        return done(null, false, { message: 'Email not registered' }); // Update message for email
                     }
                     // Compare hashed passwords
                     bcrypt.compare(password, user.password, (err, isMatch) => {
@@ -20,7 +20,7 @@ module.exports = function(passport) {
                             return done(err);
                         }
                         if (isMatch) {
-                            console.log('User authenticated:', user.username);
+                            console.log('User authenticated:', user.email); // Log email instead of username
                             return done(null, user);
                         } else {
                             console.log('Incorrect password');
@@ -36,7 +36,7 @@ module.exports = function(passport) {
     );
 
     passport.serializeUser((user, done) => {
-       // console.log('Serializing user:', user);
+        // console.log('Serializing user:', user);
         done(null, user.id);
     });
 
