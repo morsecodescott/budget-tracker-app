@@ -30,7 +30,21 @@
 
     </table>
 <% } else { %>
+    <table class="budget-items-table">
+        <thead class="budget-items-thead">
+            <tr class="budget-items-header-row">
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Frequency</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody class="budget-items-tbody">
+        </tbody>
     <p class="no-budget-items">No budget items found.</p>
+    <button onclick="openAddModal()" class="btn btn-primary">Add Item</button>
+</table>
 <% } %>
   
     

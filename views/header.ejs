@@ -7,7 +7,7 @@
             <ul>
                 <% if (currentUser) { %>
                     <li><a href="/auth/logout">Logout</a></li>
-                    <li>Welcome, <%= currentUser.username %></li>
+                    <li>Welcome, <%= currentUser.firstName %></li>
                 <% } else { %>
                     <li><a href="/auth/login">Login</a></li>
                 <% } %>    
