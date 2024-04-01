@@ -11,29 +11,30 @@ router.get('/register', (req, res) => {
 });
 
 router.post('/register', async (req, res) => {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, confirmPassword } = req.body;
+
+    if (password !== confirmPassword) {
+        req.flash('error_msg', 'Passwords do not match.');
+        return res.redirect('/auth/register');
+    }
+
     try {
         let user = await User.findOne({ email: email.toLowerCase() });
         if (user) {
-            return res.status(400).json({ message: 'Email already exists' });
+            req.flash('error_msg', 'Email already registered.');
+            return res.redirect('/auth/register');
         }
 
-        const hashedPassword = await bcrypt.hash(password, 10);
+        // Hash password, create user, etc...
 
-        user = new User({
-            firstName,
-            lastName,
-            email: email.toLowerCase(),
-            password: hashedPassword,
-        });
-
-        await user.save();
-
-        // Continue with your logic for logging the user in or redirecting them
+        req.flash('success_msg', 'Registration successful! Please log in.');
+        res.redirect('/auth/login');
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        req.flash('error_msg', 'An error occurred, please try again.');
+        res.redirect('/auth/register');
     }
 });
+
 
 
 // Login page - GET
@@ -43,13 +44,26 @@ router.get('/login', (req, res) => {
 });
 
 
+
 router.post('/login', (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+        if (err) return res.json({ success: false, message: err.message });
+        if (!user) return res.json({ success: false, message: info.message });
+
+        req.logIn(user, err => {
+            if (err) return res.json({ success: false, message: err.message });
+            return res.json({ success: true, message: 'Login successful!' });
+        });
+    })(req, res, next);
+});
+
+/*router.post('/login', (req, res, next) => {
     passport.authenticate('local', {
         successRedirect: '/dashboard',
         failureRedirect: '/auth/login',
         failureFlash: true,
     })(req, res, next);
-});
+}); */
 
 
 

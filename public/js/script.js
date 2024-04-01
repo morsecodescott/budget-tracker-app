@@ -158,3 +158,29 @@ document.getElementById('registrationForm').addEventListener('submit', function(
     }
 });
 
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Prevent the default form submission
+
+    const formData = new FormData(this);
+    const errorDiv = document.getElementById('loginError');
+
+    fetch('/auth/login', {
+        method: 'POST',
+        body: formData,
+        credentials: 'same-origin' // Include cookies in the request
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.href = '/dashboard'; // Redirect on successful login
+        } else {
+            errorDiv.textContent = data.message; // Display error message
+            errorDiv.style.display = 'block';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        errorDiv.textContent = 'An error occurred, please try again.';
+        errorDiv.style.display = 'block';
+    });
+});
