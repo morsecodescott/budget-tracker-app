@@ -7,6 +7,7 @@ const User = require('../models/User');
 module.exports = function(passport) {
     passport.use(
         new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
+            console.log("passport is called");
             User.findOne({ email: email.toLowerCase() }) // Use email to find the user
                 .then(user => {
                     if (!user) {
