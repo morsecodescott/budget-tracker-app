@@ -140,10 +140,24 @@ function updateBudgetList(item) {
 }
 
 function displayFlashMessage(message, type) {
-    // Example: Implement a way to show flash messages dynamically
-    // This can be a modal, an alert, or an inline message in the DOM.
-    alert(`${type.toUpperCase()}: ${message}`); // Placeholder implementation
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.textContent = message;
+
+    // Append the toast to the container
+    container.appendChild(toast);
+
+    // Show the toast
+    setTimeout(() => toast.classList.add('show'), 100);
+
+    // Automatically remove the toast after 5 seconds
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => container.removeChild(toast), 500); // Wait for fade-out to finish
+    }, 5000);
 }
+
 
 
 document.getElementById('registrationForm').addEventListener('submit', function(e) {
