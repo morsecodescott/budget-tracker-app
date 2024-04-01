@@ -175,25 +175,39 @@ document.getElementById('registrationForm').addEventListener('submit', function(
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault(); // Prevent the default form submission
 
+    console.log('Form submission intercepted');
+
     const formData = new FormData(this);
     const errorDiv = document.getElementById('loginError');
+
+    console.log('Initiating fetch to /auth/login');
 
     fetch('/auth/login', {
         method: 'POST',
         body: formData,
         credentials: 'same-origin' // Include cookies in the request
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('Received fetch response');
+        if (!response.ok) {
+            console.error('Fetch response was not ok', response.statusText);
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('Response JSON:', data);
         if (data.success) {
+            console.log('Login successful, redirecting...');
             window.location.href = '/dashboard'; // Redirect on successful login
         } else {
+            console.log('Login failed, displaying error message');
             errorDiv.textContent = data.message; // Display error message
             errorDiv.style.display = 'block';
         }
     })
     .catch(error => {
-        console.error('Error:', error);
+        console.error('Fetch error:', error);
         errorDiv.textContent = 'An error occurred, please try again.';
         errorDiv.style.display = 'block';
     });
