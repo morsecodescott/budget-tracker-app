@@ -102,7 +102,10 @@ document.addEventListener('DOMContentLoaded', (event) => {
 
             fetch('/auth/login', {
                 method: 'POST',
-                body: formData,
+                body: new URLSearchParams(formData).toString(), // Encode as form data
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
                 credentials: 'same-origin' // Include cookies in the request
             })
             .then(response => response.json())
