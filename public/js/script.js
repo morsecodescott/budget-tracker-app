@@ -1,13 +1,14 @@
 // script.js
 
 
-// Define openAddModal globally
+/*-- Define openAddModal globally
 window.openAddModal = function() {
     document.getElementById('modalTitle').textContent = 'Add Budget Item';
     document.getElementById('budgetItemForm').reset();
     document.getElementById('itemId').value = '';
     document.getElementById('budgetItemModal').style.display = 'block';
 };
+*/
 
 // Wait for the DOM to be fully loaded before executing any script.
 document.addEventListener('DOMContentLoaded', (event) => {
