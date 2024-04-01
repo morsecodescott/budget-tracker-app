@@ -1,56 +1,29 @@
 // script.js
 
-// This function displays a flash message of a specified type ('success' or 'error').
-function displayFlashMessage(message, type) {
-    const container = document.getElementById('toastContainer');
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
-
-    // Append and show the toast message
-    container.appendChild(toast);
-    setTimeout(() => toast.classList.add('show'), 100);
-
-    // Automatically remove the toast after a delay
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => container.removeChild(toast), 500); // Wait for fade-out to finish
-    }, 5000);
-}
-
-// Function to add a budget item to the list (used in form submission handling).
-function addToBudgetList(item) {
-    const table = document.querySelector('.budget-items-table tbody');
-    const row = table.insertRow();
-    row.setAttribute('data-id', item._id);
-    row.innerHTML = `
-        <td>${item.type}</td>
-        <td>$${parseFloat(item.amount).toFixed(2)}</td>
-        <td>${item.frequency}</td>
-        <td>${item.description}</td>
-        <td class="budget-items-actions">
-            <button onclick="openEditModal('${item._id}', '${item.type}', '${item.amount}', '${item.frequency}', '${item.description}')" class="budget-item-edit">Edit</button>
-            <button class="budget-item-delete" data-id="${item._id}" onclick="deleteItem('${item._id}')">Delete</button>
-        </td>
-    `;
-}
-
-// Function to update a budget item in the list.
-function updateBudgetList(item) {
-    const row = document.querySelector(`tr[data-id="${item._id}"]`);
-    if (row) {
-        row.cells[0].textContent = item.type;
-        row.cells[1].textContent = `$${parseFloat(item.amount).toFixed(2)}`;
-        row.cells[2].textContent = item.frequency;
-        row.cells[3].textContent = item.description;
-    } else {
-        console.error('Failed to find the item row for ID:', item._id);
-    }
-}
-
 // Wait for the DOM to be fully loaded before executing any script.
 document.addEventListener('DOMContentLoaded', (event) => {
-    // Event listener for delete buttons in the budget item list.
+
+    // Function to display a flash message of a specified type ('success' or 'error').
+    function displayFlashMessage(message, type) {
+        const container = document.getElementById('toastContainer');
+        if (container) {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+
+            // Append and show the toast message
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.add('show'), 100);
+
+            // Automatically remove the toast after a delay
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => container.removeChild(toast), 500); // Wait for fade-out to finish
+            }, 5000);
+        }
+    }
+
+    // Attach event listener for dynamic delete button actions
     document.addEventListener('click', function(e) {
         if (e.target && e.target.classList.contains('budget-item-delete')) {
             const itemId = e.target.getAttribute('data-id');
@@ -77,97 +50,82 @@ document.addEventListener('DOMContentLoaded', (event) => {
     });
 
     // Modal operations for adding and editing budget items.
-    window.openAddModal = function() {
-        document.getElementById('modalTitle').textContent = 'Add Budget Item';
-        document.getElementById('budgetItemForm').reset();
-        document.getElementById('itemId').value = '';
-        document.getElementById('budgetItemModal').style.display = 'block';
-    };
+    const modalOpener = document.getElementById('modalOpener');
+    if (modalOpener) {
+        modalOpener.addEventListener('click', function() {
+            document.getElementById('modalTitle').textContent = 'Add Budget Item';
+            document.getElementById('budgetItemForm').reset();
+            document.getElementById('itemId').value = '';
+            document.getElementById('budgetItemModal').style.display = 'block';
+        });
+    }
 
-    window.openEditModal = function(id, type, amount, frequency, description) {
-        document.getElementById('modalTitle').textContent = 'Edit Budget Item';
-        document.getElementById('type').value = type;
-        document.getElementById('amount').value = amount;
-        document.getElementById('frequency').value = frequency;
-        document.getElementById('description').value = description;
-        document.getElementById('itemId').value = id;
-        document.getElementById('budgetItemModal').style.display = 'block';
-    };
+    const editModalOpener = document.querySelector('.editModalOpener');
+    if (editModalOpener) {
+        editModalOpener.addEventListener('click', function() {
+            document.getElementById('modalTitle').textContent = 'Edit Budget Item';
+            // Assume the data to populate the form is available in attributes or through API
+            // Populate the form fields as necessary
+            document.getElementById('budgetItemModal').style.display = 'block';
+        });
+    }
 
-    window.closeModal = function() {
-        document.getElementById('budgetItemModal').style.display = 'none';
-    };
+    const modalCloser = document.getElementById('modalCloser');
+    if (modalCloser) {
+        modalCloser.addEventListener('click', function() {
+            document.getElementById('budgetItemModal').style.display = 'none';
+        });
+    }
 
-    // Form submission handling for budget items.
-    window.submitForm = function() {
-        const itemId = document.getElementById('itemId').value;
-        const isEdit = itemId !== '';
-        const form = document.getElementById('budgetItemForm');
-        const jsonFormData = Object.fromEntries(new FormData(form).entries());
-        const formAction = isEdit ? `/budget/${itemId}` : '/budget';
-        const method = isEdit ? 'PUT' : 'POST';
+    // Check and bind event listener to the registration form
+    const registrationForm = document.getElementById('registrationForm');
+    if (registrationForm) {
+        registrationForm.addEventListener('submit', function(e) {
+            var password = document.getElementById('password').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
 
-        fetch(formAction, {
-            method: method,
-            body: JSON.stringify(jsonFormData),
-            headers: {'Content-Type': 'application/json'},
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                if (isEdit) {
-                    updateBudgetList(data.item);
+            if (password !== confirmPassword) {
+                e.preventDefault(); // Prevent form submission
+                alert('Passwords do not match.');
+                document.getElementById('password').focus();
+            }
+        });
+    }
+
+    // Check and bind event listener to the login form
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault(); // Prevent the default form submission
+            const formData = new FormData(this);
+            const errorDiv = document.getElementById('loginError');
+
+            fetch('/auth/login', {
+                method: 'POST',
+                body: formData,
+                credentials: 'same-origin' // Include cookies in the request
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/dashboard'; // Redirect on successful login
                 } else {
-                    addToBudgetList(data.item);
+                    if (errorDiv) {
+                        errorDiv.textContent = data.message; // Display error message
+                        errorDiv.style.display = 'block';
+                    }
                 }
-                closeModal();
-                displayFlashMessage('Operation successful', 'success');
-            } else {
-                throw new Error(data.message || 'Operation failed.');
-            }
-        })
-        .catch((error) => {
-            console.error('Error:', error);
-            displayFlashMessage(error.message, 'error');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                if (errorDiv) {
+                    errorDiv.textContent = 'An error occurred, please try again.';
+                    errorDiv.style.display = 'block';
+                }
+            });
         });
-    };
-
-    // Event listener for the registration form validation.
-    document.getElementById('registrationForm').addEventListener('submit', function(e) {
-        var password = document.getElementById('password').value;
-        var confirmPassword = document.getElementById('confirmPassword').value;
-
-        if (password !== confirmPassword) {
-            e.preventDefault(); // Prevent form submission
-            alert('Passwords do not match.');
-            document.getElementById('password').focus();
-        }
-    });
-
-    // Event listener for the login form submission.
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        e.preventDefault(); // Prevent the default form submission
-        const formData = new FormData(this);
-        const errorDiv = document.getElementById('loginError');
-
-        fetch('/auth/login', {
-            method: 'POST',
-            body: formData,
-            credentials: 'same-origin' // Include cookies in the request
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = '/dashboard'; // Redirect on successful login
-            } else {
-                errorDiv.textContent = data.message; // Display error message
-                errorDiv.style.display = 'block';
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            errorDiv.textContent = 'An error occurred, please try again.';
-            errorDiv.style.display = 'block';
-        });
-    });
+    }
+    
+    // Additional initialization or event listeners can be safely added here,
+    // following the same pattern of checking for element existence.
 });
