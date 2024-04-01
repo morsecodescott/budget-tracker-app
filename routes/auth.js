@@ -47,12 +47,12 @@ router.get('/login', (req, res) => {
 
 router.post('/login', (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
-        if (err) return res.json({ success: false, message: err.message });
-        if (!user) return res.json({ success: false, message: info.message });
+        if (err) return res.status(500).json({ success: false, message: err.message });
+        if (!user) return res.status(500).json({ success: false, message: info.message });
 
         req.logIn(user, err => {
-            if (err) return res.json({ success: false, message: err.message });
-            return res.json({ success: true, message: 'Login successful!' });
+            if (err) return res.status(500).json({ success: false, message: err.message });
+            return res.status(201).json({ success: true, message: 'Login successful!' });
         });
     })(req, res, next);
 });
