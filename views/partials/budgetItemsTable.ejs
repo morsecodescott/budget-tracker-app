@@ -1,4 +1,4 @@
-<!-- views/budgetItemsTable.ejs -->
+<!-- views/partials/budgetItemsTable.ejs -->
 <% if (budgetItems && budgetItems.length > 0) { %>
     <table class="budget-items-table">
         <thead class="budget-items-thead">
@@ -18,8 +18,6 @@
                     <td><%= item.frequency %></td>
                     <td><%= item.description %></td>
                     <td class="budget-items-actions">
-                        <!-- Example actions -->
-                        <!--<a href="/budget/edit/<%= item._id %>" class="budget-item-edit">Edit</a> |-->
                         <button onclick="openEditModal('<%= item._id %>', '<%= item.type %>', '<%= item.amount %>', '<%= item.frequency %>', '<%= item.description %>')" class="budget-item-edit">Edit</button>
                         <button class="budget-item-delete" data-id="<%= item._id %>">Delete</button>
                     </td>
@@ -43,7 +41,7 @@
         <tbody class="budget-items-tbody">
         </tbody>
     
-    <button id="'modalOpener" class="btn btn-primary">Add Item</button>
+    <button id="modalOpener" class="btn btn-primary">Add Item</button>
 </table>
 <p class="no-budget-items">No budget items found.</p>
 <% } %>
