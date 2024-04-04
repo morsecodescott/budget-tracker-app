@@ -18,8 +18,8 @@
                     <td><%= item.frequency %></td>
                     <td><%= item.description %></td>
                     <td class="budget-items-actions">
-                        <button onclick="openEditModal('<%= item._id %>', '<%= item.type %>', '<%= item.amount %>', '<%= item.frequency %>', '<%= item.description %>')" class="budget-item-edit">Edit</button>
-                        <button class="budget-item-delete" data-id="<%= item._id %>">Delete</button>
+                        <button class="budget-item-edit btn" data-id="<%= item._id %>" data-type="<%= item.type %>" data-amount="<%= item.amount %>" data-frequency="<%= item.frequency %>" data-description="<%= item.description %>">Edit</button>                        
+                        <button class="budget-item-delete btn" data-id="<%= item._id %>">Delete</button>
                     </td>
                 </tr>
             <% }); %>
