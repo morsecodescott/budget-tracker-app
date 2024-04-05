@@ -8,6 +8,8 @@ const User = require('./models/User');
 const Budget = require('./models/Budget');
 const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budget');
+const categoryRoutes = require('./routes/category');
+const { ensureAuthenticated, isAdmin } = require('./config/auth');
 const passportConfig = require('./config/passport')(passport); // Pass passport instance
 const crypto = require('crypto'); // Import crypto module for generating session secret
 require('dotenv').config();
@@ -60,20 +62,12 @@ app.use((req, res, next) => {
   next();
 });
 
-// Define a middleware function to check authentication
-function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) {
-      // If user is authenticated, proceed to the next middleware or route handler
-      return next();
-  }
-  // If user is not authenticated, redirect to the login page or send an error response
-  console.log('User is not authenticated');
-  res.redirect('/auth/login'); // Redirect to the login page
-}
+
 
 // Middleware to ensure authentication
 app.use((req, res, next) => {
-  if (req.originalUrl === '/' || req.originalUrl === '/auth/login' || req.originalUrl === '/auth/register') {
+  if (req.originalUrl === '/' || req.originalUrl === '/auth/login' || req.originalUrl === '/auth/register' || req.originalUrl === '/test') {
+    // Skip authentication for the routes above) {
       // Skip authentication for the routes above
       return next();
   }
@@ -84,10 +78,13 @@ app.use((req, res, next) => {
 // Routes
 app.use('/auth', authRoutes);
 app.use('/budget', budgetRoutes);
+app.use('/categories', categoryRoutes);
 
 // Route handlers
 app.get('/', (req, res) => res.render('index'));
 //app.get('/dashboard', (req, res) => res.render('dashboard'));
+
+app.get('/test', (req,res) => res.render('test'));
 
 app.get('/dashboard', async (req, res) => {
   try {
