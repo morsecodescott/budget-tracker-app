@@ -51,11 +51,31 @@ router.delete('/:id', ensureAuthenticated, async (req, res) => {
     const { id } = req.params;
 
     try {
+        const category = await Category.findById(id);
+
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+
+        // Check if it's a default category and if the user is an admin
+        if (category.isDefault) {
+            if (req.user.role !== 'admin') {
+                return res.status(403).json({ message: 'Only admins can delete default categories' });
+            }
+        } else {
+            // If it's a user-specific category, check if the current user is the creator
+            if (category.user.toString() !== req.user._id.toString()) {
+                return res.status(403).json({ message: 'You can only delete your own categories' });
+            }
+        }
+
         await Category.findByIdAndDelete(id);
         res.json({ message: 'Category deleted successfully' });
+
     } catch (err) {
         res.status(500).json({ message: 'Failed to delete category', error: err.message });
     }
 });
+
 
 module.exports = router;
