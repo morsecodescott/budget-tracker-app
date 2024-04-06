@@ -85,6 +85,7 @@ app.get('/', (req, res) => res.render('index'));
 //app.get('/dashboard', (req, res) => res.render('dashboard'));
 
 app.get('/test', (req,res) => res.render('test'));
+app.get('/categoryManagement',(req,res) => res.render('categoryManagement'));
 
 app.get('/dashboard', async (req, res) => {
   try {

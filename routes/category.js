@@ -5,15 +5,27 @@ const { ensureAuthenticated, isAdmin } = require('../config/auth');
 
 // Create a new category
 router.post('/', ensureAuthenticated, async (req, res) => {
-    const { name, parentCategory, isDefault } = req.body;
-    const userId = isDefault ? null : req.user._id; // Default categories don't have a user
+    // Convert 'on' to true, absence to false
+    const isDefault = req.body.isDefault === 'on';
 
+    // Use ternary operator to set userId to null if isDefault is true, or to user's ID if false
+    const userId = isDefault ? null : req.user._id;
+    console.log("Post Request Data: "+JSON.stringify(req.body, null, 2));
+
+    // Now, proceed with creating the category
     try {
-        const newCategory = new Category({ name, parentCategory, isDefault, user: userId });
+        const newCategory = new Category({
+            name: req.body.name,
+            parentCategory: req.body.parentCategory || null, // Ensure null if undefined
+            isDefault: isDefault,
+            user: userId
+        });
         await newCategory.save();
         res.status(201).json({ message: 'Category created successfully', category: newCategory });
     } catch (err) {
-        console.log(req.body);
+        console.log("Category Post req.body:"+req.body);
+        console.log("Category Post vars: name:"+name+" parentCategory: "+parentCategory+" isDefault: "+isDefault+" userId: " +userId);
+        console.log("Error: "+ err.message);
         res.status(500).json({ message: 'Failed to create category', error: err.message });
     }
 });
@@ -32,6 +44,44 @@ router.get('/', ensureAuthenticated, async (req, res) => {
         res.status(500).json({ message: 'Failed to retrieve categories', error: err.message });
     }
 });
+
+// get a list of parent categories
+router.get('/parents', ensureAuthenticated, async (req, res) => {
+    try {
+        const categories = await Category.find({
+            $or: [
+                { isDefault: true }, // Fetch default categories
+                { user: req.user._id } // Fetch user-specific categories
+            ]
+        });
+        res.json(categories);
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to retrieve parent categories', error: err.message });
+    }
+});
+
+// Get a single category by ID
+router.get('/:id', ensureAuthenticated, async (req, res) => {
+    try {
+        const category = await Category.findById(req.params.id);
+        if (!category) {
+            return res.status(404).json({ message: 'Category not found' });
+        }
+
+        // Add a check here if you want to restrict the access to the user who created the category
+        // or if the category is default and the user is an admin
+        if (!category.isDefault && category.user.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'Not authorized to view this category' });
+        }
+
+        res.json(category);
+    } catch (err) {
+        res.status(500).json({ message: 'Failed to retrieve category', error: err.message });
+    }
+});
+
+
+
 
 // Update a category
 router.put('/:id', ensureAuthenticated, async (req, res) => {
