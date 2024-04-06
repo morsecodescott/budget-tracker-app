@@ -6,11 +6,15 @@
         <nav>
             <ul>
                 <% if (currentUser) { %>
-                    <li><a href="/auth/logout">Logout</a></li>
-                    <li>Welcome, <%= currentUser.firstName %></li>
+                    <li><a href="/dashboard">Dashboard</a></li>
+                    <% if (currentUser.role && currentUser.role === 'admin') { %>
+                        <li><a href="/categoryManagement">Category Management</a></li>
+                    <% } %>
+                    <li>Welcome, <%= currentUser.firstName %> | <a href="/auth/logout">Logout</a></li>
                 <% } else { %>
                     <li><a href="/auth/login">Login</a></li>
-                <% } %>    
+                    <li><a href="/auth/register">Register</a></li>
+                <% } %>
             </ul>
         </nav>
     </div>

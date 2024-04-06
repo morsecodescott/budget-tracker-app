@@ -7,7 +7,7 @@ const User = require('../models/User');
 module.exports = function(passport) {
     passport.use(
         new LocalStrategy({ usernameField: 'email' }, (email, password, done) => {
-            console.log("passport is called");
+           
             User.findOne({ email: email.toLowerCase() }) // Use email to find the user
                 .then(user => {
                     if (!user) {
@@ -37,7 +37,7 @@ module.exports = function(passport) {
     );
 
     passport.serializeUser((user, done) => {
-        // console.log('Serializing user:', user);
+        
         done(null, user.id);
     });
 
@@ -48,7 +48,7 @@ module.exports = function(passport) {
                     console.log('User not found during deserialization');
                     return done(null, false, { message: 'User not found' });
                 }
-                //console.log('Deserializing user:', user);
+                
                 return done(null, user);
             })
             .catch(err => {

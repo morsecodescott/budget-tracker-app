@@ -48,8 +48,8 @@ router.get('/login', (req, res) => {
 router.post('/login', (req, res, next) => {
     
     passport.authenticate('local', (err, user, info) => {
-        console.log("Login Post called: authenticate");
-        console.log(user);
+        
+        
         if (err) return res.status(500).json({ success: false, message: err.message });
         
         if (!user) return res.status(500).json({ success: false, message: info.message });

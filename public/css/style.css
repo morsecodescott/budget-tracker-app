@@ -37,6 +37,13 @@ header h1 {
 header h1.logo {
     font-size: 36px;
     margin: 0;
+
+}
+
+header h1.logo a {
+    text-decoration: none;
+    color: inherit;
+    
 }
 
 header p.slogan {
@@ -327,4 +334,8 @@ footer {
 
 .toast.error {
     background-color: red;
+}
+
+.close-button {
+     cursor: pointer;
 }

@@ -1,4 +1,4 @@
-// js/common.js
+// public/js/common.js
  // Function to display a flash message of a specified type ('success' or 'error').
  function displayFlashMessage(message, type) {
     const container = document.getElementById('toastContainer');
