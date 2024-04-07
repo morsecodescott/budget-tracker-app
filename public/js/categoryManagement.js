@@ -2,8 +2,7 @@
 
 // Assuming you have a modal setup for adding/editing categories
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadCategories(); // Load categories when the page is ready
+document.addEventListener('DOMContentLoaded', () => {   
     loadParentCategories();
     loadCategoriesNew();
 });

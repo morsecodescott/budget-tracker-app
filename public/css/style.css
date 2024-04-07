@@ -25,7 +25,7 @@ body {
 header {
     background-color: var(--dark-shade);
     color: var(--light-accent);
-    padding: 20px 0;
+    padding: 20px 0 0 0;
     text-align: center;
 }
 
@@ -43,7 +43,8 @@ header h1.logo {
 header h1.logo a {
     text-decoration: none;
     color: inherit;
-    
+    margin-bottom: 0px; /* Adjust as needed to align with the bottom */
+    flex-grow: 1; /* Allow the logo to take up available space */
 }
 
 header p.slogan {
@@ -56,17 +57,32 @@ nav ul {
     list-style: none;
     margin: 0;
     padding: 0;
+    overflow: hidden;
+    background-color: #333;
+    display: flex;        /* Make the ul a flex container */
+    align-items: flex-end; /* Align children to the bottom */
 }
 
 nav ul li {
-    display: inline;
+    /*display: inline;*/
+    float: left;
+}
+
+nav ul li.right {
+    float: right;
+    margin-right: 0; /* Reset the margin for right-aligned items */
 }
 
 nav ul li a {
+    display: block;
     color: #fff;
+    text-align: center;
     text-decoration: none;
-    padding: 10px;
+
     transition: background-color 0.3s ease;
+    padding: 16px 10px; /* Adjust padding to align with the height of the navbar */
+    white-space: nowrap; /* Prevent text from wrapping */
+
 }
 
 nav ul li a:hover {
@@ -81,12 +97,14 @@ form {
 }
 
 form input[type="text"],
+form input[type="email"],
 form input[type="password"] {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
+    box-sizing:border-box
 }
 
 form button {
@@ -153,12 +171,14 @@ p a:hover {
 
 .form-group input[type="number"],
 .form-group input[type="text"],
+.form-group input[type="email"],
 .form-group select {
     width: 100%;
     padding: 8px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    box-sizing:border-box
 }
 
 .btn {
@@ -272,13 +292,17 @@ footer {
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 2; /* Ensure it sits above other content */
-    background-color: #fff;
+    background-color: #333;
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: none; /* Start hidden */
     width: 90%;
     max-width: 500px;
+}
+
+.modal h2 {
+    color: #fff;
 }
 
 .modal .close {
@@ -338,12 +362,24 @@ footer {
 
 .close-button {
      cursor: pointer;
+     color: #fff;
+     
 }
 
 
 
 /* Collapsable category list */
 /* This will set the base styles for the category list container */
+#category-list-wrapper {
+    text-align: center; /* Center-align the button */
+    /* Add any additional styling as needed */
+}
+
+#addCategoryModalOpener {
+    margin-top: 10px; /* Add some space above the button */
+    /* Adjust styling as needed */
+}
+
 #category-list-container {
     max-width: 600px; /* Adjust the width as needed */
     margin: auto; /* This will center the container */
