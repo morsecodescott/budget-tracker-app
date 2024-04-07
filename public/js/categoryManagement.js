@@ -1,9 +1,77 @@
+// public/js/categoryManagement.js
+
 // Assuming you have a modal setup for adding/editing categories
 
 document.addEventListener('DOMContentLoaded', () => {
     loadCategories(); // Load categories when the page is ready
     loadParentCategories();
+    loadCategoriesNew();
 });
+
+function attachCollapseEventListeners() {
+    document.querySelectorAll('.category-title').forEach(title => {
+      title.addEventListener('click', function() {
+        const subcategoryList = this.nextElementSibling;
+        const collapseIcon = this.querySelector('.collapse-icon');
+        const isExpanded = collapseIcon.classList.contains('expanded');
+        
+        subcategoryList.style.display = isExpanded ? 'none' : 'block';
+        if (isExpanded) {
+          collapseIcon.classList.remove('expanded');
+          
+        } else {
+          collapseIcon.classList.add('expanded');
+          
+        }
+      });
+    });
+  }
+  
+
+
+function loadCategoriesNew() {
+    fetch('/categories')
+      .then(response => response.json())
+      .then(categories => {
+        const parentCategories = categories.filter(cat => !cat.parentCategory);
+        const categoryListHtml = parentCategories.map(parentCategory => {
+          const subCategories = categories.filter(sub => sub.parentCategory === parentCategory._id);
+          return `
+            <div class="category-item" data-category-id="${parentCategory._id}">
+            <div class="category-title">
+                <span class="collapse-icon"></span>
+                ${parentCategory.name}
+                <div class="category-actions">
+                    <button class="editCategoryBtn" onclick="openEditModal('${parentCategory._id}')">Edit</button>
+                    <button class="deleteCategoryBtn" onclick="deleteCategory('${parentCategory._id}')">Delete</button>
+                </div>
+            </div>
+            <div class="subcategory-list">
+                ${subCategories.map(subCategory => `
+                <div class="subcategory-item">
+                    ${subCategory.name}
+                    <div class="category-actions">
+                        <button class="editCategoryBtn" onclick="openEditModal('${subCategory._id}')">Edit</button>
+                        <button class="deleteCategoryBtn" onclick="deleteCategory('${subCategory._id}')">Delete</button>
+                    </div>
+                </div>
+                `).join('')}
+            </div>
+            </div>
+          `;
+        }).join('');
+  
+        document.querySelector('#category-list-container').innerHTML = categoryListHtml;
+        attachCollapseEventListeners();
+      })
+      .catch(error => {
+        console.error('Error loading categories:', error);
+      });
+  }
+  
+
+
+
 
 function loadCategories() {
     fetch('/categories')
@@ -108,6 +176,7 @@ document.getElementById('addCategoryModalOpener').addEventListener('click', func
     document.getElementById('modalTitle').textContent = 'Add New Category';
     // Reset the form within the modal
     document.getElementById('categoryForm').reset();
+    document.getElementById('categoryId').value = ''; // Explicitly clear the categoryId
     loadParentCategories(); // Populate the dropdown when the modal is opened
 });
 
@@ -120,10 +189,11 @@ document.getElementById('categoryForm').addEventListener('submit', function(e) {
     const formData = new FormData(form);
     const jsonFormData = Object.fromEntries(formData.entries());
 
-    const categoryIdElement = formData.get('categoryId');
+    const categoryIdElement = formData.get('id');
     const isEdit = categoryIdElement && categoryIdElement.value !== '';
     console.log("isEdit: "+isEdit);
-    const url = isEdit ? `/categories/${formData.get('categoryId')}` : '/categories';
+    console.log(categoryIdElement);
+    const url = isEdit ? `/categories/${formData.get('id')}` : '/categories';
     const method = isEdit ? 'PUT' : 'POST';
     console.log("Form Data: "+JSON.stringify(jsonFormData));
     fetch(url, {
@@ -151,6 +221,7 @@ document.getElementById('categoryForm').addEventListener('submit', function(e) {
             document.getElementById('categoryModal').style.display = 'none';
             // Reload the categories to reflect the new changes
             loadCategories();
+            loadCategoriesNew();
         }
     })
     .catch(error => {
@@ -167,5 +238,8 @@ document.getElementById('closeModalButton').addEventListener('click', function()
     document.getElementById('categoryModal').style.display = 'none';
     
 });
+
+
+
 
 // You can also add any additional helper functions needed for managing categories here
