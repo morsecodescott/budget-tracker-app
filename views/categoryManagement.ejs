@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= appName %></title>
-    <link rel="stylesheet" href="/css/style.css">
-    
+    <link rel="stylesheet" href="/css/style.css">    
 </head>
 <body>
 
@@ -14,28 +13,20 @@
 
     <div class="container">
         <h2>Category Management</h2>
-        
         <!-- Flash messages for feedback -->
         <%- include('partials/flashMessages'); %>
-
-        <!-- Button to trigger add new category modal -->
-        <button id="addCategoryModalOpener" class="btn btn-primary">Add New Category</button>
-        
-        <!-- Category List -->
-        <%- include('partials/categoryList') %>
-
         <!-- Add/Edit Category Modal -->
         <%- include('partials/categoryForm') %>
-    </div>
-
-    <!-- Testing space for collapsable container-->
-    <div id="category-list-container">
-        <!-- Categories will be loaded here by loadCategories() -->
-    </div>
-
-
-    <!-- Scripts -->
     
+        <!-- Collapsable Category List-->
+        <div id="category-list-wrapper">
+            <div id="category-list-container">
+                <!-- Categories will be loaded here by loadCategories() -->
+            </div>
+                <button id="addCategoryModalOpener" class="btn btn-primary">Add New Category</button>
+        </div>
+    </div>
+    <!-- Scripts -->
     <script src="/js/categoryManagement.js" defer></script>
 </body>
 </html>
