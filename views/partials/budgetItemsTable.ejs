@@ -4,9 +4,10 @@
         <thead class="budget-items-thead">
             <tr class="budget-items-header-row">
                 <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
                 <th>Amount</th>
                 <th>Frequency</th>
-                <th>Description</th>
                 <th>Actions</th>
             </tr>
         </thead>
@@ -14,11 +15,12 @@
             <% budgetItems.forEach(function(item) { %>
                 <tr class="budget-items-row" data-id="<%= item._id %>">
                     <td><%= item.type %></td>
-                    <td>$<%= item.amount.toFixed(2) %></td>
-                    <td><%= item.frequency %></td>
+                    <td><%= item.category %></td>
                     <td><%= item.description %></td>
+                    <td>$<%= item.amount.toFixed(2) %></td>
+                    <td><%= item.frequency %></td>                
                     <td class="budget-items-actions">
-                        <button class="budget-item-edit btn" data-id="<%= item._id %>" data-type="<%= item.type %>" data-amount="<%= item.amount %>" data-frequency="<%= item.frequency %>" data-description="<%= item.description %>">Edit</button>                        
+                        <button class="budget-item-edit btn" data-id="<%= item._id %>" data-type="<%= item.type %>" data-type="<%= item.category %>" data-amount="<%= item.amount %>" data-frequency="<%= item.frequency %>" data-description="<%= item.description %>">Edit</button>                        
                         <button class="budget-item-delete btn" data-id="<%= item._id %>">Delete</button>
                     </td>
                 </tr>
@@ -32,9 +34,10 @@
         <thead class="budget-items-thead">
             <tr class="budget-items-header-row">
                 <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
                 <th>Amount</th>
                 <th>Frequency</th>
-                <th>Description</th>
                 <th>Actions</th>
             </tr>
         </thead>

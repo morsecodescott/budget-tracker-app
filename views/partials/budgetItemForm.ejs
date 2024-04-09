@@ -17,6 +17,19 @@
               </select>
             </div>
             <div class="form-group">
+              <label for="category">Category:</label>
+                <select id="category" name="category">
+                  <option value="">None</option>
+                  <!-- categories will be populated here -->
+                </select>
+            </div>
+
+            <div class="form-group">
+              <label for="description">Description:</label>
+              <input type="text" id="description" name="description" required>
+            </div>
+            
+            <div class="form-group">
               <label for="amount">Amount:</label>
               <input type="number" id="amount" name="amount" step="0.01" required>
             </div>
@@ -29,10 +42,7 @@
                 <option value="one-time">One-time</option>
               </select>
             </div>
-            <div class="form-group">
-              <label for="description">Description:</label>
-              <input type="text" id="description" name="description" required>
-            </div>
+            
             <input type="hidden" id="itemId" name="itemId">
           </form>
         </div>
