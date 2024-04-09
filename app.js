@@ -13,6 +13,27 @@ const { ensureAuthenticated, isAdmin } = require('./config/auth');
 const passportConfig = require('./config/passport')(passport); // Pass passport instance
 const crypto = require('crypto'); // Import crypto module for generating session secret
 require('dotenv').config();
+let sessionStore;
+
+if (process.env.NODE_ENV === 'production') {
+    const RedisStore = require('connect-redis').default;
+    const redis = require('redis');
+    const redisClient = redis.createClient({
+        // Production Redis configuration
+        url: process.env.REDIS_URL,
+    });
+    redisClient.on('error', (err) => console.log('Redis Client Error', err));
+
+    redisClient.connect().catch(console.error);
+    sessionStore = new RedisStore({ client: redisClient });
+} else {
+    // Development environment, use default MemoryStore
+    sessionStore = new session.MemoryStore();
+}
+
+
+
+
 
 // Define app name and slogan
 const appName = 'ChaChing';
@@ -46,7 +67,7 @@ app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(session({ secret: sessionSecret, resave: true, saveUninitialized: true }));
+app.use(session({ store: sessionStore, secret: sessionSecret, resave: false, saveUninitialized: false }));
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
