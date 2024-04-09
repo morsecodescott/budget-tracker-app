@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
+
     // Modal operations for adding and editing budget items.
     const modalOpener = document.getElementById('modalOpener');
     if (modalOpener) {
@@ -119,7 +120,13 @@ document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('budgetItemModal').style.display = 'none';
         });
     }
-
+    
+    const modalCloser2 = document.getElementById('modalCloser2');
+    if (modalCloser2) {
+        modalCloser2.addEventListener('click', function() {
+            document.getElementById('budgetItemModal').style.display = 'none';
+        });
+    }
    
     
     const saveChangesButton = document.getElementById('submitItem');
