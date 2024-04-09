@@ -3,6 +3,24 @@
 // Wait for the DOM to be fully loaded before executing any script.
 document.addEventListener('DOMContentLoaded', (event) => {
 
+    function loadCategories() {
+        fetch('/categories')
+        .then(response => response.json())
+        .then(categories => {
+            const categorySelect = document.getElementById('category');
+            categorySelect.innerHTML = '<option value="">None</option>'; // Default option
+            
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category._id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+        })
+        .catch(error => console.error('Error fetching categories:', error));
+    }
+    
+    
     // Function to add a budget item to the list (used in form submission handling).
     function addToBudgetList(item) {
         const table = document.querySelector('.budget-items-table tbody');
@@ -10,12 +28,14 @@ document.addEventListener('DOMContentLoaded', (event) => {
         row.setAttribute('data-id', item._id);
         row.innerHTML = `
             <td>${item.type}</td>
+            <td>${item.category}</td>
+            <td>${item.description}</td>
             <td>$${parseFloat(item.amount).toFixed(2)}</td>
             <td>${item.frequency}</td>
-            <td>${item.description}</td>
+            
             <td class="budget-items-actions">
-                <button class="budget-item-edit btn" data-id="${item._id}" data-type="${item.type}" data-amount="${item.amount}" data-frequency="${item.frequency}" data-description="${item.description}">Edit</button>                        
-                <button class="budget-item-delete btn" data-id="${item._id}" onclick="deleteItem('${item._id}')">Delete</button>
+                <button class="budget-item-edit btn" data-id="${item._id}" data-type="${item.type}" data-category="${item.category}" data-amount="${item.amount}" data-frequency="${item.frequency}" data-description="${item.description}">Edit</button>                        
+                <button class="budget-item-delete btn" data-id="${item._id}">Delete</button>
             </td>
         `;
     }
@@ -25,9 +45,11 @@ document.addEventListener('DOMContentLoaded', (event) => {
         const row = document.querySelector(`tr[data-id="${item._id}"]`);
         if (row) {
             row.cells[0].textContent = item.type;
-            row.cells[1].textContent = `$${parseFloat(item.amount).toFixed(2)}`;
-            row.cells[2].textContent = item.frequency;
-            row.cells[3].textContent = item.description;
+            row.cells[1].textContent = item.category;
+            row.cells[2].textContent = item.description;
+            row.cells[3].textContent = `$${parseFloat(item.amount).toFixed(2)}`;
+            row.cells[4].textContent = item.frequency;
+            
         } else {
             console.error('Failed to find the item row for ID:', item._id);
         }
@@ -56,6 +78,15 @@ document.addEventListener('DOMContentLoaded', (event) => {
                     displayFlashMessage('There was an error processing your request.', 'error');
                 });
             }
+        } else if (e.target && e.target.classList.contains('budget-item-edit')) {
+            const id = e.target.getAttribute('data-id');
+            const type = e.target.getAttribute('data-type');
+            const amount = e.target.getAttribute('data-amount');
+            const frequency = e.target.getAttribute('data-frequency');
+            const description = e.target.getAttribute('data-description');
+            const category = e.target.getAttribute('data-categrory');
+            openEditModal(id, type, amount, frequency, description, category);  
+
         }
     });
 
@@ -63,6 +94,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
     const modalOpener = document.getElementById('modalOpener');
     if (modalOpener) {
         modalOpener.addEventListener('click', function() {
+            loadCategories();
             document.getElementById('modalTitle').textContent = 'Add Budget Item';
             document.getElementById('budgetItemForm').reset();
             document.getElementById('itemId').value = '';
@@ -76,6 +108,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             document.getElementById('modalTitle').textContent = 'Edit Budget Item';
             // Assume the data to populate the form is available in attributes or through API
             // Populate the form fields as necessary
+            loadCategories();
             document.getElementById('budgetItemModal').style.display = 'block';
         });
     }
@@ -131,14 +164,16 @@ document.addEventListener('DOMContentLoaded', (event) => {
     };
   
     
-    window.openEditModal = function(id, type, amount, frequency, description) {
+    window.openEditModal = function(id, type, amount, frequency, description, category) {
         // Set the form values based on the provided parameters
+        loadCategories();
         document.getElementById('modalTitle').textContent = 'Edit Budget Item';
         document.getElementById('type').value = type;
         document.getElementById('amount').value = amount;
         document.getElementById('frequency').value = frequency;
         document.getElementById('description').value = description;
         document.getElementById('itemId').value = id;
+        document.getElementById('itemId').categroy = category;
         document.getElementById('budgetItemModal').style.display = 'block';
     };
     
@@ -150,7 +185,8 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const amount = this.getAttribute('data-amount');
             const frequency = this.getAttribute('data-frequency');
             const description = this.getAttribute('data-description');
-            openEditModal(id, type, amount, frequency, description);
+            const category = this.getAttribute('data-categrory');
+            openEditModal(id, type, amount, frequency, description, category);
         });
     });
 

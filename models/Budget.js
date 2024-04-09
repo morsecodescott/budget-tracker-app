@@ -25,6 +25,11 @@ const budgetSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category', // assuming your category model is named 'Category'
+    required: true,
+  },
   createdAt: {
     type: Date,
     default: Date.now,

@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
 
 // Route to add a new budget item
 router.post('/', async (req, res) => {
-  const { type, amount, frequency, description } = req.body;
+  const { type, category , description, amount, frequency  } = req.body;
   try {
     // Create a new Budget item using the request data
     const newBudgetItem = new Budget({
@@ -24,6 +24,7 @@ router.post('/', async (req, res) => {
       amount,
       frequency,
       description,
+      category
     });
 
     // Save the new Budget item to the database
@@ -51,13 +52,14 @@ router.post('/', async (req, res) => {
 // Route to update a budget item
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { type, amount, frequency, description } = req.body;
+  const { type, amount, frequency, description, category } = req.body;
   try {
     const updatedBudgetItem = await Budget.findByIdAndUpdate(id, {
       type,
       amount,
       frequency,
       description,
+      category,
     }, { new: true }); // Return the updated document
     if (!updatedBudgetItem) {
       return res.status(404).json({ success: false, message: 'Budget item not found' });
