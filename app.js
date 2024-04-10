@@ -1,136 +1,120 @@
-// app.js
+
+// Essential module imports
 const express = require('express');
 const mongoose = require('mongoose');
 const session = require('express-session');
 const passport = require('passport');
 const flash = require('connect-flash');
+const crypto = require('crypto'); // For generating session secret
+require('dotenv').config();
+
+// Model imports
 const User = require('./models/User');
 const Budget = require('./models/Budget');
+
+// Route handler imports
 const authRoutes = require('./routes/auth');
 const budgetRoutes = require('./routes/budget');
 const categoryRoutes = require('./routes/category');
-const { ensureAuthenticated, isAdmin } = require('./config/auth');
-const passportConfig = require('./config/passport')(passport); // Pass passport instance
-const crypto = require('crypto'); // Import crypto module for generating session secret
-require('dotenv').config();
-let sessionStore;
 
+// Authentication and authorization utilities
+const { ensureAuthenticated, isAdmin } = require('./config/auth');
+const passportConfig = require('./config/passport')(passport); // Initialize passport config
+
+// Session store setup
+let sessionStore;
 if (process.env.NODE_ENV === 'production') {
+    // Production environment: Use RedisStore
     const RedisStore = require('connect-redis').default;
     const redis = require('redis');
-    const redisClient = redis.createClient({
-        // Production Redis configuration
-        url: process.env.REDIS_URL,
-    });
+    const redisClient = redis.createClient({ url: process.env.REDIS_URL });
     redisClient.on('error', (err) => console.log('Redis Client Error', err));
-
     redisClient.connect().catch(console.error);
     sessionStore = new RedisStore({ client: redisClient });
 } else {
-    // Development environment, use default MemoryStore
+    // Development environment: Use default MemoryStore
     sessionStore = new session.MemoryStore();
 }
 
-
-
-
-
-// Define app name and slogan
-const appName = 'ChaChing';
-const appSlogan = 'Make Every Dollar Count';
-
+// Express app initialization
 const app = express();
+const PORT = process.env.PORT || 3000;
 
-// Generate a random session secret
-const sessionSecret = crypto.randomBytes(64).toString('hex');
-
-
-
-// Database connection
+// MongoDB connection
 mongoose.connect(process.env.MONGO_URI);
 const db = mongoose.connection;
-
-// MongoDB event handlers
-db.on('connected', () => console.log(`Connected to MongoDB.`));
-db.on('error', (err) => console.error(`Error in MongoDB connection: ${err.message}`));
-db.on('disconnected', () => console.log('Disconnected from MongoDB'));
-
-// Close MongoDB connection on app termination
+db.on('connected', () => console.log('Connected to MongoDB.'));
+db.on('error', (err) => console.error(`MongoDB connection error: ${err.message}`));
+db.on('disconnected', () => console.log('Disconnected from MongoDB.'));
 process.on('SIGINT', () => {
-  db.close();
-  console.log('MongoDB connection closed due to app termination');
-  process.exit(0);
+  db.close(() => {
+    console.log('MongoDB connection closed due to app termination');
+    process.exit(0);
+  });
 });
 
-// Middleware setup
+// App settings and middleware
 app.set('view engine', 'ejs');
 app.set('views', __dirname + '/views');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(session({ store: sessionStore, secret: sessionSecret, resave: false, saveUninitialized: false }));
+app.use(express.static('public')); // Serve static files from 'public' directory
+
+// Session configuration
+const sessionSecret = crypto.randomBytes(64).toString('hex');
+app.use(session({
+    store: sessionStore,
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false
+}));
+
+// Passport and flash messages
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(flash());
-app.use(express.static('public')); // Serve static files from 'public' directory
 
-// Set locals
+// Global variables for templates
 app.use((req, res, next) => {
-  res.locals.appName = appName;
-  res.locals.appSlogan = appSlogan;
+  res.locals.appName = 'ChaChing';
+  res.locals.appSlogan = 'Make Every Dollar Count';
   res.locals.currentUser = req.user; // Set currentUser from req.user
   res.locals.error_msg = req.flash('error_msg');
   res.locals.success_msg = req.flash('success_msg');
   next();
 });
 
-
-
-// Middleware to ensure authentication
+// Authentication middleware for protected routes
 app.use((req, res, next) => {
-  if (req.originalUrl === '/' || req.originalUrl === '/auth/login' || req.originalUrl === '/auth/register' || req.originalUrl === '/test') {
-    // Skip authentication for the routes above) {
-      // Skip authentication for the routes above
-      return next();
+  if (['/', '/auth/login', '/auth/register', '/test'].includes(req.originalUrl)) {
+    return next(); // Skip authentication for specific routes
   }
-  ensureAuthenticated(req, res, next); // Apply ensureAuthenticated middleware to all other routes
+  ensureAuthenticated(req, res, next); // Apply to all other routes
 });
 
-
-// Routes
+// Routing
 app.use('/auth', authRoutes);
 app.use('/budget', budgetRoutes);
 app.use('/categories', categoryRoutes);
 
-// Route handlers
+// Root route
 app.get('/', (req, res) => res.render('index'));
-//app.get('/dashboard', (req, res) => res.render('dashboard'));
 
-app.get('/test', (req,res) => res.render('test'));
-app.get('/categoryManagement',(req,res) => res.render('categoryManagement'));
-
+// Dashboard route with budget items fetching
 app.get('/dashboard', async (req, res) => {
   try {
-    // Fetching budget items for the logged-in user
     const budgetItems = await Budget.find({ user: req.user._id });
-
-    // Rendering the dashboard page and passing the budgetItems to it
-    res.render('dashboard', { 
-      budgetItems: budgetItems, 
-      user: req.user // Assuming you want to pass the user object as well
-    });
+    res.render('dashboard', { budgetItems, user: req.user });
   } catch (err) {
     console.error(err);
-    res.status(500).render('dashboard', { 
-      error: 'Failed to load budget items.', 
-      user: req.user 
-    });
+    res.status(500).render('dashboard', { error: 'Failed to load budget items.' });
   }
 });
 
+// Test and category management routes
+app.get('/test', (req, res) => res.render('test'));
+app.get('/categoryManagement', (req, res) => res.render('categoryManagement'));
 
-// Server setup
-const PORT = process.env.PORT || 3000;
-//app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// Start server
 const server = app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
-module.exports = server; // Export the server for use in tests
-module.exports = app; // Export the Express app instance
+module.exports = { app, server }; // Export for testing or modular use
