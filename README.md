@@ -1,4 +1,3 @@
-/*
 # ChaChing Budget Tracker
 
 ChaChing is a budget and expense tracking web application designed to help users manage their finances more effectively. With a focus on simplicity and user experience, ChaChing allows users to easily track their income, expenses, and budget categories.
