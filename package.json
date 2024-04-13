@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "NODE_ENV=production node app.js",
-    "dev": "NODE_ENV=development nodemon app.js"
+    "dev": "NODE_ENV=development nodemon -e js,ejs app.js"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",

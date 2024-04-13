@@ -15,7 +15,7 @@
             <% budgetItems.forEach(function(item) { %>
                 <tr class="budget-items-row" data-id="<%= item._id %>">
                     <td><%= item.type %></td>
-                    <td><%= item.category %></td>
+                    <td><%= item.category ? item.category.name : 'No Category' %></td> <!-- Handle undefined category -->
                     <td><%= item.description %></td>
                     <td>$<%= item.amount.toFixed(2) %></td>
                     <td><%= item.frequency %></td>                
