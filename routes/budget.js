@@ -6,7 +6,10 @@ const Budget = require('../models/Budget');
 // Route to list all budget items
 router.get('/', async (req, res) => {
   try {
-    const budgetItems = await Budget.find({ user: req.user._id });
+    const budgetItems = await Budget.find({ user: req.user._id })
+      .populate('category', 'name')  // Populates the 'category' field, selecting only 'name'
+      .sort({ type: 1, 'category.name': 1 })  // Sorts by 'type' and then by 'category.name'
+      console.log(budgetItems);
     res.json(budgetItems);
   } catch (err) {
     res.status(500).send(err.message);
