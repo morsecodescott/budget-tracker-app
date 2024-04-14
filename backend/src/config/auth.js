@@ -1,4 +1,4 @@
-// config/auth.js
+// backend/src/config/auth.js
 
 // Define a middleware function to check authentication
 function ensureAuthenticated(req, res, next) {
