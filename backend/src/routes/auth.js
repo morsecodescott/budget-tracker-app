@@ -37,26 +37,30 @@ router.post('/register', async (req, res) => {
 
 
 
-// Login page - GET
-router.get('/login', (req, res) => {
-    
-    res.render('login.ejs');
-});
 
 
 
 router.post('/login', (req, res, next) => {
-    
-    passport.authenticate('local', (err, user, info) => {
-        
-        
-        if (err) return res.status(500).json({ success: false, message: err.message });
-        
-        if (!user) return res.status(500).json({ success: false, message: info.message });
+    console.log("Login attempt with body:", req.body); // Log the request body to see what data is being sent to the server
 
-        req.logIn(user, err => {
-            if (err) return res.status(500).json({ success: false, message: err.message });
-            return res.status(201).json({ success: true, message: 'Login successful!' });
+    passport.authenticate('local', (err, user, info) => {
+        if (err) {
+            console.error("Authentication error:", err); // Log any errors that occur during authentication
+            return res.status(500).json({ success: false, message: 'Authentication error.', error: err.message });
+        }
+        
+        if (!user) {
+            console.log("Login failed, no user found:", info); // Log the info message if no user is found
+            return res.status(401).json({ success: false, message: info.message });
+        }
+
+        req.logIn(user, (err) => {
+            if (err) {
+                console.error("Error in req.logIn:", err); // Log errors if login session setup fails
+                return res.status(500).json({ success: false, message: 'Failed to log in.', error: err.message });
+            }
+            console.log("Login successful for user:", user); // Log the successful login
+            return res.status(201).json({ success: true, message: 'Login successful!', user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role  } });
         });
     })(req, res, next);
 });
@@ -69,7 +73,7 @@ router.post('/login', (req, res, next) => {
 // Logout route - GET
 router.get('/logout', (req, res) => {
     req.logout(() => {
-        res.redirect('/'); // Redirect to the landing page
+      
     });
 });
 
