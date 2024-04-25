@@ -6,18 +6,18 @@ const { ensureAuthenticated, isAdmin } = require('../config/auth');
 // Create a new category
 router.post('/', ensureAuthenticated, async (req, res) => {
     // Convert 'on' to true, absence to false
-    const isDefault = req.body.isDefault === 'on';
-
+    //const isDefault = req.body.isDefault === 'on';
+    console.log("isDefault body value: ", req.body.isDefault);
     // Use ternary operator to set userId to null if isDefault is true, or to user's ID if false
-    const userId = isDefault ? null : req.user._id;
-    console.log("Post Request Data: "+JSON.stringify(req.body, null, 2));
+    const userId = req.body.isDefault ? null : req.user._id;
+    
 
     // Now, proceed with creating the category
     try {
         const newCategory = new Category({
             name: req.body.name,
             parentCategory: req.body.parentCategory || null, // Ensure null if undefined
-            isDefault: isDefault,
+            isDefault: req.body.isDefault,
             user: userId
         });
         await newCategory.save();
@@ -31,29 +31,70 @@ router.post('/', ensureAuthenticated, async (req, res) => {
 });
 
 // Get all categories
+// Get all categories
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
+        // Fetch all categories relevant to the user or that are defaults
         const categories = await Category.find({
             $or: [
                 { isDefault: true },
                 { user: req.user._id }
             ]
         });
-        res.json(categories);
+
+        // Function to build the hierarchical structure
+        const buildHierarchy = (categories) => {
+            let categoryMap = {};
+            let roots = [];
+
+            // First, map all categories by their IDs for quick access
+            categories.forEach(category => {
+                categoryMap[category._id.toString()] = { ...category._doc, children: [] };
+            });
+
+            // Assign children to their respective parents
+            categories.forEach(category => {
+                if (category.parentCategory) {
+                    if (categoryMap[category.parentCategory.toString()]) {
+                        categoryMap[category.parentCategory.toString()].children.push(categoryMap[category._id.toString()]);
+                    }
+                } else {
+                    roots.push(categoryMap[category._id.toString()]);
+                }
+            });
+
+            // Optionally, sort each parent's children array by name
+            roots.forEach(root => {
+                root.children.sort((a, b) => a.name.localeCompare(b.name));
+            });
+
+            return roots;
+        };
+
+        // Build the hierarchy from categories
+        const sortedCategories = buildHierarchy(categories);
+        console.log("Sorted Categories: ",sortedCategories);
+        res.json(sortedCategories);
     } catch (err) {
         res.status(500).json({ message: 'Failed to retrieve categories', error: err.message });
     }
 });
 
+
 // get a list of parent categories
 router.get('/parents', ensureAuthenticated, async (req, res) => {
     try {
         const categories = await Category.find({
-            $or: [
-                { isDefault: true }, // Fetch default categories
-                { user: req.user._id } // Fetch user-specific categories
+            $and: [
+                { parentCategory: null }, // Add this line to fetch only parent categories
+                {
+                    $or: [
+                        { isDefault: true }, // Fetch default categories
+                        { user: req.user._id } // Fetch user-specific categories
+                    ]
+                }
             ]
-        });
+        }).sort({ name: 1 }); // Sort by name in ascending order
         res.json(categories);
     } catch (err) {
         res.status(500).json({ message: 'Failed to retrieve parent categories', error: err.message });

@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Typography, Grid, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper } from '@mui/material';
+import { Container, Grid, Card,CardContent, Typography, Button,Box, LinearProgress, Divider, } from '@mui/material';
 import axios from 'axios';
+
+const budgetMonths = ['Jan-24','Feb-24','Mar-24', 'Apr-24','May-24','Jun-24'];
+// Dummy data
+const incomeSum = "5,647";
+const expenseSum = "1,881";
 
 const Dashboard = () => {
   const [incomeItems, setIncomeItems] = useState([]);
@@ -22,58 +27,81 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="lg" sx={{ backgroundColor: 'offwhite' }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Dashboard
       </Typography>
-      <Grid container spacing={2} direction="column">
-        <Grid item xs={8} sm={6}>
-          <Typography variant="h6" component="h2">Income</Typography>
-            <TableContainer component={Paper}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Category Name</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell align="right">Amount</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {incomeItems.map((item) => (
-                  <TableRow key={item._id}>                                      
-                      <TableCell component="th" scope="row">{item.category?.name}</TableCell>
-                      <TableCell>{item.description}</TableCell>
-                      <TableCell align="right">${item.amount.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+      <Box sx={{ p: 3 }}>
+        {/* Budget Months Row */}
+        <Grid container spacing={2} sx={{ mb: 4 }}>
+          {budgetMonths.map(
+            (month, index) => (
+              <Grid item key={index}>
+                <Button variant="outlined">{month}</Button>
+              </Grid>
+            )
+          )}
         </Grid>
-        <Grid item xs={8} sm={6}>
-          <Typography variant="h6" component="h2">Expenses</Typography>
-          <TableContainer component={Paper}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Category Name</TableCell>
-                    <TableCell>Description</TableCell>
-                    <TableCell align="right">Amount</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {expenseItems.map((item) => (
-                  <TableRow key={item._id}>                                      
-                      <TableCell component="th" scope="row">{item.category?.name}</TableCell>
-                      <TableCell>{item.description}</TableCell>
-                      <TableCell align="right">${item.amount.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-        </Grid>
-      </Grid>
+        
+        {/* Income Section */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h6" sx={{ float: "left" }}>
+            Income
+          </Typography>
+          <Typography variant="h6" sx={{ float: "right" }}>
+            ${incomeSum}
+          </Typography>
+          <Box sx={{ clear: "both" }} />
+          <Divider />
+          <Box sx={{ clear: "both", pl: 1, mt: 2 }}>
+          {incomeItems.map((item) => (
+            <Box key={item._id} sx={{mb: 2}}>
+              <Typography variant="subtitle1" sx={{ float: "left" }}>
+                {item.category?.name}
+              </Typography>
+              <Typography variant="subtitle1" sx={{ float: "right" }}>
+                {item.amount}
+              </Typography>
+              <Box sx={{ clear: "both" }} />
+              <LinearProgress variant="determinate" value={0} />
+              <Typography variant="caption">$0 of {item.amount}</Typography>
+            </Box> 
+          ))}
+          </Box>  
+        </CardContent>
+      </Card>
+      
+      {/* Expenses Section */}
+      <Card>
+        <CardContent>
+          <Typography variant="h6" sx={{ float: "left" }}>
+            Expenses
+          </Typography>
+          <Typography variant="h6" sx={{ float: "right" }}>
+            ${expenseSum}
+          </Typography>
+          <Box sx={{ clear: "both" }} />
+          <Divider />
+          <Box sx={{ clear: "both", pl: 1, mt: 2 }}>
+            {/* List of Expense Items */}
+            {expenseItems.map((item) => (
+              <Box key={item._id} sx={{ mb: 2 }}>
+                <Typography variant="subtitle1">
+                  {item.category?.name}: {item.description}
+                </Typography>
+                <LinearProgress variant="determinate" value={0} />
+                <Typography variant="caption">
+                  $0 of ${item.amount} left
+                </Typography>
+              </Box>
+            ))}
+          </Box>
+        </CardContent>
+      </Card>
+
+      </Box>
+      
     </Container>
   );
 };
