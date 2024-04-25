@@ -7,28 +7,43 @@ const budgetSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
   },
-  type: {
+  category: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Category', 
+    required: true,
+  },
+/*  type: {
     type: String,
     enum: ['income', 'expense'],
     required: true,
-  },
+  },*/
   amount: {
     type: Number,
     required: true,
   },
   frequency: {
     type: String,
-    enum: ['weekly', 'monthly', 'biweekly', 'one-time'],
+    enum: ['monthly', 'one-time', "every few months"],
     required: true,
+  },
+  recurrence: {
+    type: Number,
+    required: function() { return this.frequency === 'every few months'; },
+    min: 2,
+    max: 12
   },
   description: {
     type: String,
     required: true,
   },
-  category: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Category', // assuming your category model is named 'Category'
+  period: {
+    type: Date,
     required: true,
+    required: true,
+    default: () => {
+      const now = new Date();
+      return new Date(now.getFullYear(), now.getMonth(), 1);
+    },
   },
   createdAt: {
     type: Date,
