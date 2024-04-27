@@ -34,7 +34,7 @@ const budgetSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    
   },
   period: {
     type: Date,
