@@ -7,7 +7,14 @@ const Budget = require('../models/Budget');
 router.get('/', async (req, res) => {
   try {
     const budgetItems = await Budget.find({ user: req.user._id })
-      .populate('category', 'name')  // Populates the 'category' field, selecting only 'name'
+      .populate({
+        path: 'category',  // Populates the 'category' field
+        select: 'name parentCategory',  // Selects 'name' and 'parentCategory' fields of 'category'
+        populate: {
+          path: 'parentCategory',  // Populates the 'parentCategory' within 'category'
+          select: 'name'  // Selects only the 'name' field of 'parentCategory'
+        }
+      })
       .sort({ type: 1, 'category.name': 1 })  // Sorts by 'type' and then by 'category.name'
       console.log(budgetItems);
     res.json(budgetItems);
@@ -18,16 +25,17 @@ router.get('/', async (req, res) => {
 
 // Route to add a new budget item
 router.post('/', async (req, res) => {
-  const { type, category , description, amount, frequency  } = req.body;
+  const { period, category , description, amount, frequency, recurrance  } = req.body;
   try {
     // Create a new Budget item using the request data
     const newBudgetItem = new Budget({
       user: req.user._id, // Make sure req.user is populated correctly by your authentication middleware
-      type,
       amount,
       frequency,
       description,
-      category
+      category,
+      period,
+      recurrance
     });
 
     // Save the new Budget item to the database
@@ -55,14 +63,15 @@ router.post('/', async (req, res) => {
 // Route to update a budget item
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
-  const { type, amount, frequency, description, category } = req.body;
+  const { period, amount, frequency, description, category, recurrance } = req.body;
   try {
     const updatedBudgetItem = await Budget.findByIdAndUpdate(id, {
-      type,
+      period,
       amount,
       frequency,
       description,
       category,
+      recurrance
     }, { new: true }); // Return the updated document
     if (!updatedBudgetItem) {
       return res.status(404).json({ success: false, message: 'Budget item not found' });
