@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose');
 
+
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
@@ -30,6 +31,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    plaidItems: [{ 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'PlaidItem' }],
 });
 
 module.exports = mongoose.model('User', userSchema);

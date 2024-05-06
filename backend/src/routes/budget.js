@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
         }
       })
       .sort({ type: 1, 'category.name': 1 })  // Sorts by 'type' and then by 'category.name'
-      console.log(budgetItems);
+      
     res.json(budgetItems);
   } catch (err) {
     res.status(500).send(err.message);
