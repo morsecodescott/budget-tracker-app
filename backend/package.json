@@ -11,6 +11,7 @@
     "mongoose": "^8.2.4",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
+    "plaid": "^23.0.0",
     "redis": "^4.6.13"
   },
   "scripts": {
