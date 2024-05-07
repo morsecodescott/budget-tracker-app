@@ -26,8 +26,7 @@ router.post('/create_link_token', async (req, res) => {
   }
 });
 
-
-// Endpoint to retrieve all items and accounts for a specific user
+// Retrieve all items and accounts for a specific user
 router.get('/items/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
@@ -40,10 +39,7 @@ router.get('/items/:userId', async (req, res) => {
   }
 });
 
-
-
-
-// Exchange public token for access token and retrieve account info
+// Exchange public token for an access token and retrieve account info
 router.post('/set_access_token', async (request, response) => {
   const userId = request.user.id;
   const { public_token } = request.body;
@@ -54,10 +50,24 @@ router.post('/set_access_token', async (request, response) => {
     const accessToken = tokenResponse.data.access_token;
     const itemId = tokenResponse.data.item_id;
 
-    // Create or update a PlaidItem
+    // Retrieve item information including the institution ID and name
+    const itemInfoResponse = await plaidClient.itemGet({ access_token: accessToken });
+    const institutionId = itemInfoResponse.data.item.institution_id;
+
+    let institutionName = 'Unknown Institution';
+    if (institutionId) {
+      // Retrieve institution information
+      const institutionResponse = await plaidClient.institutionsGetById({
+        institution_id: institutionId,
+        country_codes: PLAID_COUNTRY_CODES,
+      });
+      institutionName = institutionResponse.data.institution.name;
+    }
+
+    // Create or update a PlaidItem with the institution information
     let plaidItem = await PlaidItem.findOneAndUpdate(
       { itemId, userId },
-      { accessToken, itemId, userId, institutionName: 'Your Institution' },
+      { accessToken, itemId, userId, institutionName, institutionId },
       { new: true, upsert: true }
     );
 
