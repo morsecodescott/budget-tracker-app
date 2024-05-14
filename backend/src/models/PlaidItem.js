@@ -6,7 +6,9 @@ const plaidItemSchema = new mongoose.Schema({
     itemId: { type: String, required: true },
     institutionId: { type: String, required: true },
     institutionName: { type: String, required: true },
-    accounts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PlaidAccount' }]
+    transaction_cursor: { type: String },
+    accounts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PlaidAccount' }],
+    is_active: { type: Boolean, required: true, default: true } 
 });
 
 module.exports = mongoose.model('PlaidItem', plaidItemSchema);

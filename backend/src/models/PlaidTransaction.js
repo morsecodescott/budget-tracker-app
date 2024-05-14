@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const plaidTransactionSchema = new mongoose.Schema({
-    account: { type: mongoose.Schema.Types.ObjectId, ref: 'PlaidAccount', required: true },
+    accountId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlaidAccount', required: true },
     transactionId: { type: String, required: true },
     amount: { type: Number, required: true },
     date: { type: Date, required: true },
