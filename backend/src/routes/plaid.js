@@ -11,6 +11,7 @@ const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',')
 
 // Create a link token
 router.post('/create_link_token', async (req, res) => {
+  console.log(req.access_token)
   try {
     const response = await plaidClient.linkTokenCreate({
       user: { client_user_id: req.user.id },
@@ -18,6 +19,7 @@ router.post('/create_link_token', async (req, res) => {
       products: PLAID_PRODUCTS,
       country_codes: PLAID_COUNTRY_CODES,
       language: 'en',
+      access_token: req.access_token || null,
     });
     res.json(response.data);
   } catch (error) {
@@ -25,6 +27,10 @@ router.post('/create_link_token', async (req, res) => {
     res.status(500).json({ error: 'Unable to create a link token. Please try again later.' });
   }
 });
+
+
+
+
 
 // Retrieve all items and accounts for a specific user
 router.get('/items/:userId', async (req, res) => {
