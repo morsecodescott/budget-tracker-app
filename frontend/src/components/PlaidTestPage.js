@@ -11,6 +11,7 @@ import {
   TableHead,
   TableRow,
   Paper,
+  TextField,
 } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -19,13 +20,15 @@ const PlaidTestPage = () => {
   const [linkToken, setLinkToken] = useState(null);
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
+  const [accessToken, setAccessToken] = useState(''); // Step 1: Add state for access_token
   const { user } = useAuth();
 
   // Fetch link token
   useEffect(() => {
     const fetchLinkToken = async () => {
+      console.log("access token from test page: ",accessToken)
       try {
-        const response = await axios.post('http://localhost:4000/plaid/create_link_token', { user });
+        const response = await axios.post('http://localhost:4000/plaid/create_link_token', { user, access_token: accessToken });
         setLinkToken(response.data.link_token);
         setLoading(false);
       } catch (error) {
@@ -69,10 +72,23 @@ const PlaidTestPage = () => {
         <CircularProgress />
       ) : linkToken ? (
         <PlaidLinkButton linkToken={linkToken} onSuccess={handleSuccess} />
+        
       ) : (
         <Typography color="error">Failed to load Plaid Link.</Typography>
       )}
-
+      <TextField
+          variant="outlined"
+          margin="normal"
+          id="access_token"
+          label="Access Token"
+          name="access_token"
+          value={accessToken}
+          onChange={(e) => setAccessToken(e.target.value)}
+        />
+         {/* Display the current value of accessToken */}
+      <Typography variant="h6" sx={{ marginTop: 2 }}>
+        Current Access Token: {accessToken || 'None'}
+      </Typography>
       {/* Display items and accounts */}
       {items.length > 0 ? (
         <TableContainer component={Paper} sx={{ marginTop: 4 }}>
