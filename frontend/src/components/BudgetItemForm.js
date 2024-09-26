@@ -51,7 +51,7 @@ const BudgetItemForm = ({ open, onClose, fetchBudgetItems, categories, itemToEdi
   };
 
   const handleSave = async () => {
-    const url = itemToEdit ? `http://localhost:4000/budget/${itemToEdit._id}` : 'http://localhost:4000/budget';
+    const url = itemToEdit ? `/budget/${itemToEdit._id}` : '/budget';
     const method = itemToEdit ? 'put' : 'post';
     try {
       await axios({ method, url, data: newBudgetItem });
