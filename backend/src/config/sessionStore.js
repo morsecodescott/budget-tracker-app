@@ -32,6 +32,7 @@ const setupSessionStore = (app) => {
         saveUninitialized: false,
         cookie: {
             httpOnly: true,
+            //sameSite: "none",
             secure: process.env.NODE_ENV === 'production', // ensure cookies are only sent over HTTPS
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         }

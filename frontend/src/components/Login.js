@@ -24,7 +24,7 @@ const LoginForm = () => {
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await axios.post('http://localhost:4000/auth/login', credentials);
+      const response = await axios.post('/auth/login', credentials);
       if (response.data.success) {
         console.log("User Data at Login:", response.data);
         login(response.data.user); // Call the login function with the user data

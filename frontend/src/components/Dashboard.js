@@ -20,7 +20,7 @@ const Dashboard = () => {
 
   const fetchBudgetItems = async () => {
     try {
-      const { data } = await axios.get('http://localhost:4000/budget');
+      const { data } = await axios.get('/budget');
       setBudgetItems(data);
       // Extract unique periods from the budget data
       const uniquePeriods = [...new Set(data.map(item => new Date(item.period).toISOString().split('T')[0]))];
@@ -58,7 +58,7 @@ const Dashboard = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`http://localhost:4000/budget/delete/${id}`);
+      await axios.delete(`/delete/${id}`);
       fetchBudgetItems(); // Refresh the list
     } catch (error) {
       console.error('Error deleting budget item:', error);
