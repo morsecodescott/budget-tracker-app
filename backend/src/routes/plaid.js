@@ -35,12 +35,12 @@ router.post('/create_link_token', async (req, res) => {
 // Retrieve all items and accounts for a specific user
 router.get('/items/:userId', async (req, res) => {
   try {
-    const { userId } = req.params;
+   const { userId } = req.params;
     // Find all Plaid items linked to the user
     const items = await PlaidItem.find({ userId }).populate('accounts');
     res.json({ items });
   } catch (error) {
-    console.error('Error fetching Plaid items:', error.message);
+   console.error('Error fetching Plaid items:', error.message);
     res.status(500).json({ error: 'Failed to retrieve items' });
   }
 });

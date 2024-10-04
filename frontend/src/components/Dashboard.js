@@ -58,7 +58,7 @@ const Dashboard = () => {
 
   const handleDelete = async (id) => {
     try {
-      await axios.delete(`/delete/${id}`);
+      await axios.delete(`budget/delete/${id}`);
       fetchBudgetItems(); // Refresh the list
     } catch (error) {
       console.error('Error deleting budget item:', error);

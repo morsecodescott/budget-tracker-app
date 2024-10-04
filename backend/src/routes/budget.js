@@ -5,6 +5,7 @@ const Budget = require('../models/Budget');
 
 // Route to list all budget items
 router.get('/', async (req, res) => {
+  console.log('GET - /budget ');
   try {
     const budgetItems = await Budget.find({ user: req.user._id })
       .populate({
@@ -25,6 +26,7 @@ router.get('/', async (req, res) => {
 
 // Route to add a new budget item
 router.post('/', async (req, res) => {
+  console.log('POST - /budget ');
   const { period, category , description, amount, frequency, recurrance  } = req.body;
   try {
     // Create a new Budget item using the request data
@@ -62,6 +64,7 @@ router.post('/', async (req, res) => {
 
 // Route to update a budget item
 router.put('/:id', async (req, res) => {
+  console.log('PUT - /budget ');
   const { id } = req.params;
   const { period, amount, frequency, description, category, recurrance } = req.body;
   try {
@@ -86,6 +89,7 @@ router.put('/:id', async (req, res) => {
 
 //Route to delete a budget item.
 router.delete('/delete/:id', async (req, res) => {
+  console.log('DELETE - /budget ');
   const itemId = req.params.id;
   try {
     const deletedBudgetItem = await Budget.findByIdAndDelete(itemId);

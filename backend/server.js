@@ -20,7 +20,7 @@ setupDatabase();
 
 // Enable CORS for all requests from any origin
 app.use(cors({
-    origin: ['http://localhost:3000'], // or your frontend's current domain
+    origin: ['http://localhost:3000', 'https://creative-kindly-jennet.ngrok-free.app'], // or your frontend's current domain
     credentials: true, // this allows session cookies to be sent back and forth
 }));
 app.set("trust proxy",1); 
