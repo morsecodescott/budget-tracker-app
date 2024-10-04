@@ -10,7 +10,7 @@ const PlaidLinkButton = ({ linkToken }) => {
 
     // Here you would send the public_token to your server to exchange it for an access token
     try {
-      const response = await axios.post('http://localhost:4000/plaid/set_access_token', {
+      const response = await axios.post('/plaid/set_access_token', {
         public_token: public_token // Sending public_token to the server
       });
       console.log('Server response:', response.data); // Handling the response from the server

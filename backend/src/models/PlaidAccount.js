@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const plaidAccountSchema = new mongoose.Schema({
     plaidItemId: { type: mongoose.Schema.Types.ObjectId, ref: 'PlaidItem', required: true },
-    accountId: { type: String, required: true },
+    plaidAccountId: { type: String, required: true },
     accountName: { type: String, required: true },
     accountType: { type: String, required: true },
     accountSubType: { type: String, required: true },
