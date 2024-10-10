@@ -9,6 +9,7 @@ const plaidRoutes = require('./plaid');
 const itemRoutes = require('./db/queries/items');
 const accountRoutes = require('./db/queries/accounts');
 const transactionRoutes = require('./db/queries/transactions');
+const plaidApiEventRoutes = require('./db/queries/plaidApiEvents');
 
 router.use('/auth', authRoutes);
 router.use('/budget', budgetRoutes);
@@ -17,4 +18,5 @@ router.use('/plaid', plaidRoutes);
 router.use('/items', itemRoutes);
 router.use('/accounts', accountRoutes);
 router.use('/transactions', transactionRoutes);
+router.use('/plaidapievents', plaidApiEventRoutes);
 module.exports = router;
