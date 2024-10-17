@@ -11,7 +11,7 @@ const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',')
 
 // Create a link token
 router.post('/create_link_token', async (req, res) => {
-  console.log(req.access_token)
+  console.log("/create_link_token: ", req.body);
   try {
     const response = await plaidClient.linkTokenCreate({
       user: { client_user_id: req.user.id },
@@ -19,8 +19,10 @@ router.post('/create_link_token', async (req, res) => {
       products: PLAID_PRODUCTS,
       country_codes: PLAID_COUNTRY_CODES,
       language: 'en',
-      access_token: req.access_token || null,
+      access_token: req.access_token ,
+      webhook: req.webhook,
     });
+    console.log(response.data)
     res.json(response.data);
   } catch (error) {
     console.error('Error creating link token:', error);
@@ -54,7 +56,7 @@ router.post('/set_access_token', async (request, response) => {
     // Exchange the public token for an access token and item ID
     const tokenResponse = await plaidClient.itemPublicTokenExchange({ public_token });
     const accessToken = tokenResponse.data.access_token;
-    const itemId = tokenResponse.data.item_id;
+    const plaidItemId = tokenResponse.data.item_id;
 
     // Retrieve item information including the institution ID and name
     const itemInfoResponse = await plaidClient.itemGet({ access_token: accessToken });
@@ -72,8 +74,8 @@ router.post('/set_access_token', async (request, response) => {
 
     // Create or update a PlaidItem with the institution information
     let plaidItem = await PlaidItem.findOneAndUpdate(
-      { itemId, userId },
-      { accessToken, itemId, userId, institutionName, institutionId },
+      { plaidItemId, userId },
+      { accessToken, plaidItemId, userId, institutionName, institutionId },
       { new: true, upsert: true }
     );
 
@@ -85,7 +87,7 @@ router.post('/set_access_token', async (request, response) => {
     const accountIds = accounts.map(async (account) => {
       const newAccount = new PlaidAccount({
         plaidItemId: plaidItem._id,
-        accountId: account.account_id,
+        plaidAccountId: account.account_id,
         accountName: account.name,
         accountType: account.type,
         accountSubType: account.subtype,
@@ -102,7 +104,7 @@ router.post('/set_access_token', async (request, response) => {
 
     response.json({
       access_token: accessToken,
-      item_id: itemId,
+      item_id: plaidItemId,
       accounts: plaidItem.accounts,
       error: null,
     });

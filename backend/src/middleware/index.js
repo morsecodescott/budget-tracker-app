@@ -13,7 +13,7 @@ exports.globalTemplateVariables = (req, res, next) => {
   
 exports.ensureAuthenticated = (req, res, next) => {
 // Middleware to protect routes
-if (['/', '/auth/login', '/auth/register', '/test'].includes(req.originalUrl)) {
+if (['/', '/auth/login', '/auth/register', '/test', '/services/webhook'].includes(req.originalUrl)) {
     return next(); // Skip authentication for specific routes
     }
     ensureAuthenticated(req, res, next); // Apply to all other routes

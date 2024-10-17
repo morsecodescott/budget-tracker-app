@@ -12,41 +12,49 @@ import {
   TableRow,
   Paper,
   TextField,
+  Button
 } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const PlaidTestPage = () => {
   const [linkToken, setLinkToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Update: no auto-fetch on page load
   const [items, setItems] = useState([]);
   const [accessToken, setAccessToken] = useState(''); // Step 1: Add state for access_token
   const [webhook, setWebhook] = useState(''); // Step 1: Add state for webhook
   const { user } = useAuth();
 
-  // Fetch link token
-  useEffect(() => {
-    const fetchLinkToken = async () => {
-      console.log("access token from test page: ",accessToken)
-      try {
-        const response = await axios.post('/plaid/create_link_token', { user, access_token: accessToken, webhook });
-        setLinkToken(response.data.link_token);
-        setLoading(false);
-      } catch (error) {
-        console.error('Failed to fetch link token:', error.message);
-        setLoading(false);
-      }
-    };
+  // Function to fetch link token, now triggered by a button click
+  const fetchLinkToken = async () => {
+    setLoading(true); // Start loading when fetching begins
+    try {
+      const response = await axios.post('/plaid/create_link_token', { user, access_token: accessToken, webhook });
+      setLinkToken(response.data.link_token);
+      setLoading(false);
+    } catch (error) {
+      console.error('Failed to fetch link token:', error.message);
+      setLoading(false);
+    }
+  };
 
-    fetchLinkToken();
-  }, [user]);
+  // Function to fetch link token, now triggered by a button click
+  const fetchLinkTokenTest = async () => {
+    setLoading(true); // Start loading when fetching begins
+    
+      setLinkToken('link-sandbox-7e767ca6-e445-4205-bd24-4b77fb4b674b');
+      setLoading(false);
+   
+    
+  };
+
 
   // Fetch user's Plaid items and accounts
   const fetchItemsAndAccounts = async () => {
     try {
       const response = await axios.get(`/items/retrieveItemsByUser/${user.id}`);
       setItems(response.data);
-      console.log(response.data)
+      console.log(response.data);
     } catch (error) {
       console.error('Error fetching Plaid items:', error.message);
     }
@@ -70,36 +78,54 @@ const PlaidTestPage = () => {
   return (
     <Container>
       <Typography variant="h4" sx={{ margin: 2 }}>Plaid Integration Test</Typography>
+      
+      {/* Button to trigger the fetchLinkToken function */}
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={fetchLinkTokenTest}
+        sx={{ mt: 2, mb: 2 }}
+      >
+        Fetch Link Token
+      </Button>
+      
       {loading ? (
         <CircularProgress />
       ) : linkToken ? (
         <PlaidLinkButton linkToken={linkToken} onSuccess={handleSuccess} />
-        
       ) : (
-        <Typography color="error">Failed to load Plaid Link.</Typography>
+        <Typography color="error">Link token not fetched yet.</Typography>
       )}
+
+      {/* Access Token Input */}
       <TextField
-          variant="outlined"
-          margin="normal"
-          id="access_token"
-          label="Access Token"
-          name="access_token"
-          value={accessToken}
-          onChange={(e) => setAccessToken(e.target.value)}
-        />
-              <TextField
-          variant="outlined"
-          margin="normal"
-          id="webhook"
-          label="webhook"
-          name="webhook"
-          value={webhook}
-          onChange={(e) => setWebhook(e.target.value)}
-        />
-         {/* Display the current value of accessToken */}
+        variant="outlined"
+        margin="normal"
+        id="access_token"
+        label="Access Token"
+        name="access_token"
+        value={accessToken}
+        onChange={(e) => setAccessToken(e.target.value)}
+        fullWidth
+      />
+
+      {/* Webhook Input */}
+      <TextField
+        variant="outlined"
+        margin="normal"
+        id="webhook"
+        label="Webhook URL"
+        name="webhook"
+        value={webhook}
+        onChange={(e) => setWebhook(e.target.value)}
+        fullWidth
+      />
+
+      {/* Display the current value of accessToken */}
       <Typography variant="h6" sx={{ marginTop: 2 }}>
         Current Access Token: {accessToken || 'None'}
       </Typography>
+
       {/* Display items and accounts */}
       {items && items.length > 0 ? (
         <TableContainer component={Paper} sx={{ marginTop: 4 }}>
