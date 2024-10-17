@@ -22,9 +22,11 @@ const {
  */
 router.post(
   '/webhook',
-  asyncWrapper(async (req, res) => {
+  async (req, res) => {
     const { webhook_type: webhookType } = req.body;
-    const { io } = req;
+    console.log(webhookType);
+    console.log(req.body); 
+    //const { io } = req;
     const type = webhookType.toLowerCase();
     // There are five types of webhooks: AUTH, TRANSACTIONS, ITEM, INCOME, and ASSETS.
     // @TODO implement handling for remaining webhook types.
@@ -33,9 +35,9 @@ router.post(
       item: handleItemWebhook,
     };
     const webhookHandler = webhookHandlerMap[type] || unhandledWebhook;
-    webhookHandler(req.body, io);
+    webhookHandler(req.body /*, io*/);
     res.json({ status: 'ok' });
-  })
+  }
 );
 
 module.exports = router;
