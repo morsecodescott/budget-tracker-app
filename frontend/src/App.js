@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import axios from 'axios';
-import Navbar from './components/Navbar';
+import Navdrawer from './components/Navdrawer';
 import LandingPage from './components/LandingPage';
 import LoginContainer from './components/Login';
 import Signup from './components/Signup';
@@ -16,7 +16,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
-        <Navbar />
+        <Navdrawer />
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginContainer />} />

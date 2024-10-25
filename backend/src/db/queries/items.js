@@ -119,15 +119,40 @@ const updateItemTransactionsCursor = async (plaidItemId, transactionsCursor) => 
 };
 
 /**
- * Removes a single item. The database will also remove related accounts and transactions.
+ * Removes a single item by its MongoDB _id and deletes associated accounts and transactions.
  *
- * @param {string} itemId the MongoDB ObjectId of the item.
+ * @param {string} itemId - The MongoDB ObjectId of the PlaidItem.
  */
-const deleteItem = async itemId => {
+const deleteItem = async (itemId) => {
   const result = await PlaidItem.findByIdAndDelete(itemId);
   if (!result) throw new Error('Item not found');
+
+  // Delete associated accounts and transactions
+  await deleteAccountsByItemId(itemId);
+
+  return result;
+}
+
+
+
+/**
+ * Deletes all accounts associated with an itemId (MongoDB _id).
+ *
+ * @param {string} itemId - The MongoDB ObjectId of the PlaidItem.
+ */
+const deleteAccountsByItemId = async (itemId) => {
+  const accounts = await PlaidAccount.find({ plaidItemId: itemId });
+
+  // Delete all associated transactions for each account
+  for (const account of accounts) {
+    await deleteTransactionsByAccountId(account._id);
+  }
+
+  // Now, delete all accounts
+  const result = await PlaidAccount.deleteMany({ plaidItemId: itemId });
   return result;
 };
+
 
 module.exports = {
   createItem,
@@ -139,4 +164,6 @@ module.exports = {
   retrieveItemsByUser,
   updateItemStatus,
   updateItemTransactionsCursor,
+  deleteAccountsByItemId,
+
 };

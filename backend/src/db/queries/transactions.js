@@ -12,22 +12,19 @@ const createOrUpdateTransactions = async (transactions) => {
     const {
       account_id: plaidAccountId,
       transaction_id: plaidTransactionId,
-      category_id: plaidCategoryId,
-      category: categories,
+      category: plaidCategory,
       transaction_type: transactionType,
-      name: transactionName,
+      name,
       amount,
       iso_currency_code: isoCurrencyCode,
       unofficial_currency_code: unofficialCurrencyCode,
-      date: transactionDate,
+      date,
       pending,
       account_owner: accountOwner,
     } = transaction;
 
     // Retrieve the corresponding MongoDB account document by the plaidAccountId
     const account = await retrieveAccountByPlaidAccountId(plaidAccountId);
-
-    const [category, subcategory] = categories || []; // Ensure categories exist
 
     // Create or update the transaction based on the plaidTransactionId
     try {
@@ -36,15 +33,15 @@ const createOrUpdateTransactions = async (transactions) => {
         {
           plaidAccountId: account._id, // Reference to the account document
           plaidTransactionId,
-          plaidCategoryId,
-          category,
-          subcategory,
+
+          plaidCategory,
+
           transactionType,
-          transactionName,
+          name,
           amount,
           isoCurrencyCode,
           unofficialCurrencyCode,
-          transactionDate,
+          date,
           pending,
           accountOwner,
         },
@@ -125,10 +122,24 @@ const deleteTransactions = async (plaidTransactionIds) => {
   }
 };
 
+
+/**
+ * Deletes all transactions associated with an accountId (MongoDB _id).
+ *
+ * @param {string} accountId - The MongoDB ObjectId of the account.
+ */
+const deleteTransactionsByAccountId = async (accountId) => {
+  const result = await PlaidTransaction.deleteMany({ plaidAccountId: accountId });
+  return result;
+};
+
+
+
 module.exports = {
   createOrUpdateTransactions,
   retrieveTransactionsByAccountId,
   retrieveTransactionsByItemId,
   retrieveTransactionsByUserId,
   deleteTransactions,
+  deleteTransactionsByAccountId
 };

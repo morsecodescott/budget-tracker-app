@@ -90,7 +90,7 @@ const CategoryManagement = () => {
       <Button variant="contained" color="primary" onClick={handleOpen}>
         Add New Category
       </Button>
-      <List>
+      <List dense='true'>
         {categories.map((category) => (
           <React.Fragment key={category._id}>
             <ListItem>

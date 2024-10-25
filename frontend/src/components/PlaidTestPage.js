@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import PlaidLinkButton from './PlaidLinkButton';
 import {
   Container,
@@ -12,22 +12,32 @@ import {
   TableRow,
   Paper,
   TextField,
-  Button
+  Button,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  TablePagination,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 
 const PlaidTestPage = () => {
   const [linkToken, setLinkToken] = useState(null);
-  const [loading, setLoading] = useState(false); // Update: no auto-fetch on page load
+  const [loading, setLoading] = useState(false);
   const [items, setItems] = useState([]);
-  const [accessToken, setAccessToken] = useState(''); // Step 1: Add state for access_token
-  const [webhook, setWebhook] = useState(''); // Step 1: Add state for webhook
+  const [accessToken, setAccessToken] = useState('');
+  const [webhook, setWebhook] = useState('');
   const { user } = useAuth();
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [expanded, setExpanded] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // Function to fetch link token, now triggered by a button click
+  // Function to fetch link token
   const fetchLinkToken = async () => {
-    setLoading(true); // Start loading when fetching begins
+    setLoading(true);
     try {
       const response = await axios.post('/plaid/create_link_token', { user, access_token: accessToken, webhook });
       setLinkToken(response.data.link_token);
@@ -38,57 +48,71 @@ const PlaidTestPage = () => {
     }
   };
 
-  // Function to fetch link token, now triggered by a button click
-  const fetchLinkTokenTest = async () => {
-    setLoading(true); // Start loading when fetching begins
-    
-      setLinkToken('link-sandbox-7e767ca6-e445-4205-bd24-4b77fb4b674b');
-      setLoading(false);
-   
-    
-  };
-
-
-  // Fetch user's Plaid items and accounts
-  const fetchItemsAndAccounts = async () => {
+  // Function to fetch user's Plaid items and accounts
+  const fetchItemsAndAccounts = useCallback(async () => {
     try {
-      const response = await axios.get(`/items/retrieveItemsByUser/${user.id}`);
-      setItems(response.data);
-      console.log(response.data);
+      const response = await axios.get(`plaid/items/${user.id}`);
+      setItems(response.data.items);
     } catch (error) {
       console.error('Error fetching Plaid items:', error.message);
     }
-  };
+  }, [user.id]);
 
-  // Fetch items and accounts on mount and after new account linking
   useEffect(() => {
     fetchItemsAndAccounts();
-  }, [linkToken]);
+  }, [fetchItemsAndAccounts, linkToken]);
 
-  // Plaid link button success callback
+  // Function to fetch transactions for a specific account
+  const fetchTransactions = async (accountId) => {
+    try {
+      const response = await axios.get(`/plaid/transactions/${accountId}`);
+      setTransactions(response.data);
+    } catch (error) {
+      console.error('Error fetching transactions:', error.message);
+    }
+  };
+
   const handleSuccess = async (publicToken, metadata) => {
     try {
       await axios.post('/plaid/set_access_token', { public_token: publicToken });
-      fetchItemsAndAccounts(); // Refresh the list after linking
+      fetchItemsAndAccounts(); // Adjust this to your current item fetching logic
     } catch (error) {
       console.error('Error setting access token:', error.message);
     }
+  };
+  
+
+  // Handle accordion expand/collapse and fetch transactions
+  const handleAccordionChange = (account) => async (event, isExpanded) => {
+    if (isExpanded) {
+      setSelectedAccount(account);
+      await fetchTransactions(account._id);
+    }
+    setExpanded(isExpanded ? account._id : false);
+  };
+
+  // Handle pagination change
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
     <Container>
       <Typography variant="h4" sx={{ margin: 2 }}>Plaid Integration Test</Typography>
-      
-      {/* Button to trigger the fetchLinkToken function */}
       <Button
         variant="contained"
         color="primary"
-        onClick={fetchLinkTokenTest}
+        onClick={fetchLinkToken}
         sx={{ mt: 2, mb: 2 }}
       >
         Fetch Link Token
       </Button>
-      
+
       {loading ? (
         <CircularProgress />
       ) : linkToken ? (
@@ -121,43 +145,64 @@ const PlaidTestPage = () => {
         fullWidth
       />
 
-      {/* Display the current value of accessToken */}
-      <Typography variant="h6" sx={{ marginTop: 2 }}>
-        Current Access Token: {accessToken || 'None'}
-      </Typography>
-
       {/* Display items and accounts */}
       {items && items.length > 0 ? (
-        <TableContainer component={Paper} sx={{ marginTop: 4 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Institution</TableCell>
-                <TableCell>Account Name</TableCell>
-                <TableCell>Type</TableCell>
-                <TableCell>Subtype</TableCell>
-                <TableCell>Available Balance</TableCell>
-                <TableCell>Current Balance</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {items.map(item =>
-                item.accounts.map(account => (
-                  <TableRow key={account._id}>
-                    <TableCell>{item.institutionName}</TableCell>
-                    <TableCell>{account.accountName}</TableCell>
-                    <TableCell>{account.accountType}</TableCell>
-                    <TableCell>{account.accountSubType}</TableCell>
-                    <TableCell>{account.availableBalance !== undefined ? `$${account.availableBalance}` : 'N/A'}</TableCell>
-                    <TableCell>{account.currentBalance !== undefined ? `$${account.currentBalance}` : 'N/A'}</TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        items.map(item => (
+          item.accounts && item.accounts.length > 0 && item.accounts.map(account => (
+            <Accordion
+              key={account._id}
+              expanded={expanded === account._id}
+              onChange={handleAccordionChange(account)}
+            >
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography>{account.accountName} - {account.accountType}</Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                {/* Transaction Table */}
+                {transactions.length > 0 ? (
+                  <TableContainer component={Paper}>
+                    <Table size="small">
+                      <TableHead>
+                        <TableRow>
+                          <TableCell>Date</TableCell>
+                          <TableCell>Name</TableCell>
+                          <TableCell>Amount</TableCell>
+                          <TableCell>Category</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {transactions
+                          .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                          .map((transaction) => (
+                            <TableRow key={transaction.plaidTransactionId}>
+                              <TableCell>{new Date(transaction.date).toLocaleDateString('en-CA')}</TableCell>
+                              <TableCell>{transaction.name}</TableCell>
+                              <TableCell align='right'>{transaction.amount}</TableCell>
+                              <TableCell>{transaction.category}</TableCell>
+                            </TableRow>
+                          ))}
+                      </TableBody>
+                    </Table>
+                    {/* Pagination */}
+                    <TablePagination
+                      rowsPerPageOptions={[10, 25, 50]}
+                      component="div"
+                      count={transactions.length}
+                      rowsPerPage={rowsPerPage}
+                      page={page}
+                      onPageChange={handleChangePage}
+                      onRowsPerPageChange={handleChangeRowsPerPage}
+                    />
+                  </TableContainer>
+                ) : (
+                  <Typography>No transactions found for this account.</Typography>
+                )}
+              </AccordionDetails>
+            </Accordion>
+          ))
+        ))
       ) : (
-        <Typography sx={{ marginTop: 4 }}>No linked accounts found.</Typography>
+        <Typography>No linked accounts found.</Typography>
       )}
     </Container>
   );

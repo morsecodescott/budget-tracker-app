@@ -7,6 +7,7 @@ const plaidTransactionSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     name: { type: String, required: true },
     category: [String],
+    plaidCategory: [{type: String}],
     isoCurrencyCode: { type: String },  // Optional, but useful if dealing with multiple currencies
     unofficialCurrencyCode: { type: String },  // Optional
     pending: { type: Boolean },

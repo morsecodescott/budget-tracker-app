@@ -1,6 +1,7 @@
 const PlaidAccount = require('../../models/PlaidAccount'); // Mongoose model for accounts
 const PlaidItem = require('../../models/PlaidItem'); // Mongoose model for items
 
+
 /**
  * Creates multiple accounts related to a single item.
  *
@@ -93,9 +94,14 @@ const retrieveAccountsByUserId = async (userId) => {
     return accounts;
 };
 
+
+
+
+
 module.exports = {
     createAccounts,
     retrieveAccountByPlaidAccountId,
     retrieveAccountsByItemId,
     retrieveAccountsByUserId,
+    
 };

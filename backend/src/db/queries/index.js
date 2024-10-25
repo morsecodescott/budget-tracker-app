@@ -4,6 +4,7 @@ const {
   retrieveAccountByPlaidAccountId,
   retrieveAccountsByItemId,
   retrieveAccountsByUserId,
+  deleteAccountsByItemId,
      
   } = require('./accounts');
   
@@ -26,7 +27,8 @@ const {
     retrieveTransactionsByAccountId, 
     retrieveTransactionsByItemId, 
     retrieveTransactionsByUserId, 
-    deleteTransactions 
+    deleteTransactions, 
+    deleteTransactionsByAccountId,
   } = require('./transactions');
   
   // Export functions from plaidApiEvents.js
@@ -40,6 +42,7 @@ const {
   retrieveAccountByPlaidAccountId,
   retrieveAccountsByItemId,
   retrieveAccountsByUserId,
+  deleteAccountsByItemId,
   
     // Items
     createItem,
@@ -58,6 +61,7 @@ const {
     retrieveTransactionsByItemId,
     retrieveTransactionsByUserId,
     deleteTransactions,
+    deleteTransactionsByAccountId,
   
     // Plaid API Events
     createPlaidApiEvent
