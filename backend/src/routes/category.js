@@ -73,7 +73,7 @@ router.get('/', ensureAuthenticated, async (req, res) => {
 
         // Build the hierarchy from categories
         const sortedCategories = buildHierarchy(categories);
-        console.log("Sorted Categories: ",sortedCategories);
+        
         res.json(sortedCategories);
     } catch (err) {
         res.status(500).json({ message: 'Failed to retrieve categories', error: err.message });

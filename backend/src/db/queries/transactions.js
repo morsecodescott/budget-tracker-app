@@ -1,6 +1,10 @@
 // Import the mongoose models
 const PlaidTransaction = require('../../models/PlaidTransaction');
 const { retrieveAccountByPlaidAccountId } = require('./accounts');
+const { mapToInternalCategory } = require('../queries/services'); 
+
+
+
 
 /**
  * Creates or updates multiple transactions.
@@ -12,7 +16,7 @@ const createOrUpdateTransactions = async (transactions) => {
     const {
       account_id: plaidAccountId,
       transaction_id: plaidTransactionId,
-      category: plaidCategory,
+      personal_finance_category,
       transaction_type: transactionType,
       name,
       amount,
@@ -21,10 +25,21 @@ const createOrUpdateTransactions = async (transactions) => {
       date,
       pending,
       account_owner: accountOwner,
+      
     } = transaction;
+    
+    const plaidCategory = {
+      detailed: personal_finance_category?.detailed || null,
+      primary: personal_finance_category?.primary || null,
+      confidence_level: personal_finance_category?.confidence_level || null,
+    };
+
 
     // Retrieve the corresponding MongoDB account document by the plaidAccountId
     const account = await retrieveAccountByPlaidAccountId(plaidAccountId);
+    
+    const internalCategoryId = await mapToInternalCategory(plaidCategory);
+
 
     // Create or update the transaction based on the plaidTransactionId
     try {
@@ -33,7 +48,7 @@ const createOrUpdateTransactions = async (transactions) => {
         {
           plaidAccountId: account._id, // Reference to the account document
           plaidTransactionId,
-
+          category: internalCategoryId,
           plaidCategory,
 
           transactionType,
@@ -64,6 +79,7 @@ const createOrUpdateTransactions = async (transactions) => {
 const retrieveTransactionsByAccountId = async (accountId) => {
   try {
     const transactions = await PlaidTransaction.find({ plaidAccountId: accountId })
+      .populate('category')
       .sort({ date: -1 }) // Sort by date in descending order
       .exec();
     return transactions;

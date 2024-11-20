@@ -67,6 +67,7 @@ const PlaidTestPage = () => {
     try {
       const response = await axios.get(`/plaid/transactions/${accountId}`);
       setTransactions(response.data);
+      console.log(transactions);
     } catch (error) {
       console.error('Error fetching transactions:', error.message);
     }
@@ -159,6 +160,7 @@ const PlaidTestPage = () => {
               </AccordionSummary>
               <AccordionDetails>
                 {/* Transaction Table */}
+                
                 {transactions.length > 0 ? (
                   <TableContainer component={Paper}>
                     <Table size="small">
@@ -178,9 +180,12 @@ const PlaidTestPage = () => {
                               <TableCell>{new Date(transaction.date).toLocaleDateString('en-CA')}</TableCell>
                               <TableCell>{transaction.name}</TableCell>
                               <TableCell align='right'>{transaction.amount}</TableCell>
-                              <TableCell>{transaction.category}</TableCell>
+                              <TableCell>{transaction.category.name}</TableCell>
+                              <TableCell>{transaction.plaidCategory.detailed|| "empty"}</TableCell>
                             </TableRow>
+                            
                           ))}
+                          
                       </TableBody>
                     </Table>
                     {/* Pagination */}

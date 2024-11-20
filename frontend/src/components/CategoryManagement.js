@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import {
   Button,
-  TextField,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  List,
-  ListItem,
-  ListItemText,
+  TextField,
   Select,
   MenuItem,
   FormControl,
   InputLabel,
   Checkbox,
   FormControlLabel,
-  Typography
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TablePagination,
+  Box,
+  Typography,
 } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -28,6 +33,8 @@ const CategoryManagement = () => {
   const [isDefault, setIsDefault] = useState(false);
   const [parentCategories, setParentCategories] = useState([]);
   const { user } = useAuth();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
 
   useEffect(() => {
     fetchCategories();
@@ -77,12 +84,19 @@ const CategoryManagement = () => {
       setParentCategory('');
       setIsDefault(false);
       fetchCategories();
-      await fetchCategories();
-      await fetchParentCategories(); 
       handleClose();
     } catch (error) {
       console.error('Failed to add category:', error);
     }
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
   };
 
   return (
@@ -90,20 +104,56 @@ const CategoryManagement = () => {
       <Button variant="contained" color="primary" onClick={handleOpen}>
         Add New Category
       </Button>
-      <List dense='true'>
-        {categories.map((category) => (
-          <React.Fragment key={category._id}>
-            <ListItem>
-              <ListItemText primary={<Typography variant="h6" style={{ fontWeight: 'bold' }}>{category.name}</Typography>} />
-            </ListItem>
-            {category.children && category.children.map((child) => (
-              <ListItem key={child._id} style={{ paddingLeft: '20px' }}>
-                <ListItemText primary={child.name} />
-              </ListItem>
-            ))}
-          </React.Fragment>
-        ))}
-      </List>
+      <Box mt={2} maxHeight="400px" overflow="auto">
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell><Typography variant="subtitle2">Category Name</Typography></TableCell>
+                <TableCell><Typography variant="subtitle2">Parent Category</Typography></TableCell>
+                <TableCell><Typography variant="subtitle2">Actions</Typography></TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {categories
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((category) => (
+                  <TableRow key={category._id}>
+                    <TableCell>{category.name}</TableCell>
+                    <TableCell>{category.parentCategory?.name || 'None'}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => console.log('Edit:', category)}
+                      >
+                        Edit
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="secondary"
+                        style={{ marginLeft: 8 }}
+                        onClick={() => console.log('Delete:', category)}
+                      >
+                        Delete
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
+      </Box>
+      <TablePagination
+        component="div"
+        count={categories.length}
+        page={page}
+        onPageChange={handleChangePage}
+        rowsPerPage={rowsPerPage}
+        onRowsPerPageChange={handleChangeRowsPerPage}
+      />
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>Add a New Category</DialogTitle>
         <DialogContent>

@@ -6,8 +6,16 @@ const plaidTransactionSchema = new mongoose.Schema({
     amount: { type: Number, required: true },
     date: { type: Date, required: true },
     name: { type: String, required: true },
-    category: [String],
-    plaidCategory: [{type: String}],
+    category: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'Category', 
+        required: true, 
+        default: new mongoose.Types.ObjectId('67223d3d38c3ebd3102829fe') 
+    },
+    plaidCategory: {
+        primary: { type: String, required: true },
+        detailed: { type: String, required: true },
+        confidence_level: { type: String, enum: ['VERY_HIGH', 'HIGH', 'MEDIUM', 'LOW'], required: true }},
     isoCurrencyCode: { type: String },  // Optional, but useful if dealing with multiple currencies
     unofficialCurrencyCode: { type: String },  // Optional
     pending: { type: Boolean },

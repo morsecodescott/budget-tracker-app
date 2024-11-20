@@ -35,6 +35,10 @@ const {
   const { 
     createPlaidApiEvent 
   } = require('./plaidApiEvents');
+
+  const{
+    mapToInternalCategory
+  } = require('./services');
   
   module.exports = {
     // Accounts
@@ -64,6 +68,9 @@ const {
     deleteTransactionsByAccountId,
   
     // Plaid API Events
-    createPlaidApiEvent
+    createPlaidApiEvent,
+
+    //services
+    mapToInternalCategory
   };
   
