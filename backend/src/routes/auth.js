@@ -41,8 +41,7 @@ router.post('/register', async (req, res) => {
 
 
 router.post('/login', (req, res, next) => {
-    console.log("Login attempt with body:", req.body); // Log the request body to see what data is being sent to the server
-
+    
     passport.authenticate('local', (err, user, info) => {
         if (err) {
             console.error("Authentication error:", err); // Log any errors that occur during authentication

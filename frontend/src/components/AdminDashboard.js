@@ -8,7 +8,8 @@ const AdminDashboard = () => {
 
   // Breadcrumbs array for navigation
   const breadcrumbs = [
-    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')}>
+    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
+    sx={{ cursor: 'pointer' }}>
       Home
     </Link>,
     <Typography key="admin" color="text.primary">

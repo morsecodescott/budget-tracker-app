@@ -49,11 +49,14 @@ const Navdrawer = () => {
           <ListItem button component={RouterLink} to="/dashboard">
             <ListItemText primary="Dashboard" />
           </ListItem>
+          <ListItem button component={RouterLink} to="/transactions">
+            <ListItemText primary="Transactions" />
+          </ListItem>
           <ListItem button component={RouterLink} to="/plaid-test">
             <ListItemText primary="Plaid Test" />
           </ListItem>
           {user.role === 'admin' && (
-            <ListItem button component={RouterLink} to="/admin-dashboard">
+            <ListItem button component={RouterLink} to="/admin">
               <ListItemText primary="Admin Dashboard" />
             </ListItem>
           )}

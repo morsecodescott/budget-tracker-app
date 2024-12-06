@@ -47,10 +47,12 @@ const CategoryManagement = () => {
 
   // Breadcrumbs array
   const breadcrumbs = [
-    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')}>
+    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
+    sx={{ cursor: 'pointer' }}>
       Home
     </Link>,
-    <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/admin')}>
+    <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/admin')} component="button"
+    sx={{ cursor: 'pointer' }}>
       Admin Dashboard
     </Link>,
     <Typography key="categories" color="text.primary">
@@ -77,7 +79,7 @@ const CategoryManagement = () => {
       category.children.forEach((child) => traverse(child, category.name));
     };
     categories.forEach((category) => traverse(category));
-    console.log(result);
+    
     return result;
   };
 
@@ -171,7 +173,7 @@ const CategoryManagement = () => {
         {breadcrumbs}
       </Breadcrumbs>
       <Typography variant="h5">Manage Categories</Typography>
-      <Button variant="contained" color="primary" onClick={() => handleOpen()}>
+      <Button size="small" variant="contained" color="primary" onClick={() => handleOpen()}>
         Add New Category
       </Button>
       <Box mt={2} maxHeight="400px" overflow="auto">
@@ -199,7 +201,7 @@ const CategoryManagement = () => {
                     <TableCell>
                     <Button
                         size="small"
-                        variant="outlined"
+                        variant="contained"
                         color="primary"
                         onClick={() => {
                           setIsEditing(true);
@@ -217,8 +219,8 @@ const CategoryManagement = () => {
 
                       <Button
                         size="small"
-                        variant="outlined"
-                        color="secondary"
+                        variant="contained"
+                        color="primary"
                         style={{ marginLeft: 8 }}
                         onClick={() => handleDeleteCategory(category._id)}
                       >

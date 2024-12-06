@@ -9,7 +9,7 @@ const plaidCategorySchema = new mongoose.Schema({
     },
     PRIMARY: { type: String, required: true },
     DETAILED: { type: String, required: true },
-    description: { type: String, required: true }
+    DESCRIPTION: { type: String, required: true }
     
 });
 

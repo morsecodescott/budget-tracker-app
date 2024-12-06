@@ -7,14 +7,18 @@ const budgetRoutes = require('./budget');
 const categoryRoutes = require('./category');
 const plaidRoutes = require('./plaid');
 const servicesRoutes = require('./services');
+const plaidCategoryRoutes = require('./plaidCategory');
+const userRoutes = require('./users');
+
 
 
 router.use('/auth', authRoutes);
 router.use('/budget', budgetRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/plaid', plaidRoutes);
-
 router.use('/services', servicesRoutes);
+router.use('/plaid-categories', plaidCategoryRoutes);
+router.use('/users', userRoutes);
 
 
 module.exports = router;

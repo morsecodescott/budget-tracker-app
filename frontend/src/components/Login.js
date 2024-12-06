@@ -26,7 +26,7 @@ const LoginForm = () => {
     try {
       const response = await axios.post('/auth/login', credentials);
       if (response.data.success) {
-        console.log("User Data at Login:", response.data);
+        
         login(response.data.user); // Call the login function with the user data
         navigate('/dashboard'); // Navigate to the Dashboard on successful login
       } else {
