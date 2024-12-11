@@ -1,7 +1,7 @@
 import React from 'react';
-import { Container, List, ListItem, ListItemButton, ListItemText, Typography, Breadcrumbs, Link } from '@mui/material';
-import { useNavigate, Route, Routes } from 'react-router-dom';
-import CategoryManagement from './CategoryManagement';
+import { Container, List, ListItem, ListItemButton, ListItemText, Typography, Breadcrumbs, Link, Card, CardContent } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -9,7 +9,7 @@ const AdminDashboard = () => {
   // Breadcrumbs array for navigation
   const breadcrumbs = [
     <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-    sx={{ cursor: 'pointer' }}>
+      sx={{ cursor: 'pointer' }}>
       Home
     </Link>,
     <Typography key="admin" color="text.primary">
@@ -18,35 +18,35 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <Container maxWidth="lg" sx={{ backgroundColor: '#f7f7f7', p: 3, borderRadius: 2 }}>
+    <Container maxWidth="md" >
       {/* Breadcrumbs */}
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
         {breadcrumbs}
       </Breadcrumbs>
+      <Card>
+        <CardContent>
 
-      {/* Dashboard Title */}
-      <Typography variant="h4" sx={{ mb: 2 }}>
-        Admin Dashboard
-      </Typography>
+          {/* List of Admin Functions */}
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => navigate('/admin/manage-categories')}>
+                <ListItemText primary="Manage Categories" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => navigate('/admin/manage-users')}>
+                <ListItemText primary="Manage Users" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => navigate('/admin/manage-plaid-categories')}>
+                <ListItemText primary="Manage Plaid Categories" />
+              </ListItemButton>
+            </ListItem>
+          </List>
 
-      {/* List of Admin Functions */}
-      <List>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate('/admin/manage-categories')}>
-            <ListItemText primary="Manage Categories" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate('/admin/manage-users')}>
-            <ListItemText primary="Manage Users" />
-          </ListItemButton>
-        </ListItem>
-        <ListItem disablePadding>
-          <ListItemButton onClick={() => navigate('/admin/manage-plaid-categories')}>
-            <ListItemText primary="Manage Plaid Categories" />
-          </ListItemButton>
-        </ListItem>
-      </List>
+        </CardContent>
+      </Card>
     </Container>
   );
 };

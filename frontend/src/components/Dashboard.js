@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Container,
-  Grid,
   Card,
   CardContent,
   Typography,
@@ -10,15 +9,16 @@ import {
   Box,
   LinearProgress,
   Divider,
-  TableContainer,
-  TableBody,
-  TableCell,
-  TableRow,
-  TableHead,
-  Table,
+  Breadcrumbs,
+  Link,
+  IconButton
 } from "@mui/material";
 import axios from "axios";
 import BudgetItemForm from "./BudgetItemForm";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
 const Dashboard = () => {
   const [budgetItems, setBudgetItems] = useState([]);
@@ -31,6 +31,18 @@ const Dashboard = () => {
   const [expenseSum, setExpenseSum] = useState(0);
   const [transactions, setTransactions] = useState([]);
   const navigate = useNavigate();
+
+  // Breadcrumbs array
+  const breadcrumbs = [
+    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
+      sx={{ cursor: 'pointer' }}>
+      Home
+    </Link>,
+
+    <Typography key="dashboard" color="text.primary">
+      Dashboard
+    </Typography>,
+  ];
 
   const handleCategoryClick = (categoryId, isParentCategory = false) => {
     const startDate = new Date(selectedPeriod).toISOString();
@@ -208,128 +220,154 @@ const Dashboard = () => {
       0
     );
 
+    const aggregatedByCategory =
+      title === "Unbudgeted"
+        ? transactions.reduce((acc, transaction) => {
+          const categoryName =
+            transaction.category?.parentCategory?.name ||
+            transaction.category.name;
+
+          if (!acc[categoryName]) {
+            acc[categoryName] = { amount: 0, categoryId: transaction.category._id };
+          }
+          acc[categoryName].amount += transaction.amount;
+          return acc;
+        }, {})
+        : null;
+
     return (
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography
-            variant="h6"
-            sx={{
-              float: "left",
-              cursor: title === "Unbudgeted" ? "pointer" : "default",
-              textDecoration: title === "Unbudgeted" ? "underline" : "none",
-              color: title === "Unbudgeted" ? "blue" : "inherit",
-            }}
-            onClick={title === "Unbudgeted" ? handleUnbudgetedClick : undefined}
+            variant="h5"
+            component="h2"
+            sx={{ float: "left" }}
           >
             {title}
           </Typography>
-          <Typography variant="h6" sx={{ float: "right" }}>
-            {title !== "Unbudgeted" ? `$${sectionSum} of` : ""} ${total}
+          <Typography variant="h5" component="h2" sx={{ float: "right" }}>
+            {title !== "Unbudgeted" ? `$${sectionSum} of ` : ""} ${total}
           </Typography>
           <Box sx={{ clear: "both" }} />
-          <Divider />
-          {items.map((item) => {
-            const transactionSum = transactions
-              .filter(
-                (transaction) => transaction.category._id === item.category._id
-              )
-              .reduce((sum, transaction) => sum + transaction.amount, 0);
-            return (
-              <Box key={item._id} sx={{ mb: 2 }}>
+          <Divider sx={{ mb: 2 }} />
+
+          {title === "Unbudgeted" &&
+            aggregatedByCategory &&
+            Object.entries(aggregatedByCategory).map(([categoryName, data]) => (
+              <Box key={data.categoryId} sx={{ mb: 2 }}>
                 <Typography
-                  variant="subtitle1"
+                  variant="linkText"
                   sx={{
                     float: "left",
-                    cursor: "pointer",
-                    textDecoration: "underline",
-                    color: "blue",
                   }}
-                  onClick={() => handleCategoryClick(item.category._id)}
+                  onClick={() => handleUnbudgetedClick(data.categoryId)}
                 >
-                  {item.category?.parentCategory.name || item.category.name}:{" "}
-                  {item.category.name}
+                  {categoryName}
                 </Typography>
                 <Typography variant="subtitle1" sx={{ float: "right" }}>
-                  ${item.amount}
+                  ${data.amount.toFixed(2)}
                 </Typography>
                 <Box sx={{ clear: "both" }} />
-                <LinearProgress
-                  variant="determinate"
-                  value={(transactionSum / item.amount) * 100}
-                />
-                <Typography variant="caption">
-                  ${transactionSum} of ${item.amount}
-                </Typography>
-                <Button
-                  sx={{ float: "right" }}
-                  onClick={() => handleDelete(item._id)}
-                >
-                  Delete
-                </Button>
-                <Button
-                  sx={{ float: "right" }}
-                  onClick={() => handleEditClick(item)}
-                >
-                  Edit
-                </Button>
               </Box>
-            );
-          })}
-          <Divider />
-          <TableContainer>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Category</TableCell>
-                  <TableCell>Name</TableCell>
-                  <TableCell>Amount</TableCell>
-                  <TableCell>Date</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {transactions.map((transaction) => (
-                  <TableRow key={transaction._id}>
-                    <TableCell>
-                      {transaction.category?.parentCategory?.name ||
-                        transaction.category.name}
-                      : {transaction.category.name}
-                    </TableCell>
-                    <TableCell>{transaction.name}</TableCell>
-                    <TableCell align="right">{transaction.amount}</TableCell>
-                    <TableCell>
-                      {new Date(transaction.date).toLocaleDateString("en-CA")}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+            ))}
+          {title !== "Unbudgeted" &&
+            items.map((item) => {
+              const transactionSum = transactions
+                .filter(
+                  (transaction) => transaction.category._id === item.category._id
+                )
+                .reduce((sum, transaction) => sum + transaction.amount, 0);
+              return (
+                <Box key={item._id} sx={{ mb: 2 }}>
+                  <Typography
+                    variant="linkText"
+                    sx={{
+                      float: "left",
+
+                    }}
+                    onClick={() => handleCategoryClick(item.category._id)}
+                  >
+                    {item.category?.parentCategory.name || item.category.name}:{" "}
+                    {item.category.name}
+                  </Typography>
+                  <Typography variant="subtitle1" sx={{ float: "right" }}>
+                    ${item.amount}
+                  </Typography>
+                  <Box sx={{ clear: "both" }} />
+                  <LinearProgress
+                    sx={{ height: 10 }}
+                    variant="determinate"
+                    value={(transactionSum / item.amount) * 100}
+                  />
+                  <Typography variant="caption">
+                    ${transactionSum} of ${item.amount}
+                  </Typography>
+                  <IconButton
+                    sx={{ float: "right" }}
+                    onClick={() => handleDelete(item._id)}
+                    size="small"
+                    aria-label="delete"
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                  <IconButton
+                    sx={{ float: "right" }}
+                    onClick={() => handleEditClick(item)}
+                    size="small"
+                    aria-label="edit"
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                </Box>
+              );
+            })}
         </CardContent>
       </Card>
     );
   };
 
+
   return (
-    <Container maxWidth="lg" sx={{ backgroundColor: "offwhite" }}>
-      <Typography variant="h4" component="h1" gutterBottom>
-        Dashboard
-      </Typography>
+    <Container maxWidth="md" >
+
       <Box sx={{ p: 3 }}>
-        <Grid container spacing={2} sx={{ mb: 4 }}>
-          {periods.map((period, index) => (
-            <Grid item key={index}>
-              <Button
-                variant={period === selectedPeriod ? "contained" : "outlined"}
-                onClick={() => handlePeriodChange(period)}
+        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+          {breadcrumbs}
+        </Breadcrumbs>
+
+        <Box display="flex" alignItems="center" sx={{ mb: 2 }}>
+          <Box flexGrow={1} display="flex" justifyContent="left">
+            <FormControl sx={{ minWidth: 200 }}>
+              <InputLabel id="period-select-label">Select Period</InputLabel>
+              <Select
+                labelId="period-select-label"
+                value={selectedPeriod}
+                onChange={(e) => handlePeriodChange(e.target.value)}
+                label="Budget Period"
               >
-                {period}
-              </Button>
-            </Grid>
-          ))}
-        </Grid>
-        <Button variant="contained" onClick={() => setAddBudgetOpen(true)}>
-          Add a Budget Item
-        </Button>
+                {[...periods]
+                  .sort((a, b) => new Date(b) - new Date(a))
+                  .map((period) => (
+                    <MenuItem key={period} value={period}>
+                      {new Date(period).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                      })}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
+          </Box>
+
+          <Button
+            variant="contained"
+            startIcon={<AddCircleIcon />}
+            onClick={() => setAddBudgetOpen(true)}
+          >
+            Budget Item
+          </Button>
+        </Box>
+
         <BudgetItemForm
           open={addBudgetOpen}
           onClose={handleCloseForm}
@@ -344,7 +382,7 @@ const Dashboard = () => {
             (item) =>
               item.category.parentCategory.name === "Income" &&
               new Date(item.period).toISOString().split("T")[0] ===
-                selectedPeriod
+              selectedPeriod
           ),
           categorizedTransactions.income,
           "income"
@@ -356,7 +394,7 @@ const Dashboard = () => {
             (item) =>
               item.category.parentCategory.name !== "Income" &&
               new Date(item.period).toISOString().split("T")[0] ===
-                selectedPeriod
+              selectedPeriod
           ),
           categorizedTransactions.expenses,
           "expenses"

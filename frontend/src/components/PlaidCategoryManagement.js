@@ -15,10 +15,19 @@ import {
   TextField,
   Button,
   TablePagination,
-  Paper,
   Box,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Card,
+  CardContent
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 const PlaidCategoryManagement = () => {
   const navigate = useNavigate();
@@ -32,17 +41,17 @@ const PlaidCategoryManagement = () => {
   const [newCategory, setNewCategory] = useState({
     PRIMARY: '',
     DETAILED: '',
-    DESCRIPTION:'',
+    DESCRIPTION: '',
     internal_category: '',
   });
 
   const breadcrumbs = [
     <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-    sx={{ cursor: 'pointer' }}>
+      sx={{ cursor: 'pointer' }}>
       Home
     </Link>,
     <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/admin')} component="button"
-    sx={{ cursor: 'pointer' }}>
+      sx={{ cursor: 'pointer' }}>
       Admin Dashboard
     </Link>,
     <Typography key="users" color="text.primary">
@@ -101,7 +110,7 @@ const PlaidCategoryManagement = () => {
   const handleChange = (field, value) => {
     setEditedCategory({ ...editedCategory, [field]: value });
 
-    
+
   };
 
 
@@ -131,6 +140,7 @@ const PlaidCategoryManagement = () => {
     }
   };
 
+
   const handleAddCategory = async () => {
     try {
       await fetch('/plaid-categories', {
@@ -143,7 +153,7 @@ const PlaidCategoryManagement = () => {
 
       fetchPlaidCategories();
       setShowAddForm(false);
-      setNewCategory({ PRIMARY: '', DETAILED: '', internal_category: '' });
+      setNewCategory({ PRIMARY: '', DETAILED: '', DESCRIPTION: '', internal_category: '' });
     } catch (error) {
       console.error('Failed to add new category:', error);
     }
@@ -222,24 +232,23 @@ const PlaidCategoryManagement = () => {
             </>
           ) : (
             <>
-              <Button
-                size="small"
+              <IconButton
                 variant="contained"
                 color="primary"
                 onClick={() => startEditing(row._id)}
-                sx={{ mr: 1 }}
               >
-                Edit
-              </Button>
-              <Button size="small" variant="contained" color="primary" onClick={() => deleteCategory(row._id)}>
-                Delete
-              </Button>
+                <EditIcon fontSize="small" />
+              </IconButton>
+              <IconButton variant="contained" color="error" onClick={() => deleteCategory(row._id)}>
+                <DeleteIcon fontSize="small" />
+              </IconButton>
             </>
           )}
         </TableCell>
       </TableRow>
     );
   };
+
 
   const paginatedCategories = plaidCategories.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
@@ -248,23 +257,20 @@ const PlaidCategoryManagement = () => {
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
         {breadcrumbs}
       </Breadcrumbs>
-      <Typography variant="h4" sx={{ mb: 3 }}>
-        Plaid Category Management
-      </Typography>
-      <Button
-        size="small"
-        variant="contained"
-        color="primary"
-        onClick={() => setShowAddForm(!showAddForm)}
-        sx={{ mb: 2 }}
-      >
-        {showAddForm ? 'Cancel' : 'Add New Category'}
-      </Button>
-      {showAddForm && (
-        <Box sx={{ mb: 2, p: 2, backgroundColor: '#fff', borderRadius: 1 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>
-            Add New Category
-          </Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <Button
+          size="small"
+          variant="contained"
+          startIcon={<AddCircleIcon />}
+          color="primary"
+          onClick={() => setShowAddForm(true)}
+        >
+          New Category
+        </Button>
+      </Box>
+      <Dialog open={showAddForm} onClose={() => setShowAddForm(false)}>
+        <DialogTitle>Add New Category</DialogTitle>
+        <DialogContent>
           <TextField
             label="Primary"
             size="small"
@@ -288,7 +294,7 @@ const PlaidCategoryManagement = () => {
             onChange={(e) => setNewCategory({ ...newCategory, DESCRIPTION: e.target.value })}
             fullWidth
             sx={{ mb: 2 }}
-          />          
+          />
           <Select
             value={newCategory.internal_category}
             onChange={(e) => setNewCategory({ ...newCategory, internal_category: e.target.value })}
@@ -298,36 +304,37 @@ const PlaidCategoryManagement = () => {
           >
             {renderCategoryOptions()}
           </Select>
-          <Button variant="contained" color="primary" onClick={handleAddCategory}>
-            Save
-          </Button>
-        </Box>
-      )}
-      <Paper>
-      <TableContainer >
-        <Table size="small">
-          <TableHead>
-            <TableRow>
-              <TableCell>Primary</TableCell>
-              <TableCell>Detailed</TableCell>
-              <TableCell>Internal Category</TableCell>
-              <TableCell>Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>{paginatedCategories.map((row) => renderRow(row))}</TableBody>
-          
-        </Table>
-        
-      </TableContainer>
-      <TablePagination
-          count={plaidCategories.length}
-          page={page}
-          component="div"
-          onPageChange={handleChangePage}
-          rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
-     </Paper>   
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowAddForm(false)} variant="contained" color="primary">Cancel</Button>
+          <Button onClick={handleAddCategory} variant="contained" color="primary">Save</Button>
+        </DialogActions>
+      </Dialog>
+      <Card>
+        <CardContent>
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell>Primary</TableCell>
+                  <TableCell>Detailed</TableCell>
+                  <TableCell>Internal Category</TableCell>
+                  <TableCell>Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>{paginatedCategories.map((row) => renderRow(row))}</TableBody>
+            </Table>
+          </TableContainer>
+          <TablePagination
+            count={plaidCategories.length}
+            page={page}
+            component="div"
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </CardContent>
+      </Card>
     </Container>
   );
 };

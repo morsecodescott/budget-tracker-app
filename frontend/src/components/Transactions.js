@@ -16,12 +16,20 @@ import {
   RadioGroup,
   FormControlLabel,
   Radio,
+  Grid,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Breadcrumbs,
+  Link,
 } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Autocomplete } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from 'react-router-dom';
 
 const TransactionsPage = ({ userId }) => {
   const location = useLocation();
@@ -39,6 +47,7 @@ const TransactionsPage = ({ userId }) => {
   const [categories, setCategories] = useState([]);
   const [budgetFilter, setBudgetFilter] = useState("all"); // New state for budget filter
   const isInitialized = useRef(false);
+  const navigate = useNavigate();
 
   function normalizeDateToUTC(date) {
     if (!date) return null;
@@ -57,6 +66,21 @@ const TransactionsPage = ({ userId }) => {
     );
     return returnValue;
   }
+
+  // Breadcrumbs array
+  const breadcrumbs = [
+    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
+    sx={{ cursor: 'pointer' }}>
+      Home
+    </Link>,
+    <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/dashboard')} component="button"
+    sx={{ cursor: 'pointer' }}>
+      Dashboard
+    </Link>,
+    <Typography key="categories" color="text.primary">
+      Transactions
+    </Typography>,
+  ];
 
   // Fetch categories only once on mount
   useEffect(() => {
@@ -160,54 +184,78 @@ const TransactionsPage = ({ userId }) => {
     setBudgetFilter(event.target.value); // Update budget filter state
   };
 
+
+
   return (
-    <Container maxWidth="lg">
+    <Container maxWidth="md">
       {loading ? (
         <Box display="flex" justifyContent="center" mt={3}>
           <CircularProgress />
         </Box>
       ) : (
         <Box p={3}>
-          <Typography variant="h4" gutterBottom>
-            Transactions
-          </Typography>
-          <Box display="flex" gap={2} alignItems="center" mb={3}>
-            <LocalizationProvider dateAdapter={AdapterDateFns}>
-              <DatePicker
-                label="Start Date"
-                value={toLocalDate(dateRange.startDate)}
-                onChange={(value) => handleDateChange("startDate", value)}
-                textField={(params) => <TextField {...params} />}
+          <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
+            {breadcrumbs}
+          </Breadcrumbs>
+
+          <Grid container spacing={3} sx={{ marginTop: 3, marginBottom: 3 }} >
+            <Grid item xs={12} sm={6} md={3}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="Start Date"
+                  value={toLocalDate(dateRange.startDate)}
+                  onChange={(value) => handleDateChange("startDate", value)}
+                  TextField={(params) => <TextField {...params}  variant="outlined"/>}
+                />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <LocalizationProvider dateAdapter={AdapterDateFns}>
+                <DatePicker
+                  label="End Date"
+                  value={toLocalDate(dateRange.endDate)}
+                  onChange={(value) => handleDateChange("endDate", value)}
+                  textField={(params) => <TextField {...params} variant="outlined" />}
+                />
+              </LocalizationProvider>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3}>
+              <Autocomplete
+                multiple
+                
+                options={categories}
+                getOptionLabel={(option) => option.name}
+                value={selectedCategories}
+                isOptionEqualToValue={(option, value) => option._id === value._id}
+                onChange={(event, newValue) => handleCategoryChange(newValue)}
+                renderInput={(params) => (
+                  <TextField {...params} label="Category" variant="outlined" />
+                )}
+                sx={{ width: "100%" }}
               />
-              <DatePicker
-                label="End Date"
-                value={toLocalDate(dateRange.endDate)}
-                onChange={(value) => handleDateChange("endDate", value)}
-                textField={(params) => <TextField {...params} />}
-              />
-            </LocalizationProvider>
-            <Autocomplete
-              multiple
-              options={categories}
-              getOptionLabel={(option) => option.name}
-              value={selectedCategories}
-              isOptionEqualToValue={(option, value) => option._id === value._id}
-              onChange={(event, newValue) => handleCategoryChange(newValue)}
-              renderInput={(params) => <TextField {...params} label="Filter by Category" />}
-              sx={{ width: 200 }}
-            />
-            {/* Budget Filter Radio Group */}
-            <RadioGroup
-              row
-              value={budgetFilter}
-              onChange={handleBudgetFilterChange}
-              sx={{ marginLeft: 2 }}
-            >
-              <FormControlLabel value="all" control={<Radio />} label="All" />
-              <FormControlLabel value="budgeted" control={<Radio />} label="Budgeted" />
-              <FormControlLabel value="unbudgeted" control={<Radio />} label="Unbudgeted" />
-            </RadioGroup>
-          </Box>
+            </Grid>
+
+            <Grid item xs={12} sm={6} md={3} sizing="grow">
+            <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+              <InputLabel id="budget-filter-label">Budget Filter</InputLabel>
+              <Select
+                label="Budget Filter"
+                labelId="budget-filter-label"
+                value={budgetFilter}
+                onChange={handleBudgetFilterChange}
+              >
+                <MenuItem value="all">All</MenuItem>
+                <MenuItem value="budgeted">Budgeted</MenuItem>
+                <MenuItem value="unbudgeted">Unbudgeted</MenuItem>
+              </Select>
+            </FormControl>
+
+            </Grid>
+          </Grid>
+
+
           {error ? (
             <Typography color="error">{error}</Typography>
           ) : (

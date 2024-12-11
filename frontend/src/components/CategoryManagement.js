@@ -23,13 +23,17 @@ import {
   Typography,
   Container,
   Breadcrumbs,
-  Link
+  Link,
+  IconButton,
+  Card,
+  CardContent
 } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-
-
+import AddCircleIcon from '@mui/icons-material/AddCircle';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 
 const CategoryManagement = () => {
   const [categories, setCategories] = useState([]);
@@ -48,11 +52,11 @@ const CategoryManagement = () => {
   // Breadcrumbs array
   const breadcrumbs = [
     <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-    sx={{ cursor: 'pointer' }}>
+      sx={{ cursor: 'pointer' }}>
       Home
     </Link>,
     <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/admin')} component="button"
-    sx={{ cursor: 'pointer' }}>
+      sx={{ cursor: 'pointer' }}>
       Admin Dashboard
     </Link>,
     <Typography key="categories" color="text.primary">
@@ -79,7 +83,7 @@ const CategoryManagement = () => {
       category.children.forEach((child) => traverse(child, category.name));
     };
     categories.forEach((category) => traverse(category));
-    
+
     return result;
   };
 
@@ -124,11 +128,11 @@ const CategoryManagement = () => {
       parentCategory: parentCategory,
       isDefault: isDefault,
     };
-  
+
     if (!isDefault) {
       categoryData.user = user.id;
     }
-  
+
     try {
       if (isEditing) {
         await axios.put(`/categories/${editingCategory._id}`, categoryData);
@@ -144,7 +148,7 @@ const CategoryManagement = () => {
       console.error('Failed to save category:', error);
     }
   };
-  
+
 
   const handleDeleteCategory = async (categoryId) => {
     if (window.confirm('Are you sure you want to delete this category?')) {
@@ -167,80 +171,84 @@ const CategoryManagement = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ backgroundColor: '#f7f7f7', p: 3, borderRadius: 2 }}>
+    <Container maxWidth="md" >
       {/* Breadcrumbs */}
       <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
         {breadcrumbs}
       </Breadcrumbs>
-      <Typography variant="h5">Manage Categories</Typography>
-      <Button size="small" variant="contained" color="primary" onClick={() => handleOpen()}>
-        Add New Category
-      </Button>
-      <Box mt={2} maxHeight="400px" overflow="auto">
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell><Typography variant="subtitle2">Category Name</Typography></TableCell>
-                <TableCell><Typography variant="subtitle2">Actions</Typography></TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {categories
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((category) => (
-                  <TableRow key={category._id}>
-                    <TableCell
-                      style={{
-                        fontWeight: category.parentCategory ? 'normal' : 'bold',
-                        paddingLeft: category.parentCategory ? '40px' : '20px',
-                      }}
-                    >
-                      {category.name}
-                    </TableCell>
-                    <TableCell>
-                    <Button
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        onClick={() => {
-                          setIsEditing(true);
-                          setEditingCategory(category);
-                          setNewCategory(category.name);
-                          setParentCategory(
-                            parentCategories.find((cat) => cat.name === category.parentCategory)?._id || ''
-                          );
-                          setIsDefault(false); // Adjust as needed based on your logic
-                          setOpen(true);
-                        }}
-                      >
-                        Edit
-                      </Button>
-
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                        style={{ marginLeft: 8 }}
-                        onClick={() => handleDeleteCategory(category._id)}
-                      >
-                        Delete
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
+        <Button size="small" color="primary" onClick={() => handleOpen()} variant="contained"
+          startIcon={<AddCircleIcon />}>
+          Category
+        </Button>
       </Box>
-      <TablePagination
-        component="div"
-        count={categories.length}
-        page={page}
-        onPageChange={handleChangePage}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
+      <Card>
+        <CardContent>
+
+
+          <Box mt={2} overflow="auto">
+            <TableContainer>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell><Typography variant="subtitle2">Category Name</Typography></TableCell>
+                    <TableCell><Typography variant="subtitle2">Actions</Typography></TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {categories
+                    .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                    .map((category) => (
+                      <TableRow key={category._id}>
+                        <TableCell
+                          style={{
+                            fontWeight: category.parentCategory ? 'normal' : 'bold',
+                            paddingLeft: category.parentCategory ? '40px' : '20px',
+                          }}
+                        >
+                          {category.name}
+                        </TableCell>
+                        <TableCell>
+                          <IconButton
+                            color='primary'
+                            onClick={() => {
+                              setIsEditing(true);
+                              setEditingCategory(category);
+                              setNewCategory(category.name);
+                              setParentCategory(
+                                parentCategories.find((cat) => cat.name === category.parentCategory)?._id || ''
+                              );
+                              setIsDefault(false); // Adjust as needed based on your logic
+                              setOpen(true);
+                            }}
+                          >
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+
+                          <IconButton
+                            color='error'
+                            style={{ marginLeft: 8 }}
+                            onClick={() => handleDeleteCategory(category._id)}
+                          >
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Box>
+          <TablePagination
+            component="div"
+            count={categories.length}
+            page={page}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </CardContent>
+      </Card>
       <Dialog open={open} onClose={handleClose}>
         <DialogTitle>{editingCategory ? 'Edit Category' : 'Add a New Category'}</DialogTitle>
         <DialogContent>
@@ -293,7 +301,7 @@ const CategoryManagement = () => {
 
         </DialogActions>
       </Dialog>
-      </Container>
+    </Container>
   );
 };
 

@@ -13,14 +13,18 @@ import UserManagement from './components/UserManagement';
 import PlaidCategoryManagement from './components/PlaidCategoryManagement';
 import TransactionsPage from './components/Transactions';
 import PlaidTestPage from './components/PlaidTestPage';
+import ThemeDemo from './components/themedemo';
+
+
 
 
 axios.defaults.withCredentials = true;
 
 function App() {
   return (
-    <AuthProvider>
-      
+ 
+
+    <AuthProvider> 
       <Router future={{ v7_startTransition: true , v7_relativeSplatPath: true}}>
         <Navdrawer />
         <Routes>
@@ -34,9 +38,9 @@ function App() {
           <Route path="/admin/manage-users" element={<UserManagement />} />
           <Route path="/admin/manage-plaid-categories" element={<PlaidCategoryManagement />} />
           <Route path="/plaid-test" element={<PlaidTestPage />} />
+          <Route path="/themedemo" element={<ThemeDemo />} />
         </Routes>
       </Router>
-      
     </AuthProvider>
   );
 }
