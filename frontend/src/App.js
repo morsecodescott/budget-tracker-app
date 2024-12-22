@@ -12,6 +12,7 @@ import CategoryManagement from './components/CategoryManagement';
 import UserManagement from './components/UserManagement';
 import PlaidCategoryManagement from './components/PlaidCategoryManagement';
 import TransactionsPage from './components/Transactions';
+import Trends from './components/Trends';
 import PlaidTestPage from './components/PlaidTestPage';
 import ThemeDemo from './components/themedemo';
 
@@ -22,10 +23,10 @@ axios.defaults.withCredentials = true;
 
 function App() {
   return (
- 
 
-    <AuthProvider> 
-      <Router future={{ v7_startTransition: true , v7_relativeSplatPath: true}}>
+
+    <AuthProvider>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Navdrawer />
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -33,6 +34,7 @@ function App() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/transactions" element={<TransactionsPage />} />
+          <Route path="/trends" element={<Trends />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/manage-categories" element={<CategoryManagement />} />
           <Route path="/admin/manage-users" element={<UserManagement />} />

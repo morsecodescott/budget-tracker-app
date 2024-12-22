@@ -5,7 +5,7 @@ const plaidClient = require('../config/plaidClient');
 const PlaidItem = require('../models/PlaidItem');
 const PlaidAccount = require('../models/PlaidAccount');
 const { deleteItem } = require('../db/queries/items');
-const { retrieveTransactionsByAccountId} = require('../db/queries/transactions');
+const { retrieveTransactionsByAccountId } = require('../db/queries/transactions');
 const mongoose = require('mongoose');
 const PlaidTransaction = require('../models/PlaidTransaction');
 const Budget = require('../models/Budget');
@@ -25,10 +25,10 @@ router.post('/create_link_token', async (req, res) => {
       products: PLAID_PRODUCTS,
       country_codes: PLAID_COUNTRY_CODES,
       language: 'en',
-      access_token: req.access_token ,
+      access_token: req.access_token,
       webhook: req.webhook,
     });
-    console.log(response.data)
+    console.log(response.data);
     res.json(response.data);
   } catch (error) {
     console.error('Error creating link token:', error);
@@ -43,12 +43,12 @@ router.post('/create_link_token', async (req, res) => {
 // Retrieve all items and accounts for a specific user
 router.get('/items/:userId', async (req, res) => {
   try {
-   const { userId } = req.params;
+    const { userId } = req.params;
     // Find all Plaid items linked to the user
     const items = await PlaidItem.find({ userId }).populate('accounts');
     res.json({ items });
   } catch (error) {
-   console.error('Error fetching Plaid items:', error.message);
+    console.error('Error fetching Plaid items:', error.message);
     res.status(500).json({ error: 'Failed to retrieve items' });
   }
 });
@@ -132,15 +132,15 @@ router.delete('/items/:itemId', async (req, res) => {
   }
 });
 
-router.get('/transactions/:accountId', async(req,res) =>{
-  const {accountId} = req.params;
+router.get('/transactions/:accountId', async (req, res) => {
+  const { accountId } = req.params;
   try {
-      const transactions = await retrieveTransactionsByAccountId(accountId);
-      res.status(200).json(transactions);
+    const transactions = await retrieveTransactionsByAccountId(accountId);
+    res.status(200).json(transactions);
 
   } catch (error) {
     console.error('Error fetching transactions:', error.message);
-    res.status(500).send({error: 'Failed to fetch transactions'});
+    res.status(500).send({ error: 'Failed to fetch transactions' });
   }
 
 });
@@ -154,9 +154,9 @@ router.post('/create_plaid_item', async (request, response) => {
   const { access_token } = request.body;
 
   try {
-    
+
     // Retrieve item information including the institution ID and name
-    const itemInfoResponse = await plaidClient.itemGet({ access_token});
+    const itemInfoResponse = await plaidClient.itemGet({ access_token });
     const institutionId = itemInfoResponse.data.item.institution_id;
     const plaidItemId = itemInfoResponse.data.item.item_id
 
@@ -178,7 +178,7 @@ router.post('/create_plaid_item', async (request, response) => {
     );
 
     // Retrieve account information
-    const accountsResponse = await plaidClient.accountsGet({ access_token});
+    const accountsResponse = await plaidClient.accountsGet({ access_token });
     const accounts = accountsResponse.data.accounts;
 
     // Save each account and link it to the PlaidItem
@@ -214,91 +214,110 @@ router.post('/create_plaid_item', async (request, response) => {
 
 // Retrieve transactions for a user with filtering and optional pagination
 router.get('/transactions', async (req, res) => {
-  const { startDate, endDate, page, rowsPerPage, category, budgetFilter } = req.query;
+  const { startDate, endDate, page, rowsPerPage, category, budgetFilter, transactionType } = req.query;
   const userId = req.user._id;
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ error: 'Invalid userId provided' });
   }
 
-  const start = startDate
-    ? new Date(startDate).toISOString().split("T")[0]
-    : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // Default: last 30 days
-  const end = endDate
-    ? new Date(endDate).toISOString().split("T")[0]
-    : new Date(); // Default: today
+  const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const end = endDate ? new Date(endDate) : new Date();
 
   try {
-    // Fetch account IDs for the user
     const plaidAccountIds = await getPlaidAccountIdsForUser(userId);
 
-    // Fetch budget categories for the user within the date range
     const budgetCategories = await Budget.find({
       user: userId,
       period: { $lte: end, $gte: start },
     }).distinct('category');
 
-    console.log('User ID:', userId);
-    console.log('Date Range:', start, '-', end);
-    console.log('Budget Categories:', budgetCategories);
+    // Build aggregation pipeline
+    const pipeline = [
+      {
+        $match: {
+          plaidAccountId: { $in: plaidAccountIds },
+          date: { $gte: start, $lte: end },
+        },
+      },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category',
+          foreignField: '_id',
+          as: 'category',
+        },
+      },
+      { $unwind: '$category' },
+      {
+        $lookup: {
+          from: 'categories',
+          localField: 'category.parentCategory',
+          foreignField: '_id',
+          as: 'category.parentCategoryDetails',
+        },
+      },
+      { $unwind: { path: '$category.parentCategoryDetails', preserveNullAndEmptyArrays: true } },
+    ];
 
-    let queryConditions = {
-      plaidAccountId: { $in: plaidAccountIds },
-      date: { $gte: start, $lte: end },
-    };
-
-    // Add category condition if provided
     if (category) {
-      let categoryObjectId = category;
-      if (typeof category === 'string') {
-        categoryObjectId = new mongoose.Types.ObjectId(category);
+      console.log("Category:", category);
+
+      if (Array.isArray(category)) {
+        // Handle multiple categories
+        pipeline.push({
+          $match: {
+            'category._id': {
+              $in: category.map((id) => new mongoose.Types.ObjectId(id)),
+            },
+          },
+        });
+      } else {
+        // Handle single category
+        pipeline.push({
+          $match: {
+            'category._id': new mongoose.Types.ObjectId(category),
+          },
+        });
       }
-      queryConditions.category = categoryObjectId;
     }
 
-    // Query transactions
-    let query = PlaidTransaction.find(queryConditions)
-      .sort({ date: -1 }) // Sort by date descending
-      .populate({
-        path: 'category',
-        populate: {
-          path: 'parentCategory',
+    if (transactionType && transactionType !== 'All') {
+      pipeline.push({
+        $match: {
+          'category.parentCategoryDetails.name': transactionType === 'Income' ? 'Income' : { $ne: 'Income' },
         },
       });
-
-    // Apply pagination if page and rowsPerPage are provided
-    if (page !== undefined && rowsPerPage !== undefined) {
-      const skip = page * rowsPerPage;
-      query = query.skip(skip).limit(Number(rowsPerPage));
     }
 
-    const transactions = await query;
+    pipeline.push(
+      {
+        $set: {
+          budgeted: {
+            $in: ['$category._id', budgetCategories],
+          },
+        },
+      },
+      { $sort: { date: -1 } }
+    );
 
-    // Map transactions to include the `budgeted` field
-    const transactionsWithBudgeted = transactions.map((transaction) => ({
-      ...transaction.toObject(),
-      budgeted: budgetCategories.some((budgetCategoryId) =>
-        budgetCategoryId.equals(transaction.category?._id)
-      ),
-    }));
+    const allTransactions = await PlaidTransaction.aggregate(pipeline);
 
-    // Filter transactions based on `budgetFilter`
-    let filteredTransactions = transactionsWithBudgeted;
-    if (budgetFilter === 'budgeted') {
-      filteredTransactions = transactionsWithBudgeted.filter((t) => t.budgeted);
-    } else if (budgetFilter === 'unbudgeted') {
-      filteredTransactions = transactionsWithBudgeted.filter((t) => !t.budgeted);
-    }
+    // Budget filter
+    const filteredTransactions = allTransactions.filter((t) =>
+      budgetFilter === 'budgeted'
+        ? t.budgeted
+        : budgetFilter === 'unbudgeted'
+          ? !t.budgeted
+          : true
+    );
 
-    // Count total transactions after filtering
     const totalTransactions = filteredTransactions.length;
+    const paginatedTransactions =
+      page !== undefined && rowsPerPage !== undefined
+        ? filteredTransactions.slice(page * rowsPerPage, (page + 1) * rowsPerPage)
+        : filteredTransactions;
 
-    // Apply pagination on filtered results
-    const paginatedTransactions = page !== undefined && rowsPerPage !== undefined
-      ? filteredTransactions.slice(page * rowsPerPage, (page + 1) * rowsPerPage)
-      : filteredTransactions;
-
-    // Send response
     res.status(200).json({
       transactions: paginatedTransactions,
       total: totalTransactions,
@@ -316,11 +335,55 @@ router.get('/transactions', async (req, res) => {
 
 
 
+
+
+
+
+
+
+
+
 // Utility function to fetch account IDs for the user
 async function getPlaidAccountIdsForUser(userId) {
   const items = await mongoose.model('PlaidItem').find({ userId }).populate('accounts');
   return items.flatMap(item => item.accounts.map(account => account._id));
 }
+
+
+// GET /plaid/accounts/summary
+router.get('/accounts/summary', async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const summary = await PlaidAccount.aggregate([
+      {
+        $lookup: {
+          from: "plaiditems",
+          localField: "plaidItemId",
+          foreignField: "_id",
+          as: "item"
+        }
+      },
+      { $unwind: "$item" }, // Deconstructs the item array
+      { $match: { "item.userId": userId } },
+      {
+        $group: {
+          _id: "$accountType",
+          totalBalance: { $sum: "$currentBalance" },
+          accountCount: { $sum: 1 }
+        }
+      }
+    ]);
+
+    res.json({ summary });
+  } catch (error) {
+    console.error("Error fetching account summary:", error.message);
+    res.status(500).json({ error: "Failed to retrieve account summary" });
+  }
+});
+
+
+
 
 module.exports = router;
 

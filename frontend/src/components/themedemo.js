@@ -1,9 +1,33 @@
 // src/pages/DemoPage.js
-import React from 'react';
-import { Box, Typography, Button, Card, CardContent, Grid , Link} from '@mui/material';
+
+import { Box, Typography, Button, Card, CardContent, Grid, Link, Table, TableCell, TableBody, TableRow, TableContainer, Paper, TableHead } from '@mui/material';
+
+
+import React, { useState, useEffect } from "react";
+
+
+
+
+
 
 
 function DemoPage() {
+  const [transactions, setTransactions] = useState([]);
+
+  // Transaction API Call in the Dashboard
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await fetch('/plaid/transactions?endDate=2024-10-31T00:00:00.000Z&startDate=2024-10-01T00:00:00.000Z');
+        const data = await response.json();
+        setTransactions(data.transactions);
+      } catch (error) {
+        console.error('Error fetching transactions:', error);
+      }
+    };
+    fetchTransactions();
+  }, []);
+
   return (
     <Box sx={{ p: 4, backgroundColor: 'background.default' }}>
       <Typography variant="h1" gutterBottom>
@@ -52,16 +76,43 @@ function DemoPage() {
               <Typography variant="h3">Simple Card</Typography>
               <Typography variant="body1">This is an example of a basic card component.</Typography>
               <Typography variant="body1">
-      Check out our{' '}
-      <Link href="https://example.com" target="_blank">
-        latest features
-      </Link>{' '}
-      to learn more.
-    </Typography>
+                Check out our{' '}
+                <Link href="https://example.com" target="_blank">
+                  latest features
+                </Link>{' '}
+                to learn more.
+              </Typography>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Category</TableCell>
+              <TableCell>Parent Category</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {transactions.map((transaction) => (
+              <TableRow key={transaction.plaidTransactionId}>
+                <TableCell>{transaction.name}</TableCell>
+                <TableCell>
+                  {transaction.category?.name || 'Uncategorized'}
+                </TableCell>
+                <TableCell>
+                  {transaction.category.parentCategoryDetails?.name || 'N/A'}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+
     </Box>
   );
 }
