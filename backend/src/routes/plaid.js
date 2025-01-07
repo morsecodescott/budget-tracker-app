@@ -19,17 +19,22 @@ const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',')
 router.post('/create_link_token', async (req, res) => {
   console.log("/create_link_token: ", req.body);
   try {
+
     const response = await plaidClient.linkTokenCreate({
       user: { client_user_id: req.user.id },
       client_name: 'ChaChing',
       products: PLAID_PRODUCTS,
       country_codes: PLAID_COUNTRY_CODES,
       language: 'en',
-      access_token: req.access_token,
-      webhook: req.webhook,
+      access_token: req.body.access_token,
+      webhook: req.body.webhook,
     });
     console.log(response.data);
+
+    const linkTokenData = await plaidClient.linkTokenGet({ link_token: response.data.link_token });
+
     res.json(response.data);
+    console.log(linkTokenData.data);
   } catch (error) {
     console.error('Error creating link token:', error);
     res.status(500).json({ error: 'Unable to create a link token. Please try again later.' });
@@ -56,17 +61,23 @@ router.get('/items/:userId', async (req, res) => {
 // Exchange public token for an access token and retrieve account info
 router.post('/set_access_token', async (request, response) => {
   const userId = request.user.id;
-  const { public_token } = request.body;
+  const { public_token, accessToken } = request.body;
 
   try {
-    // Exchange the public token for an access token and item ID
-    const tokenResponse = await plaidClient.itemPublicTokenExchange({ public_token });
-    const accessToken = tokenResponse.data.access_token;
-    const plaidItemId = tokenResponse.data.item_id;
+    let accessTokenToUse = accessToken;
+
+
+    if (!accessToken) {
+      // Exchange the public token for an access token and item ID
+      const tokenResponse = await plaidClient.itemPublicTokenExchange({ public_token });
+      accessTokenToUse = tokenResponse.data.access_token;
+
+    }
 
     // Retrieve item information including the institution ID and name
-    const itemInfoResponse = await plaidClient.itemGet({ access_token: accessToken });
+    const itemInfoResponse = await plaidClient.itemGet({ access_token: accessTokenToUse });
     const institutionId = itemInfoResponse.data.item.institution_id;
+    const plaidItemId = itemInfoResponse.data.item.item_id;
 
     let institutionName = 'Unknown Institution';
     if (institutionId) {
@@ -125,6 +136,7 @@ router.delete('/items/:itemId', async (req, res) => {
   const { itemId } = req.params;
   try {
     await deleteItem(itemId); // Assuming deleteItem is your backend function to delete an item
+
     res.status(200).send({ message: 'Item deleted successfully' });
   } catch (error) {
     console.error('Error deleting item:', error.message);
@@ -386,5 +398,3 @@ router.get('/accounts/summary', async (req, res) => {
 
 
 module.exports = router;
-
-

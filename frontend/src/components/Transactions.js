@@ -70,11 +70,11 @@ const TransactionsPage = ({ userId }) => {
   // Breadcrumbs array
   const breadcrumbs = [
     <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-    sx={{ cursor: 'pointer' }}>
+      sx={{ cursor: 'pointer' }}>
       Home
     </Link>,
     <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/dashboard')} component="button"
-    sx={{ cursor: 'pointer' }}>
+      sx={{ cursor: 'pointer' }}>
       Dashboard
     </Link>,
     <Typography key="categories" color="text.primary">
@@ -106,7 +106,7 @@ const TransactionsPage = ({ userId }) => {
       }
     };
     fetchCategories();
-   
+
   }, []);
 
   // Fetch transactions whenever filter changes
@@ -125,7 +125,7 @@ const TransactionsPage = ({ userId }) => {
       const { data } = await axios.get("/plaid/transactions", { params });
       setTransactions(data.transactions);
       setTotalCount(data.total);
-     
+
     } catch (err) {
       setError("Failed to fetch transactions.");
     } finally {
@@ -205,7 +205,7 @@ const TransactionsPage = ({ userId }) => {
                   label="Start Date"
                   value={toLocalDate(dateRange.startDate)}
                   onChange={(value) => handleDateChange("startDate", value)}
-                  TextField={(params) => <TextField {...params}  variant="outlined"/>}
+                  TextField={(params) => <TextField {...params} variant="outlined" />}
                 />
               </LocalizationProvider>
             </Grid>
@@ -224,7 +224,7 @@ const TransactionsPage = ({ userId }) => {
             <Grid item xs={12} sm={6} md={3}>
               <Autocomplete
                 multiple
-                
+
                 options={categories}
                 getOptionLabel={(option) => option.name}
                 value={selectedCategories}
@@ -238,19 +238,19 @@ const TransactionsPage = ({ userId }) => {
             </Grid>
 
             <Grid item xs={12} sm={6} md={3} sizing="grow">
-            <FormControl variant="outlined" sx={{ minWidth: 150 }}>
-              <InputLabel id="budget-filter-label">Budget Filter</InputLabel>
-              <Select
-                label="Budget Filter"
-                labelId="budget-filter-label"
-                value={budgetFilter}
-                onChange={handleBudgetFilterChange}
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="budgeted">Budgeted</MenuItem>
-                <MenuItem value="unbudgeted">Unbudgeted</MenuItem>
-              </Select>
-            </FormControl>
+              <FormControl variant="outlined" sx={{ minWidth: 150 }}>
+                <InputLabel id="budget-filter-label">Budget Filter</InputLabel>
+                <Select
+                  label="Budget Filter"
+                  labelId="budget-filter-label"
+                  value={budgetFilter}
+                  onChange={handleBudgetFilterChange}
+                >
+                  <MenuItem value="all">All</MenuItem>
+                  <MenuItem value="budgeted">Budgeted</MenuItem>
+                  <MenuItem value="unbudgeted">Unbudgeted</MenuItem>
+                </Select>
+              </FormControl>
 
             </Grid>
           </Grid>

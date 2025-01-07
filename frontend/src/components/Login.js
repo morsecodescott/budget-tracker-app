@@ -26,8 +26,7 @@ const LoginForm = () => {
     try {
       const response = await axios.post('/auth/login', credentials);
       if (response.data.success) {
-        
-        login(response.data.user); // Call the login function with the user data
+        await login(response.data.user, response.data.token); // Call the login function with user data and token
         navigate('/dashboard'); // Navigate to the Dashboard on successful login
       } else {
         setError('Invalid email or password');

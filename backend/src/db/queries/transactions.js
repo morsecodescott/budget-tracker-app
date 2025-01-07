@@ -1,7 +1,7 @@
 // Import the mongoose models
 const PlaidTransaction = require('../../models/PlaidTransaction');
 const { retrieveAccountByPlaidAccountId } = require('./accounts');
-const { mapToInternalCategory } = require('../queries/services'); 
+const { mapToInternalCategory } = require('../queries/services');
 
 
 
@@ -19,15 +19,16 @@ const createOrUpdateTransactions = async (transactions) => {
       personal_finance_category,
       transaction_type: transactionType,
       name,
+      merchant_name,
       amount,
       iso_currency_code: isoCurrencyCode,
       unofficial_currency_code: unofficialCurrencyCode,
       date,
       pending,
       account_owner: accountOwner,
-      
+
     } = transaction;
-    
+
     const plaidCategory = {
       detailed: personal_finance_category?.detailed || null,
       primary: personal_finance_category?.primary || null,
@@ -37,7 +38,7 @@ const createOrUpdateTransactions = async (transactions) => {
 
     // Retrieve the corresponding MongoDB account document by the plaidAccountId
     const account = await retrieveAccountByPlaidAccountId(plaidAccountId);
-    
+
     const internalCategoryId = await mapToInternalCategory(plaidCategory);
 
 
@@ -53,6 +54,7 @@ const createOrUpdateTransactions = async (transactions) => {
 
           transactionType,
           name,
+          merchant_name,
           amount,
           isoCurrencyCode,
           unofficialCurrencyCode,

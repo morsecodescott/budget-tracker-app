@@ -12,7 +12,8 @@
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "plaid": "^23.0.0",
-    "redis": "^4.6.13"
+    "redis": "^4.6.13",
+    "socket.io": "^4.8.1"
   },
   "scripts": {
     "start": "NODE_ENV=production node server.js",

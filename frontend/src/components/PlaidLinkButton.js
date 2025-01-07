@@ -3,15 +3,17 @@ import { usePlaidLink } from 'react-plaid-link';
 import Button from '@mui/material/Button';
 import axios from 'axios'; // Import axios
 
-const PlaidLinkButton = ({ linkToken }) => {
+const PlaidLinkButton = ({ linkToken, accessToken }) => {
   const onSuccess = async (public_token, metadata) => {
     console.log('Plaid public token:', public_token);
+    console.log('Access Token:', accessToken)
     console.log('Account metadata:', metadata);
 
     // Here you would send the public_token to your server to exchange it for an access token
     try {
       const response = await axios.post('/plaid/set_access_token', {
-        public_token: public_token // Sending public_token to the server
+        public_token: public_token, // Sending public_token to the server
+        accessToken: accessToken
       });
       console.log('Server response:', response.data); // Handling the response from the server
     } catch (error) {

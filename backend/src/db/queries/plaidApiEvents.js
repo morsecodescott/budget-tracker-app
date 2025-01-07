@@ -2,39 +2,40 @@
 const PlaidApiEvent = require('../../models/PlaidApiEvent');
 
 /**
- * Creates a single Plaid API event log entry.
+ * Creates a Plaid API event log entry. Can handle both API calls and webhook events.
  *
- * @param {string} itemId - The MongoDB ObjectId of the item (plaidItemId).
- * @param {string} userId - The MongoDB ObjectId of the user.
- * @param {string} plaidMethod - The Plaid client method called.
- * @param {Array} clientMethodArgs - The arguments passed to the Plaid client method.
- * @param {Object} response - The Plaid API response object.
+ * @param {Object} eventData - Event data to log
+ * @param {string} eventData.type - Event type (API_CALL or WEBHOOK)
+ * @param {string} eventData.code - Webhook code or API method name
+ * @param {string} eventData.plaidItemId - Plaid item ID
+ * @param {string} [eventData.userId] - User ID (optional for webhooks)
+ * @param {string} [eventData.status] - Event status
+ * @param {Object} [eventData.details] - Additional details
+ * @param {string} [eventData.error] - Error message
+ * @param {string} [eventData.requestId] - Plaid request ID
+ * @param {string} [eventData.errorType] - Plaid error type
+ * @param {string} [eventData.errorCode] - Plaid error code
+ * @returns {Promise<void>}
  */
-const createPlaidApiEvent = async (
-  itemId,
-  userId,
-  plaidMethod,
-  clientMethodArgs,
-  response
-) => {
-  const { error_code: errorCode, error_type: errorType, request_id: requestId } = response;
-
-  // Create a new event document using the PlaidApiEvent schema
+const createPlaidApiEvent = async (eventData) => {
   try {
     const plaidApiEvent = new PlaidApiEvent({
-      plaidItemId: itemId,
-      userId,
-      plaidMethod,
-      clientMethodArgs,
-      requestId,
-      errorType,
-      errorCode,
+      type: eventData.type,
+      code: eventData.code,
+      plaidItemId: eventData.plaidItemId || null,
+      userId: eventData.userId || null,
+      status: eventData.status || null,
+      details: eventData.details || null,
+      error: eventData.error || null,
+      requestId: eventData.requestId || null,
+      errorType: eventData.errorType || null,
+      errorCode: eventData.errorCode || null,
+      timestamp: eventData.timestamp || new Date()
     });
 
-    // Save the event to MongoDB
     await plaidApiEvent.save();
   } catch (err) {
-    console.error(`Error logging Plaid API event for item ${itemId}:`, err);
+    console.error(`Error logging Plaid event for item ${eventData.plaidItemId}:`, err);
   }
 };
 

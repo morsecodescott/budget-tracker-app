@@ -2,7 +2,7 @@
 // Essential module imports
 const express = require('express');
 const cors = require('cors');
-const passport = require('passport'); 
+const passport = require('passport');
 require('dotenv').config();
 const { setupDatabase } = require('./src/config/database');
 const { setupSessionStore } = require('./src/config/sessionStore');
@@ -23,7 +23,7 @@ app.use(cors({
     origin: ['http://localhost:3000', 'https://creative-kindly-jennet.ngrok-free.app'], // or your frontend's current domain
     credentials: true, // this allows session cookies to be sent back and forth
 }));
-app.set("trust proxy",1); 
+app.set("trust proxy", 1);
 
 // App settings and middleware
 app.use(express.urlencoded({ extended: true }));
@@ -43,6 +43,36 @@ app.use(ensureAuthenticated);
 // Routing
 app.use(routes);
 
-// Start server
+// Create HTTP server
 const server = app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
-module.exports = { app, server }; // Export for testing or modular use
+
+// Set up WebSocket server
+const { Server } = require('socket.io');
+const io = new Server(server, {
+    cors: {
+        origin: ['http://localhost:3000', 'https://creative-kindly-jennet.ngrok-free.app'],
+        methods: ['GET', 'POST'],
+        credentials: true
+    }
+});
+
+// WebSocket connection handler
+io.on('connection', (socket) => {
+    console.log('Client connected:', socket.id);
+
+    // Handle authentication
+    socket.on('authenticate', (token) => {
+        // Verify token and associate socket with user
+        // TODO: Implement proper authentication
+        console.log('Client authenticated:', socket.id);
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected:', socket.id);
+    });
+});
+
+// Make io available to other modules
+app.set('io', io);
+
+module.exports = { app, server, io };

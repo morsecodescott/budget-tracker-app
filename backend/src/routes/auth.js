@@ -41,13 +41,13 @@ router.post('/register', async (req, res) => {
 
 
 router.post('/login', (req, res, next) => {
-    
+
     passport.authenticate('local', (err, user, info) => {
         if (err) {
             console.error("Authentication error:", err); // Log any errors that occur during authentication
             return res.status(500).json({ success: false, message: 'Authentication error.', error: err.message });
         }
-        
+
         if (!user) {
             console.log("Login failed, no user found:", info); // Log the info message if no user is found
             return res.status(401).json({ success: false, message: info.message });
@@ -59,7 +59,21 @@ router.post('/login', (req, res, next) => {
                 return res.status(500).json({ success: false, message: 'Failed to log in.', error: err.message });
             }
             console.log("Login successful for user:", user); // Log the successful login
-            return res.status(201).json({ success: true, message: 'Login successful!', user: { id: user.id, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role  } });
+            // Get the session token from cookies
+            const token = req.sessionID;
+
+            return res.status(201).json({
+                success: true,
+                message: 'Login successful!',
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    role: user.role
+                },
+                token: token
+            });
         });
     })(req, res, next);
 });
@@ -72,7 +86,7 @@ router.post('/login', (req, res, next) => {
 // Logout route - GET
 router.get('/logout', (req, res) => {
     req.logout(() => {
-      
+
     });
 });
 

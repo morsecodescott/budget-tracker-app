@@ -3,28 +3,47 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 const AuthContext = createContext({
   user: null,
   isLoggedIn: false,
-  login: () => {},
-  logout: () => {},
+  login: () => { },
+  logout: () => { },
 });
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem('user')) || null;
-    } catch {
-      return null;
-    }
-  });
+  const [user, setUser] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const login = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData));
-    setUser(userData);
+  useEffect(() => {
+    try {
+      const storedUser = JSON.parse(localStorage.getItem('user'));
+      const token = localStorage.getItem('token');
+      if (storedUser && token) {
+        setUser(storedUser);
+        setIsLoggedIn(true);
+      }
+    } catch {
+      setUser(null);
+      setIsLoggedIn(false);
+    }
+  }, []);
+
+  const login = (userData, token) => {
+    return new Promise((resolve) => {
+      console.log('Logging in user:', userData);
+      localStorage.setItem('user', JSON.stringify(userData));
+      localStorage.setItem('token', token);
+      console.log('Setting user state...');
+      // Force state update by creating new object
+      setUser({ ...userData });
+      setIsLoggedIn(true);
+      console.log('Login complete - current user:', userData);
+      resolve();
+    });
   };
 
   const logout = () => {
     localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setUser(null);
   };
 
@@ -41,8 +60,6 @@ export const AuthProvider = ({ children }) => {
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
-
-  const isLoggedIn = Boolean(user);
 
   return (
     <AuthContext.Provider value={{ user, isLoggedIn, login, logout }}>

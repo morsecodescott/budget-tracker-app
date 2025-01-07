@@ -22,7 +22,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import { Select, MenuItem, FormControl, InputLabel } from "@mui/material";
 
 
-
 const Dashboard = () => {
   const [budgetItems, setBudgetItems] = useState([]);
   const [addBudgetOpen, setAddBudgetOpen] = useState(false);
@@ -93,6 +92,7 @@ const Dashboard = () => {
     fetchBudgetItems();
     fetchCategories();
     fetchAccountBalances();
+
   }, []);
 
 
@@ -189,7 +189,7 @@ const Dashboard = () => {
       });
 
       setTransactions(data.transactions);
-      console.log(data.transactions);
+
     } catch (error) {
       console.error("Error fetching transactions:", error);
     }
@@ -277,12 +277,15 @@ const Dashboard = () => {
     const aggregatedByCategory =
       title === "Unbudgeted"
         ? transactions.reduce((acc, transaction) => {
-          const categoryName =
-            transaction.category?.parentCategoryDetails?.name ||
-            transaction.category.name;
+          const categoryName = transaction.category.name;
+          const parentCategoryName = transaction.category.parentCategoryDetails.name;
 
           if (!acc[categoryName]) {
-            acc[categoryName] = { amount: 0, categoryId: transaction.category._id };
+            acc[categoryName] = {
+              amount: 0,
+              categoryId: transaction.category._id,
+              parentCategoryName: parentCategoryName
+            };
           }
           acc[categoryName].amount += transaction.amount;
           return acc;
@@ -307,8 +310,8 @@ const Dashboard = () => {
           <Box sx={{ clear: "both" }} />
           <Divider sx={{ mb: 2 }} />
 
-          {title === "Unbudgeted" &&
-            aggregatedByCategory &&
+          {title === "Unbudgeted" && aggregatedByCategory && (
+
             Object.entries(aggregatedByCategory).map(([categoryName, data]) => (
               <Box key={data.categoryId} sx={{ mb: 2 }}>
                 <Typography
@@ -318,14 +321,15 @@ const Dashboard = () => {
                   }}
                   onClick={() => handleUnbudgetedClick(data.categoryId)}
                 >
-                  {categoryName}
+                  {data.parentCategoryName}: {categoryName}
                 </Typography>
                 <Typography variant="body2" sx={{ float: "right" }}>
                   ${data.amount.toFixed(2)}
                 </Typography>
                 <Box sx={{ clear: "both" }} />
               </Box>
-            ))}
+            ))
+          )}
           {title !== "Unbudgeted" &&
             items.map((item) => {
               const transactionSum = transactions
@@ -493,7 +497,7 @@ const Dashboard = () => {
 
           {renderSection(
             "Unbudgeted",
-            categorizedTransactions.unbudgeted.reduce((sum, t) => sum + t.amount, 0),
+            Math.round(categorizedTransactions.unbudgeted.reduce((sum, t) => sum + t.amount, 0)),
             [],
             categorizedTransactions.unbudgeted,
             "unbudgeted"

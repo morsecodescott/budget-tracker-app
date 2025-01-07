@@ -81,7 +81,7 @@ const PlaidTestPage = () => {
       console.error('Error setting access token:', error.message);
     }
   };
-  
+
 
   // Handle accordion expand/collapse and fetch transactions
   const handleAccordionChange = (account) => async (event, isExpanded) => {
@@ -102,6 +102,24 @@ const PlaidTestPage = () => {
     setPage(0);
   };
 
+  // Function to start Plaid Link session in update mode
+  const startUpdateMode = async () => {
+    if (!accessToken) {
+      console.error('Access token is required to start update mode');
+      return;
+    }
+    try {
+      const response = await axios.post('/plaid/create_link_token', { access_token: accessToken, mode: 'update' });
+      const updateLinkToken = response.data.link_token;
+      if (updateLinkToken) {
+        // Assuming PlaidLinkButton can handle update mode
+        setLinkToken(updateLinkToken);
+      }
+    } catch (error) {
+      console.error('Failed to start update mode:', error.message);
+    }
+  };
+
   return (
     <Container>
       <Typography variant="h4" sx={{ margin: 2 }}>Plaid Integration Test</Typography>
@@ -117,7 +135,7 @@ const PlaidTestPage = () => {
       {loading ? (
         <CircularProgress />
       ) : linkToken ? (
-        <PlaidLinkButton linkToken={linkToken} onSuccess={handleSuccess} />
+        <PlaidLinkButton linkToken={linkToken} accessToken={accessToken} onSuccess={handleSuccess} />
       ) : (
         <Typography color="error">Link token not fetched yet.</Typography>
       )}
@@ -134,7 +152,16 @@ const PlaidTestPage = () => {
         fullWidth
       />
 
-      {/* Webhook Input */}
+      {/* Button to start Plaid Link session in update mode */}
+      <Button
+        variant="contained"
+        color="secondary"
+        onClick={startUpdateMode}
+        sx={{ mt: 2, mb: 2 }}
+      >
+        Start Update Mode
+      </Button>
+
       <TextField
         variant="outlined"
         margin="normal"
@@ -156,11 +183,11 @@ const PlaidTestPage = () => {
               onChange={handleAccordionChange(account)}
             >
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Typography>{account.accountName} - {account.accountType}</Typography>
+                <Typography>{item.institutionName} - {account.accountName} - {account.accountType} - {item.accessToken}</Typography>
               </AccordionSummary>
               <AccordionDetails>
                 {/* Transaction Table */}
-                
+
                 {transactions.length > 0 ? (
                   <TableContainer component={Paper}>
                     <Table size="small">
@@ -181,11 +208,11 @@ const PlaidTestPage = () => {
                               <TableCell>{transaction.name}</TableCell>
                               <TableCell align='right'>{transaction.amount}</TableCell>
                               <TableCell>{transaction.category.name}</TableCell>
-                              <TableCell>{transaction.plaidCategory.detailed|| "empty"}</TableCell>
+                              <TableCell>{transaction.plaidCategory.detailed || "empty"}</TableCell>
                             </TableRow>
-                            
+
                           ))}
-                          
+
                       </TableBody>
                     </Table>
                     {/* Pagination */}
