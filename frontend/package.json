@@ -26,9 +26,11 @@
   "proxy": "http://localhost:4000",
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "cross-env NODE_ENV=production react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "validate-env": "node scripts/validateEnv.js",
+    "generate-env-example": "node scripts/generateEnvExample.js"
   },
   "eslintConfig": {
     "extends": [
@@ -47,5 +49,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3"
   }
 }
