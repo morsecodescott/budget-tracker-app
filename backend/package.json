@@ -16,8 +16,8 @@
     "socket.io": "^4.8.1"
   },
   "scripts": {
-    "start": "NODE_ENV=production node server.js",
-    "dev": "NODE_ENV=development nodemon -e js server.js"
+    "start": "cross-env NODE_ENV=production node server.js",
+    "dev": "cross-env NODE_ENV=development nodemon -e js server.js"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
