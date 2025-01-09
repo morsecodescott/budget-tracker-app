@@ -3,6 +3,7 @@
 const express = require('express');
 const cors = require('cors');
 const passport = require('passport');
+const path = require('path');
 require('dotenv').config({
     path: process.env.NODE_ENV === 'production'
         ? './.env.production'
