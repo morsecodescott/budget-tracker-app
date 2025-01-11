@@ -9,6 +9,8 @@ const plaidRoutes = require('./plaid');
 const servicesRoutes = require('./services');
 const plaidCategoryRoutes = require('./plaidCategory');
 const userRoutes = require('./users');
+const healthCheckRoutes = require('./healthCheck');
+
 
 
 
@@ -19,6 +21,7 @@ router.use('/plaid', plaidRoutes);
 router.use('/services', servicesRoutes);
 router.use('/plaid-categories', plaidCategoryRoutes);
 router.use('/users', userRoutes);
+router.use('/health-check', healthCheckRoutes);
 
 
 module.exports = router;
