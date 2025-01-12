@@ -16,6 +16,7 @@ import TransactionsPage from './components/Transactions';
 import Trends from './components/Trends';
 import PlaidTestPage from './components/PlaidTestPage';
 import ThemeDemo from './components/themedemo';
+import Accounts from './components/Accounts';
 
 
 
@@ -90,6 +91,7 @@ function App() {
         <Route path="/admin/manage-plaid-categories" element={<PlaidCategoryManagement />} />
         <Route path="/plaid-test" element={<PlaidTestPage />} />
         <Route path="/themedemo" element={<ThemeDemo />} />
+        <Route path="/linked-accounts" element={<Accounts />} />
       </Routes>
     </Router>
 

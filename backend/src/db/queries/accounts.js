@@ -36,6 +36,7 @@ const createAccounts = async (plaidItemId, accounts) => {
                 accountSubType,
                 availableBalance,
                 currentBalance,
+                mask,
             },
             { new: true, upsert: true } // upsert: creates a new account if it doesn't exist
         );
@@ -103,5 +104,5 @@ module.exports = {
     retrieveAccountByPlaidAccountId,
     retrieveAccountsByItemId,
     retrieveAccountsByUserId,
-    
+
 };
