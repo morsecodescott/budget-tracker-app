@@ -134,8 +134,10 @@ router.post('/set_access_token', async (request, response) => {
 
 router.delete('/items/:itemId', async (req, res) => {
   const { itemId } = req.params;
+  const userId = req.user.id;
+  console.log("Deleting item: ", itemId, userId);
   try {
-    await deleteItem(itemId); // Assuming deleteItem is your backend function to delete an item
+    await deleteItem(itemId, userId);
 
     res.status(200).send({ message: 'Item deleted successfully' });
   } catch (error) {
@@ -364,7 +366,7 @@ router.get('/accounts', async (req, res) => {
     const accounts = items.flatMap(item =>
       item.accounts.map(account => ({
         _id: account._id,
-        plaidItemId: item._id,
+        itemId: item._id,
         institutionId: item.institutionId,
         institutionName: item.institutionName,
         accountName: account.accountName,
