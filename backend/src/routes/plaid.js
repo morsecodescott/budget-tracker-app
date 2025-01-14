@@ -134,8 +134,10 @@ router.post('/set_access_token', async (request, response) => {
 
 router.delete('/items/:itemId', async (req, res) => {
   const { itemId } = req.params;
+  const userId = req.user.id;
+  console.log("Deleting item: ", itemId, userId);
   try {
-    await deleteItem(itemId); // Assuming deleteItem is your backend function to delete an item
+    await deleteItem(itemId, userId);
 
     res.status(200).send({ message: 'Item deleted successfully' });
   } catch (error) {
@@ -345,22 +347,43 @@ router.get('/transactions', async (req, res) => {
 });
 
 
-
-
-
-
-
-
-
-
-
-
 // Utility function to fetch account IDs for the user
 async function getPlaidAccountIdsForUser(userId) {
   const items = await mongoose.model('PlaidItem').find({ userId }).populate('accounts');
   return items.flatMap(item => item.accounts.map(account => account._id));
 }
 
+
+// GET /plaid/accounts - Get all linked accounts for a user
+router.get('/accounts', async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Find all PlaidItems for the user and populate their accounts
+    const items = await PlaidItem.find({ userId }).populate('accounts');
+
+    // Flatten and transform the accounts data
+    const accounts = items.flatMap(item =>
+      item.accounts.map(account => ({
+        _id: account._id,
+        itemId: item._id,
+        institutionId: item.institutionId,
+        institutionName: item.institutionName,
+        accountName: account.accountName,
+        accountType: account.accountType,
+        accountSubType: account.accountSubType,
+        availableBalance: account.availableBalance,
+        currentBalance: account.currentBalance,
+        mask: account.mask
+      }))
+    );
+
+    res.json(accounts);
+  } catch (error) {
+    console.error('Error fetching accounts:', error);
+    res.status(500).json({ error: 'Failed to retrieve accounts' });
+  }
+});
 
 // GET /plaid/accounts/summary
 router.get('/accounts/summary', async (req, res) => {

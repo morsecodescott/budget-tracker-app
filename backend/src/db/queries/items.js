@@ -1,4 +1,7 @@
-const PlaidItem = require('../../models/PlaidItem'); // Mongoose model for items
+const PlaidItem = require('../../models/PlaidItem');
+const PlaidAccount = require('../../models/PlaidAccount');
+const plaidClient = require('../../config/plaidClient');
+const { deleteTransactionsByAccountId } = require('./transactions');
 
 /**
  * Creates a single item.
@@ -23,7 +26,7 @@ const createItem = async (
     userId,
     status: 'good' // Assuming 'good' status when item is created
   });
-  
+
   return await newItem.save(); // Mongoose returns the saved document
 };
 
@@ -118,19 +121,75 @@ const updateItemTransactionsCursor = async (plaidItemId, transactionsCursor) => 
   return item;
 };
 
+const mongoose = require('mongoose');
+
 /**
- * Removes a single item by its MongoDB _id and deletes associated accounts and transactions.
+ * Removes a single item by its MongoDB _id, removes it from Plaid, and deletes associated accounts and transactions.
  *
  * @param {string} itemId - The MongoDB ObjectId of the PlaidItem.
+ * @param {string} userId - The user ID to verify ownership
+ * @returns {Object} The deleted item information and operation status
  */
-const deleteItem = async (itemId) => {
-  const result = await PlaidItem.findByIdAndDelete(itemId);
-  if (!result) throw new Error('Item not found');
+const deleteItem = async (itemId, userId) => {
+  // Validate ObjectId format
+  if (!mongoose.Types.ObjectId.isValid(itemId)) {
+    throw new Error('Invalid item ID format');
+  }
 
-  // Delete associated accounts and transactions
-  await deleteAccountsByItemId(itemId);
+  let item;
+  let plaidResponse = null;
+  let deleteResult = null;
+  let accountsDeleted = false;
 
-  return result;
+  try {
+    // Find the item and verify ownership
+    console.log("Searching for: ", itemId, userId);
+    item = await PlaidItem.findOne({ _id: itemId, userId });
+    if (!item) throw new Error('Item not found');
+
+    try {
+      // Attempt to remove item from Plaid
+      plaidResponse = await plaidClient.itemRemove({
+        access_token: item.accessToken
+      });
+    } catch (error) {
+      // If Plaid API fails with "item not found" error, continue
+      if (error.response?.data?.error_message?.includes('The Item you requested cannot be found')) {
+        console.log('Plaid item not found, continuing with local cleanup');
+      } else {
+        throw error;
+      }
+    }
+
+    // Delete associated accounts and transactions
+    await deleteAccountsByItemId(itemId);
+    accountsDeleted = true;
+
+    // Delete the item from our database
+    deleteResult = await PlaidItem.deleteOne({ _id: itemId });
+
+    return {
+      success: true,
+      deletedItem: item,
+      plaidResponse,
+      deleteResult,
+      accountsDeleted
+    };
+  } catch (error) {
+    // If accounts weren't deleted yet, try to delete them
+    if (!accountsDeleted && item) {
+      try {
+        await deleteAccountsByItemId(itemId);
+      } catch (accountsError) {
+        console.error('Failed to delete accounts:', accountsError);
+      }
+    }
+
+    if (error.response?.data?.error_code) {
+      throw new Error(`Plaid API error: ${error.response.data.error_message}`);
+    }
+    throw new Error(`Database operation failed: ${error.message}`);
+  }
 }
 
 
@@ -139,17 +198,20 @@ const deleteItem = async (itemId) => {
  * Deletes all accounts associated with an itemId (MongoDB _id).
  *
  * @param {string} itemId - The MongoDB ObjectId of the PlaidItem.
+ * @param {Object} [session] - Optional mongoose session for transactions
  */
-const deleteAccountsByItemId = async (itemId) => {
-  const accounts = await PlaidAccount.find({ plaidItemId: itemId });
+const deleteAccountsByItemId = async (itemId, session = null) => {
+  const findOptions = session ? { session } : {};
+  const accounts = await PlaidAccount.find({ plaidItemId: itemId }, null, findOptions);
 
   // Delete all associated transactions for each account
   for (const account of accounts) {
-    await deleteTransactionsByAccountId(account._id);
+    await deleteTransactionsByAccountId(account._id, session);
   }
 
   // Now, delete all accounts
-  const result = await PlaidAccount.deleteMany({ plaidItemId: itemId });
+  const deleteOptions = session ? { session } : {};
+  const result = await PlaidAccount.deleteMany({ plaidItemId: itemId }, deleteOptions);
   return result;
 };
 
