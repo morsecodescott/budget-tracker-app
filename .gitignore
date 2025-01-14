@@ -6,3 +6,4 @@ cline_docs/
 build/
 coverage/
 *.test.js
+*.spec.js
