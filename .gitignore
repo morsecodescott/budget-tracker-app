@@ -7,3 +7,4 @@ build/
 coverage/
 *.test.js
 *.spec.js
+jest.config.js
