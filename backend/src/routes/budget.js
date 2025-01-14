@@ -3,6 +3,13 @@ const express = require('express');
 const router = express.Router();
 const Budget = require('../models/Budget');
 
+// Helper function to normalize date to first of month in UTC
+function normalizeToFirstOfMonth(date) {
+  const d = new Date(date);
+  // Create date in UTC to avoid timezone shifts
+  return new Date(Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0));
+}
+
 // Route to list all budget items
 router.get('/', async (req, res) => {
   console.log('GET - /budget ');
@@ -17,7 +24,7 @@ router.get('/', async (req, res) => {
         }
       })
       .sort({ type: 1, 'category.name': 1 })  // Sorts by 'type' and then by 'category.name'
-      
+
     res.json(budgetItems);
   } catch (err) {
     res.status(500).send(err.message);
@@ -27,7 +34,10 @@ router.get('/', async (req, res) => {
 // Route to add a new budget item
 router.post('/', async (req, res) => {
   console.log('POST - /budget ');
-  const { period, category , description, amount, frequency, recurrance  } = req.body;
+  const { period, category, description, amount, frequency, recurrance } = req.body;
+
+  // Normalize the period to first of month
+  const normalizedPeriod = normalizeToFirstOfMonth(period);
   try {
     // Create a new Budget item using the request data
     const newBudgetItem = new Budget({
@@ -36,7 +46,7 @@ router.post('/', async (req, res) => {
       frequency,
       description,
       category,
-      period,
+      period: normalizedPeriod,
       recurrance
     });
 
@@ -44,17 +54,17 @@ router.post('/', async (req, res) => {
     const savedItem = await newBudgetItem.save();
 
     // If successful, return the saved item along with a success message
-    res.status(201).json({ 
-      success: true, 
-      message: 'Budget item was added successfully!', 
-      item: savedItem 
+    res.status(201).json({
+      success: true,
+      message: 'Budget item was added successfully!',
+      item: savedItem
     });
   } catch (err) {
     // If an error occurs, return the error message
-    res.status(400).json({ 
-      success: false, 
-      message: 'Failed to add budget item.', 
-      error: err.message 
+    res.status(400).json({
+      success: false,
+      message: 'Failed to add budget item.',
+      error: err.message
     });
   }
 });
@@ -67,9 +77,12 @@ router.put('/:id', async (req, res) => {
   console.log('PUT - /budget ');
   const { id } = req.params;
   const { period, amount, frequency, description, category, recurrance } = req.body;
+
+  // Normalize the period to first of month
+  const normalizedPeriod = normalizeToFirstOfMonth(period);
   try {
     const updatedBudgetItem = await Budget.findByIdAndUpdate(id, {
-      period,
+      period: normalizedPeriod,
       amount,
       frequency,
       description,
@@ -105,4 +118,3 @@ router.delete('/delete/:id', async (req, res) => {
 
 
 module.exports = router;
-

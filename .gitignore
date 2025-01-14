@@ -1,5 +1,5 @@
 .env*
 node_modules
 start.sh
-cline_docs
 .clinerules
+cline_docs

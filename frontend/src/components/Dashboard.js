@@ -53,9 +53,9 @@ const Dashboard = () => {
   const handleCategoryClick = (categoryId, isParentCategory = false) => {
     const startDate = new Date(selectedPeriod).toISOString();
     const endDate = new Date(
-      Date.UTC(
-        new Date(selectedPeriod).getUTCFullYear(),
-        new Date(selectedPeriod).getUTCMonth() + 1,
+      Date(
+        new Date(selectedPeriod).getFullYear(),
+        new Date(selectedPeriod).getMonth() + 1,
         0
       )
     ).toISOString();
@@ -72,9 +72,9 @@ const Dashboard = () => {
   const handleUnbudgetedClick = () => {
     const startDate = new Date(selectedPeriod).toISOString();
     const endDate = new Date(
-      Date.UTC(
-        new Date(selectedPeriod).getUTCFullYear(),
-        new Date(selectedPeriod).getUTCMonth() + 1,
+      Date(
+        new Date(selectedPeriod).getFullYear(),
+        new Date(selectedPeriod).getMonth() + 1,
         0
       )
     ).toISOString();
@@ -168,9 +168,9 @@ const Dashboard = () => {
     try {
       const startDate = new Date(period).toISOString();
       const endDate = new Date(
-        Date.UTC(
-          new Date(period).getUTCFullYear(),
-          new Date(period).getUTCMonth() + 1,
+        Date(
+          new Date(period).getFullYear(),
+          new Date(period).getMonth() + 1,
           0
         )
       ).toISOString();
@@ -441,9 +441,10 @@ const Dashboard = () => {
                     .sort((a, b) => new Date(b) - new Date(a))
                     .map((period) => (
                       <MenuItem key={period} value={period}>
-                        {new Date(period).toLocaleDateString("en-US", {
+                        {new Date(period + 'T00:00:00Z').toLocaleDateString("en-US", {
                           year: "numeric",
                           month: "long",
+                          timeZone: 'UTC'
                         })}
                       </MenuItem>
                     ))}
