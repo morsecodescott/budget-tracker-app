@@ -1,8 +1,8 @@
 .env*
-/node_modules
+node_modules/
 start.sh
 .clinerules
-cline_docs
-/build
-/coverage
+cline_docs/
+build/
+coverage/
 *.test.js
