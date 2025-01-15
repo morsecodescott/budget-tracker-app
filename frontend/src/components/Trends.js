@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
     Container,
     Grid,
@@ -28,7 +27,6 @@ import ChartByCategory from './charts/ChartByCategory';
 import ChartByMerchant from './charts/ChartByMerchant';
 
 const Trends = () => {
-    const navigate = useNavigate();
     const [transactions, setTransactions] = useState([]);
     const [dateRange, setDateRange] = useState({
         startDate: new Date(new Date().setDate(new Date().getDate() - 180)),

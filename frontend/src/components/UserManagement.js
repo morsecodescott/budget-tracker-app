@@ -19,7 +19,6 @@ import {
   Alert,
 } from '@mui/material';
 import Breadcrumbs from "./Breadcrumbs";
-import { useNavigate } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
@@ -29,7 +28,6 @@ import CloseIcon from '@mui/icons-material/Close'; // For close button
 import axios from 'axios';
 
 const UserManagement = () => {
-  const navigate = useNavigate();
 
   // State variables
   const [users, setUsers] = useState([]); // Stores the list of users

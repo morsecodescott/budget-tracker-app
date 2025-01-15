@@ -29,7 +29,6 @@ import {
 import Breadcrumbs from "./Breadcrumbs";
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -46,7 +45,7 @@ const CategoryManagement = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [isEditing, setIsEditing] = useState(false);
-  const navigate = useNavigate();
+
 
   // Breadcrumbs array
   const breadcrumbs = [

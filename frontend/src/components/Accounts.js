@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axiosConfig';
-import { useNavigate } from 'react-router-dom';
 import {
     Box,
     Card,
@@ -36,7 +35,6 @@ const Accounts = () => {
     const [collapsedInstitutions, setCollapsedInstitutions] = useState([]);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [itemToUnlink, setItemToUnlink] = useState(null);
-    const navigate = useNavigate();
 
     // Breadcrumbs array
     const breadcrumbs = [

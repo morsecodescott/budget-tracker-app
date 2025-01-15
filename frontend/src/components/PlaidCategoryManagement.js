@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
   Container,
-  Typography,
   Table,
   TableBody,
   TableCell,
@@ -23,13 +22,11 @@ import {
   CardContent
 } from '@mui/material';
 import Breadcrumbs from "./Breadcrumbs";
-import { useNavigate } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 
 const PlaidCategoryManagement = () => {
-  const navigate = useNavigate();
   const [plaidCategories, setPlaidCategories] = useState([]);
   const [categories, setCategories] = useState([]);
   const [editingRow, setEditingRow] = useState(null);

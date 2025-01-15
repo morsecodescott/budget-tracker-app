@@ -13,9 +13,6 @@ import {
   Paper,
   CircularProgress,
   Container,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
   Grid,
   FormControl,
   InputLabel,
@@ -28,7 +25,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Autocomplete } from "@mui/material";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import { useNavigate } from 'react-router-dom';
+
 
 const TransactionsPage = ({ userId }) => {
   const location = useLocation();
@@ -46,13 +43,9 @@ const TransactionsPage = ({ userId }) => {
   const [categories, setCategories] = useState([]);
   const [budgetFilter, setBudgetFilter] = useState("all"); // New state for budget filter
   const isInitialized = useRef(false);
-  const navigate = useNavigate();
 
-  function normalizeDateToUTC(date) {
-    if (!date) return null;
-    const utcDate = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-    return utcDate;
-  }
+
+
 
   function toLocalDate(date) {
     if (!date) return null;
