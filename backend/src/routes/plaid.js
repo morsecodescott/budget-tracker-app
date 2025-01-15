@@ -230,13 +230,14 @@ router.post('/create_plaid_item', async (request, response) => {
 router.get('/transactions', async (req, res) => {
   const { startDate, endDate, page, rowsPerPage, category, budgetFilter, transactionType } = req.query;
   const userId = req.user._id;
-
+  console.log("Transactions query: ", startDate, endDate);
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     return res.status(400).json({ error: 'Invalid userId provided' });
   }
 
   const start = startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const end = endDate ? new Date(endDate) : new Date();
+  console.log("Transactions query after parsing: ", start, end);
 
   try {
     const plaidAccountIds = await getPlaidAccountIdsForUser(userId);

@@ -53,12 +53,11 @@ const Dashboard = () => {
   const handleCategoryClick = (categoryId, isParentCategory = false) => {
     const startDate = new Date(selectedPeriod).toISOString();
     const endDate = new Date(
-      Date(
-        new Date(selectedPeriod).getFullYear(),
-        new Date(selectedPeriod).getMonth() + 1,
-        0
-      )
+      new Date(selectedPeriod).getFullYear(),
+      new Date(selectedPeriod).getMonth() + 2,
+      0
     ).toISOString();
+
 
     navigate("/transactions", {
       state: {
@@ -72,11 +71,9 @@ const Dashboard = () => {
   const handleUnbudgetedClick = () => {
     const startDate = new Date(selectedPeriod).toISOString();
     const endDate = new Date(
-      Date(
-        new Date(selectedPeriod).getFullYear(),
-        new Date(selectedPeriod).getMonth() + 1,
-        0
-      )
+      new Date(selectedPeriod).getFullYear(),
+      new Date(selectedPeriod).getMonth() + 2,
+      0
     ).toISOString();
 
     navigate("/transactions", {
@@ -168,13 +165,11 @@ const Dashboard = () => {
     try {
       const startDate = new Date(period).toISOString();
       const endDate = new Date(
-        Date(
-          new Date(period).getFullYear(),
-          new Date(period).getMonth() + 1,
-          0
-        )
+        new Date(period).getFullYear(),
+        new Date(period).getMonth() + 2,
+        0
       ).toISOString();
-
+      console.log("Fetching on Dashboard Using Dates:", startDate, endDate);
       const { data } = await axios.get("/plaid/transactions", {
         params: { startDate, endDate },
       });
@@ -278,8 +273,7 @@ const Dashboard = () => {
       title === "Unbudgeted"
         ? transactions.reduce((acc, transaction) => {
           const categoryName = transaction.category.name;
-          const parentCategoryName = transaction.category.parentCategoryDetails.name;
-
+          const parentCategoryName = transaction.category.parentCategoryDetails?.name || "missing";
           if (!acc[categoryName]) {
             acc[categoryName] = {
               amount: 0,

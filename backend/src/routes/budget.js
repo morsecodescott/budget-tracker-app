@@ -5,9 +5,9 @@ const Budget = require('../models/Budget');
 
 // Helper function to normalize date to first of month in UTC
 function normalizeToFirstOfMonth(date) {
+  // Parse input date string and create UTC date
   const d = new Date(date);
-  // Create date in UTC to avoid timezone shifts
-  return new Date(Date(d.getFullYear(), d.getMonth(), 1, 0, 0, 0, 0));
+  return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1, 0, 0, 0, 0));
 }
 
 // Route to list all budget items
