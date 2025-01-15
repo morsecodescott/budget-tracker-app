@@ -22,12 +22,11 @@ import {
   Box,
   Typography,
   Container,
-  Breadcrumbs,
-  Link,
   IconButton,
   Card,
   CardContent
 } from '@mui/material';
+import Breadcrumbs from "./Breadcrumbs";
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -51,17 +50,9 @@ const CategoryManagement = () => {
 
   // Breadcrumbs array
   const breadcrumbs = [
-    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-      sx={{ cursor: 'pointer' }}>
-      Home
-    </Link>,
-    <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/admin')} component="button"
-      sx={{ cursor: 'pointer' }}>
-      Admin Dashboard
-    </Link>,
-    <Typography key="categories" color="text.primary">
-      Manage Categories
-    </Typography>,
+    { label: "Home", path: "/" },
+    { label: "Admin Dashboard", path: "/admin" },
+    { label: "Manage Categories", path: "" }
   ];
 
 
@@ -173,9 +164,7 @@ const CategoryManagement = () => {
   return (
     <Container maxWidth="md" >
       {/* Breadcrumbs */}
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-        {breadcrumbs}
-      </Breadcrumbs>
+      <Breadcrumbs items={breadcrumbs} />
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
         <Button size="small" color="primary" onClick={() => handleOpen()} variant="contained"
           startIcon={<AddCircleIcon />}>

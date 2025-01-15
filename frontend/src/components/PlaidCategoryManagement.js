@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
-  Breadcrumbs,
-  Link,
   Table,
   TableBody,
   TableCell,
@@ -24,6 +22,7 @@ import {
   Card,
   CardContent
 } from '@mui/material';
+import Breadcrumbs from "./Breadcrumbs";
 import { useNavigate } from 'react-router-dom';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
@@ -46,17 +45,9 @@ const PlaidCategoryManagement = () => {
   });
 
   const breadcrumbs = [
-    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-      sx={{ cursor: 'pointer' }}>
-      Home
-    </Link>,
-    <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/admin')} component="button"
-      sx={{ cursor: 'pointer' }}>
-      Admin Dashboard
-    </Link>,
-    <Typography key="users" color="text.primary">
-      Manage Plaid Categories
-    </Typography>,
+    { label: "Home", path: "/" },
+    { label: "Admin Dashboard", path: "/admin" },
+    { label: "Manage Plaid Categories", path: "" }
   ];
 
   useEffect(() => {
@@ -254,9 +245,7 @@ const PlaidCategoryManagement = () => {
 
   return (
     <Container maxWidth="lg" sx={{ backgroundColor: '#f7f7f7', p: 3, borderRadius: 2 }}>
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-        {breadcrumbs}
-      </Breadcrumbs>
+      <Breadcrumbs items={breadcrumbs} />
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
         <Button
           size="small"

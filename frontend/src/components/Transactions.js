@@ -21,9 +21,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Breadcrumbs,
-  Link,
 } from "@mui/material";
+import Breadcrumbs from "./Breadcrumbs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Autocomplete } from "@mui/material";
@@ -69,17 +68,9 @@ const TransactionsPage = ({ userId }) => {
 
   // Breadcrumbs array
   const breadcrumbs = [
-    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-      sx={{ cursor: 'pointer' }}>
-      Home
-    </Link>,
-    <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/dashboard')} component="button"
-      sx={{ cursor: 'pointer' }}>
-      Dashboard
-    </Link>,
-    <Typography key="categories" color="text.primary">
-      Transactions
-    </Typography>,
+    { label: "Home", path: "/" },
+    { label: "Dashboard", path: "/dashboard" },
+    { label: "Transactions", path: "" }
   ];
 
   // Fetch categories only once on mount
@@ -194,9 +185,7 @@ const TransactionsPage = ({ userId }) => {
         </Box>
       ) : (
         <Box p={3}>
-          <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-            {breadcrumbs}
-          </Breadcrumbs>
+          <Breadcrumbs items={breadcrumbs} />
 
           <Grid container spacing={3} sx={{ marginTop: 3, marginBottom: 3 }} >
             <Grid item xs={12} sm={6} md={3}>

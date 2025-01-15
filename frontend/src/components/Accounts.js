@@ -13,8 +13,6 @@ import {
     Button,
     CircularProgress,
     Alert,
-    Breadcrumbs,
-    Link,
     Container,
     IconButton,
     Skeleton,
@@ -24,6 +22,7 @@ import {
     DialogContentText,
     DialogActions,
 } from '@mui/material';
+import Breadcrumbs from "./Breadcrumbs";
 import PlaidLinkButton from './PlaidLinkButton';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -41,17 +40,9 @@ const Accounts = () => {
 
     // Breadcrumbs array
     const breadcrumbs = [
-        <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-            sx={{ cursor: 'pointer' }}>
-            Home
-        </Link>,
-        <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/dashboard')} component="button"
-            sx={{ cursor: 'pointer' }}>
-            Dashboard
-        </Link>,
-        <Typography key="categories" color="text.primary">
-            Accounts
-        </Typography>,
+        { label: "Home", path: "/" },
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "Accounts", path: "" }
     ];
 
     useEffect(() => {
@@ -149,9 +140,7 @@ const Accounts = () => {
     return (
         <Container maxWidth="md">
             <Box p={3}>
-                <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-                    {breadcrumbs}
-                </Breadcrumbs>
+                <Breadcrumbs items={breadcrumbs} />
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold', color: 'primary.main' }}>
                     Linked Accounts
                 </Typography>

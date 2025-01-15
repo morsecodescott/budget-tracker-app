@@ -4,8 +4,6 @@ import {
     Container,
     Grid,
     Typography,
-    Link,
-    Breadcrumbs,
     Box,
     CardContent,
     Divider,
@@ -17,6 +15,7 @@ import {
     Autocomplete,
     CircularProgress
 } from "@mui/material";
+import Breadcrumbs from "./Breadcrumbs";
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -115,18 +114,9 @@ const Trends = () => {
     };
 
     const breadcrumbs = [
-        <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')} component="button"
-            sx={{ cursor: 'pointer' }}>
-            Home
-        </Link>,
-        <Link key="dashboard" underline="hover" color="inherit" onClick={() => navigate('/dashboard')} component="button"
-            sx={{ cursor: 'pointer' }}>
-            Dashboard
-        </Link>,
-
-        <Typography key="trends" color="text.primary">
-            Trends
-        </Typography>,
+        { label: "Home", path: "/" },
+        { label: "Dashboard", path: "/dashboard" },
+        { label: "Trends", path: "" }
     ];
 
     const renderChart = () => {
@@ -147,9 +137,7 @@ const Trends = () => {
             <Grid container direction="row" spacing={2} sx={{ justifyContent: "center", alignItems: "flex-start" }}>
                 <Grid item xs={12} sm={12}>
                     <Box sx={{ p: 2 }}>
-                        <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
-                            {breadcrumbs}
-                        </Breadcrumbs>
+                        <Breadcrumbs items={breadcrumbs} />
                     </Box>
                 </Grid>
                 <Grid item xs={12} sm={3}>
