@@ -35,6 +35,8 @@ const Accounts = () => {
     const [collapsedInstitutions, setCollapsedInstitutions] = useState([]);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [itemToUnlink, setItemToUnlink] = useState(null);
+    const [linkToken, setLinkToken] = useState(null);
+    const [linkTokenError, setLinkTokenError] = useState(null);
 
     // Breadcrumbs array
     const breadcrumbs = [
@@ -45,6 +47,7 @@ const Accounts = () => {
 
     useEffect(() => {
         fetchAccounts();
+        fetchLinkToken();
     }, []);
 
     const fetchAccounts = async () => {
@@ -57,6 +60,17 @@ const Accounts = () => {
             console.error('Error fetching accounts:', err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchLinkToken = async () => {
+        try {
+            const response = await axios.post('/plaid/create_link_token');
+            setLinkToken(response.data.link_token);
+            setLinkTokenError(null);
+        } catch (err) {
+            console.error('Error fetching link token:', err);
+            setLinkTokenError('Failed to initialize Plaid connection. Please try again later.');
         }
     };
 
@@ -126,11 +140,15 @@ const Accounts = () => {
     if (accounts.length === 0) {
         return (
             <Box p={3} textAlign="center">
-                <img src="/empty-state-illustration.svg" alt="No accounts" style={{ width: '200px', marginBottom: '16px' }} />
                 <Typography variant="h6" gutterBottom>
                     No accounts linked yet
                 </Typography>
-                <PlaidLinkButton />
+                {linkTokenError && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {linkTokenError}
+                    </Alert>
+                )}
+                <PlaidLinkButton linkToken={linkToken} />
             </Box>
         );
     }

@@ -10,7 +10,6 @@ const plaidAccountSchema = new mongoose.Schema({
     availableBalance: { type: Number },
     currentBalance: { type: Number },
     limit: { type: Number },
-    transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PlaidTransaction' }]
 });
 
 module.exports = mongoose.model('PlaidAccount', plaidAccountSchema);
