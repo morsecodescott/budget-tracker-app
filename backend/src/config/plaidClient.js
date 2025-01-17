@@ -1,12 +1,16 @@
 // backend/src/config/plaidClient.js
 require('dotenv').config();
-const { Configuration, PlaidApi, Products, PlaidEnvironments} = require('plaid');
+const { Configuration, PlaidApi, Products, PlaidEnvironments } = require('plaid');
 
 const PLAID_CLIENT_ID = process.env.PLAID_CLIENT_ID;
 const PLAID_SECRET = process.env.PLAID_SECRET;
 const PLAID_ENV = process.env.PLAID_ENV || 'sandbox';
 
 
+
+// Supported Plaid products and country codes
+const PLAID_PRODUCTS = [Products.Transactions];
+const PLAID_COUNTRY_CODES = ['US'];
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments[PLAID_ENV],
@@ -22,4 +26,8 @@ const configuration = new Configuration({
 const client = new PlaidApi(configuration);
 
 
-module.exports = client;
+module.exports = {
+  client,
+  PLAID_PRODUCTS,
+  PLAID_COUNTRY_CODES
+};

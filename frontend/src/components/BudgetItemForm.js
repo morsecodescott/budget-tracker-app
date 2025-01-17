@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import {
   Dialog,
   DialogTitle,
@@ -13,8 +14,7 @@ import {
   Select,
   MenuItem,
   InputLabel,
-  Box,
-  Typography
+
 } from '@mui/material';
 import axios from 'axios';
 
@@ -27,8 +27,8 @@ const initialFormState = {
   period: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split('T')[0],
 };
 
-const BudgetItemForm = ({ open, onClose, fetchBudgetItems, categories, itemToEdit }) => {
-  
+const BudgetItemForm = ({ open, onClose, fetchBudgetItems, categories = [], itemToEdit = null }) => {
+
   const [newBudgetItem, setNewBudgetItem] = useState(initialFormState);
 
   // Effect to update state when itemToEdit changes
@@ -43,7 +43,7 @@ const BudgetItemForm = ({ open, onClose, fetchBudgetItems, categories, itemToEdi
     } else {
       setNewBudgetItem(initialFormState);
     }
-  }, [itemToEdit]);  // Removed initialFormState from dependency array
+  }, [itemToEdit]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -57,14 +57,14 @@ const BudgetItemForm = ({ open, onClose, fetchBudgetItems, categories, itemToEdi
       await axios({ method, url, data: newBudgetItem });
       fetchBudgetItems();
       setNewBudgetItem(initialFormState);
-      onClose(); // Close the modal
+      onClose(true); // Close the modal and progress wizard
     } catch (error) {
       console.error('Failed to add budget item:', error);
     }
   };
 
   return (
-    <Dialog open={open} onClose={() => onClose()}>
+    <Dialog open={open} onClose={() => onClose(false)}>
       <DialogTitle>{itemToEdit ? 'Edit Budget' : 'Set a Budget'}</DialogTitle>
       <DialogContent>
         {/* Category Select */}
@@ -78,13 +78,13 @@ const BudgetItemForm = ({ open, onClose, fetchBudgetItems, categories, itemToEdi
             label="Choose a category"
             onChange={handleChange}
           >
-            {categories.map((category) => [
+            {categories?.map((category) => [
               <MenuItem key={category._id} value={category._id} style={{ fontWeight: 'bold' }}>
                 {category.name}
               </MenuItem>,
               ...(category.children ? category.children.map((child) => (
                 <MenuItem key={child._id} value={child._id} style={{ paddingLeft: '30px' }}>
-                    {child.name}
+                  {child.name}
                 </MenuItem>
               )) : [])
             ])}
@@ -161,11 +161,32 @@ const BudgetItemForm = ({ open, onClose, fetchBudgetItems, categories, itemToEdi
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose()}>Cancel</Button>
+        <Button onClick={() => onClose(false)}>Cancel</Button>
         <Button onClick={handleSave}>{itemToEdit ? 'Update' : 'Save'}</Button>
       </DialogActions>
     </Dialog>
   );
+};
+
+BudgetItemForm.propTypes = {
+  open: PropTypes.bool.isRequired,
+  onClose: PropTypes.func.isRequired,
+  fetchBudgetItems: PropTypes.func.isRequired,
+  categories: PropTypes.arrayOf(PropTypes.shape({
+    _id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    children: PropTypes.array
+  })),
+  itemToEdit: PropTypes.shape({
+    _id: PropTypes.string,
+    category: PropTypes.oneOfType([
+      PropTypes.shape({
+        _id: PropTypes.string
+      }),
+      PropTypes.string
+    ]),
+    period: PropTypes.string
+  })
 };
 
 export default BudgetItemForm;

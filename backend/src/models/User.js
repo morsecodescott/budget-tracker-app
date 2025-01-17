@@ -31,9 +31,14 @@ const userSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    plaidItems: [{ 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: 'PlaidItem' }],
+    plaidItems: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PlaidItem'
+    }],
+    onboardingCompleted: {
+        type: Boolean,
+        default: false
+    },
 });
 
 module.exports = mongoose.model('User', userSchema);

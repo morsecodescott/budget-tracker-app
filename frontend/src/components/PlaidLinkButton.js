@@ -1,48 +1,78 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
-import Button from '@mui/material/Button';
-import axios from 'axios'; // Import axios
+import { Button, CircularProgress, Typography, Box } from '@mui/material';
+import axios from 'axios';
 
-const PlaidLinkButton = ({ linkToken, accessToken }) => {
-  const onSuccess = async (public_token, metadata) => {
-    console.log('Plaid public token:', public_token);
-    console.log('Access Token:', accessToken)
-    console.log('Account metadata:', metadata);
+const PlaidLinkButton = ({ onSuccess, onExit, accessToken }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [linkToken, setLinkToken] = useState(null);
 
-    // Here you would send the public_token to your server to exchange it for an access token
-    try {
-      const response = await axios.post('/plaid/set_access_token', {
-        public_token: public_token, // Sending public_token to the server
-        accessToken: accessToken
-      });
-      console.log('Server response:', response.data); // Handling the response from the server
-    } catch (error) {
-      console.error('Error sending public token to server:', error);
-    }
-  };
+  useEffect(() => {
+    const createLinkToken = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const response = await axios.post('/plaid/create_link_token');
+        setLinkToken(response.data.link_token);
+      } catch (error) {
+        console.error('Error creating link token:', error);
+        setError('Failed to create link token. Please try again.');
+        setIsLoading(false);
+      }
+    };
 
-  const onExit = () => {
-    console.log('User exited Plaid Link.');
-  };
+    createLinkToken();
+  }, []);
 
-  const config = {
+  const config = linkToken ? {
     token: linkToken,
-    onSuccess,
-    onExit,
-  };
+    onSuccess: async (public_token, metadata) => {
+      try {
+        await axios.post('/plaid/set_access_token', {
+          public_token,
+          accessToken
+        });
+        onSuccess(public_token, metadata);
+      } catch (error) {
+        console.error('Error sending public token to server:', error);
+        onExit(error, metadata);
+      }
+    },
+    onExit
+  } : null;
 
-  const { open, ready } = usePlaidLink(config);
+  const { open, ready } = usePlaidLink(config || {});
+
+  // Open Plaid Link when token is ready
+  React.useEffect(() => {
+    if (linkToken && ready) {
+      open();
+      setIsLoading(false);
+    }
+  }, [linkToken, ready, open]);
 
   return (
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => open()}
-      disabled={!ready}
-      sx={{ mt: 2 }}
-    >
-      Connect a bank account
-    </Button>
+    <Box>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={() => open()}
+        disabled={!ready || isLoading}
+        sx={{ mt: 2 }}
+      >
+        {isLoading ? (
+          <CircularProgress size={24} />
+        ) : (
+          'Connect a bank account'
+        )}
+      </Button>
+      {error && (
+        <Typography color="error" sx={{ mt: 1 }}>
+          {error}
+        </Typography>
+      )}
+    </Box>
   );
 };
 
