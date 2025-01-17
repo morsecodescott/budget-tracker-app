@@ -7,23 +7,21 @@ const PlaidLinkButton = ({ onSuccess, onExit, accessToken }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [linkToken, setLinkToken] = useState(null);
+  const [shouldOpen, setShouldOpen] = useState(false);
+  const [tokenExpiration, setTokenExpiration] = useState(null);
 
+  // Clear expired tokens
   useEffect(() => {
-    const createLinkToken = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const response = await axios.post('/plaid/create_link_token');
-        setLinkToken(response.data.link_token);
-      } catch (error) {
-        console.error('Error creating link token:', error);
-        setError('Failed to create link token. Please try again.');
-        setIsLoading(false);
+    const checkTokenExpiration = () => {
+      if (tokenExpiration && Date.now() > tokenExpiration) {
+        setLinkToken(null);
+        setTokenExpiration(null);
       }
     };
 
-    createLinkToken();
-  }, []);
+    const interval = setInterval(checkTokenExpiration, 1000);
+    return () => clearInterval(interval);
+  }, [tokenExpiration]);
 
   const config = linkToken ? {
     token: linkToken,
@@ -39,26 +37,52 @@ const PlaidLinkButton = ({ onSuccess, onExit, accessToken }) => {
         onExit(error, metadata);
       }
     },
-    onExit
+    onExit: (error, metadata) => {
+      // Don't clear token immediately - keep it valid for 2 minutes
+      setTokenExpiration(Date.now() + 120000);
+      onExit(error, metadata);
+      console.log('Plaid link exit:', error, metadata);
+    }
   } : null;
 
   const { open, ready } = usePlaidLink(config || {});
 
-  // Open Plaid Link when token is ready
-  React.useEffect(() => {
-    if (linkToken && ready) {
+  useEffect(() => {
+    if (shouldOpen && ready && linkToken) {
       open();
+      setShouldOpen(false);
+    }
+  }, [shouldOpen, ready, linkToken, open]);
+
+  const handleClick = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      // Only create new token if current one is expired or doesn't exist
+      if (!linkToken || (tokenExpiration && Date.now() > tokenExpiration)) {
+        const response = await axios.post('/plaid/create_link_token');
+        const token = response.data.link_token;
+        setLinkToken(token);
+        setTokenExpiration(Date.now() + 120000); // 2 minute expiration
+      }
+
+      setShouldOpen(true);
+    } catch (error) {
+      console.error('Error creating link token:', error);
+      setError('Failed to create link token. Please try again.');
+    } finally {
       setIsLoading(false);
     }
-  }, [linkToken, ready, open]);
+  };
 
   return (
     <Box>
       <Button
         variant="contained"
         color="primary"
-        onClick={() => open()}
-        disabled={!ready || isLoading}
+        onClick={handleClick}
+        disabled={isLoading}
         sx={{ mt: 2 }}
       >
         {isLoading ? (

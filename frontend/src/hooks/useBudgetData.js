@@ -8,7 +8,13 @@ export const useBudgetData = () => {
     const [transactions, setTransactions] = useState([]);
     const [accountBalances, setAccountBalances] = useState([]);
 
+    const [loadingBudgetItems, setLoadingBudgetItems] = useState(false);
+    const [loadingCategories, setLoadingCategories] = useState(false);
+    const [loadingAccountBalances, setLoadingAccountBalances] = useState(false);
+    const [loadingTransactions, setLoadingTransactions] = useState(false);
+
     const fetchBudgetItems = async () => {
+        setLoadingBudgetItems(true);
         try {
             const { data } = await axios.get("/budget");
             setBudgetItems(data);
@@ -20,28 +26,37 @@ export const useBudgetData = () => {
             setPeriods(uniquePeriods);
         } catch (error) {
             console.error("Error fetching budget items:", error);
+        } finally {
+            setLoadingBudgetItems(false);
         }
     };
 
     const fetchCategories = async () => {
+        setLoadingCategories(true);
         try {
             const response = await axios.get("/categories");
             setCategories(response.data);
         } catch (error) {
             console.error("Failed to fetch categories:", error);
+        } finally {
+            setLoadingCategories(false);
         }
     };
 
     const fetchAccountBalances = async () => {
+        setLoadingAccountBalances(true);
         try {
             const { data } = await axios.get("/plaid/accounts/summary");
             setAccountBalances(data.summary);
         } catch (error) {
             console.error("Error fetching account balances:", error);
+        } finally {
+            setLoadingAccountBalances(false);
         }
     };
 
     const fetchTransactions = async (period) => {
+        setLoadingTransactions(true);
         try {
             const startDate = new Date(period).toISOString();
             const endDate = new Date(
@@ -65,6 +80,8 @@ export const useBudgetData = () => {
             setTransactions(data.transactions);
         } catch (error) {
             console.error("Error fetching transactions:", error);
+        } finally {
+            setLoadingTransactions(false);
         }
     };
 
@@ -80,6 +97,10 @@ export const useBudgetData = () => {
         categories,
         transactions,
         accountBalances,
+        loadingBudgetItems,
+        loadingCategories,
+        loadingAccountBalances,
+        loadingTransactions,
         fetchBudgetItems,
         fetchTransactions,
         fetchCategories,

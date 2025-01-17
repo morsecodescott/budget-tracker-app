@@ -1,8 +1,8 @@
 import React from "react";
-import { Card, CardContent, Typography, Box, Divider } from "@mui/material";
+import { Card, CardContent, Typography, Box, Divider, CircularProgress } from "@mui/material";
 import { Link } from "react-router-dom";
 
-const AccountBalances = ({ balances }) => {
+const AccountBalances = ({ balances, loading }) => {
     return (
         <Card>
             <CardContent>
@@ -10,7 +10,11 @@ const AccountBalances = ({ balances }) => {
                     Account Balances
                 </Typography>
                 <Divider sx={{ mb: 2 }} />
-                {balances.length === 0 ? (
+                {loading ? (
+                    <Box display="flex" justifyContent="center" py={4}>
+                        <CircularProgress />
+                    </Box>
+                ) : balances.length === 0 ? (
                     <Typography>No account balances available</Typography>
                 ) : (
                     balances.map((account, index) => (

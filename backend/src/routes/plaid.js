@@ -172,6 +172,9 @@ router.post('/set_access_token', async (req, res) => {
     plaidItem.accounts = accountIds;
     await plaidItem.save();
 
+    // Invalidate cache
+    await PlaidDbService.invalidateAccountSummaryCache(userId);
+
     res.json({
       access_token: accessTokenToUse,
       item_id: plaidItemId,

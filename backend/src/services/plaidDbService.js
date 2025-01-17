@@ -9,6 +9,8 @@ const PlaidAccount = require('../models/PlaidAccount');
 const PlaidTransaction = require('../models/PlaidTransaction');
 const Budget = require('../models/Budget');
 const mongoose = require('mongoose');
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: 300 }); // 5 minute cache
 
 class PlaidDbService {
     /**
@@ -102,7 +104,13 @@ class PlaidDbService {
      */
     static async getAccountSummary(userId) {
         try {
-            return await PlaidAccount.aggregate([
+            const cacheKey = `accountSummary-${userId}`;
+            const cachedData = cache.get(cacheKey);
+            if (cachedData) {
+                return cachedData;
+            }
+
+            const result = await PlaidAccount.aggregate([
                 {
                     $lookup: {
                         from: "plaiditems",
@@ -121,9 +129,17 @@ class PlaidDbService {
                     }
                 }
             ]);
+
+            cache.set(cacheKey, result);
+            return result;
         } catch (error) {
             throw new Error(`Failed to get account summary: ${error.message}`);
         }
+    }
+
+    static async invalidateAccountSummaryCache(userId) {
+        const cacheKey = `accountSummary-${userId}`;
+        cache.del(cacheKey);
     }
 
     /**

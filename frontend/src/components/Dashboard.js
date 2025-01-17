@@ -75,6 +75,7 @@ const Dashboard = ({ children }) => {
     categories,
     transactions,
     accountBalances,
+    loadingAccountBalances,
     fetchBudgetItems,
     fetchTransactions,
     fetchCategories,
@@ -206,7 +207,7 @@ const Dashboard = ({ children }) => {
           </Grid>
 
           <Grid item xs={12} sm={3}>
-            <AccountBalances balances={accountBalances} />
+            <AccountBalances balances={accountBalances} loading={loadingAccountBalances} />
           </Grid>
 
           <Grid item xs={12} sm={6}>
