@@ -6,7 +6,7 @@ import BudgetItemForm from './BudgetItemForm';
 
 const steps = ['Link Account', 'Set Up Income', 'Set Up Expenses'];
 
-function OnboardingWizard({ onComplete, onSkip, categories, refreshAccountData }) {
+function OnboardingWizard({ onComplete, onSkip, categories, refreshAccountData, userId }) {
     const [activeStep, setActiveStep] = useState(0);
     const [skipped, setSkipped] = useState(new Set());
     const [formOpen, setFormOpen] = useState(true);
@@ -63,10 +63,11 @@ function OnboardingWizard({ onComplete, onSkip, categories, refreshAccountData }
                             Let's connect your bank account
                         </Typography>
                         <PlaidLinkButton
+                            userId={userId}
                             onSuccess={(publicToken, metadata) => {
                                 console.log('Successfully linked account:', metadata);
                                 // Refresh account balances and progress to next step
-                                refreshAccountData();
+                                refreshAccountДata();
                                 handleNext();
                             }}
                             onExit={(error, metadata) => {

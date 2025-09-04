@@ -196,6 +196,7 @@ const Dashboard = ({ children }) => {
           onSkip={handleOnboardingSkip}
           categories={categories}
           refreshAccountData={fetchAccountBalances}
+          userId={user.id}
         />
       )}
       <Container maxWidth="lg">

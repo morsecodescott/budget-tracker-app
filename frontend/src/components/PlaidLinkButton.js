@@ -3,7 +3,7 @@ import { usePlaidLink } from 'react-plaid-link';
 import { Button, CircularProgress, Typography, Box } from '@mui/material';
 import axios from 'axios';
 
-const PlaidLinkButton = ({ onSuccess, onExit, accessToken }) => {
+const PlaidLinkButton = ({ onSuccess, onExit, accessToken, userId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [linkToken, setLinkToken] = useState(null);
@@ -61,7 +61,7 @@ const PlaidLinkButton = ({ onSuccess, onExit, accessToken }) => {
 
       // Only create new token if current one is expired or doesn't exist
       if (!linkToken || (tokenExpiration && Date.now() > tokenExpiration)) {
-        const response = await axios.post('/plaid/create_link_token');
+        const response = await axios.post('/plaid/create_link_token', { userId });
         const token = response.data.link_token;
         setLinkToken(token);
         setTokenExpiration(Date.now() + 120000); // 2 minute expiration
