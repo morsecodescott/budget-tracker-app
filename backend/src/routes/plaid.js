@@ -20,6 +20,8 @@ const { retrieveTransactionsByAccountId } = require('../db/queries/transactions'
 const mongoose = require('mongoose');
 const PlaidTransaction = require('../models/PlaidTransaction');
 const Budget = require('../models/Budget');
+const updateTransactions = require('../update_transactions');
+
 
 // Configure Plaid product types and countries from environment variables
 const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || 'transactions').split(',');
@@ -39,20 +41,24 @@ const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',')
  */
 router.post('/create_link_token', async (req, res) => {
   try {
-    const { access_token, webhook } = req.body;
+    const { access_token } = req.body;
     const userId = req.user.id;
+    const webhook = process.env.PLAID_WEBHOOK_URL;
 
     // Validate required fields
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
     }
 
+    console.log('Sending Link Token Request:', userId, access_token, webhook);
+
+
     // Create link token using service
-    const linkToken = await PlaidApiService.createLinkToken(
+    const linkToken = await PlaidApiService.createLinkToken({
       userId,
       access_token,
       webhook
-    );
+    });
 
     res.json(linkToken);
   } catch (error) {
@@ -174,6 +180,15 @@ router.post('/set_access_token', async (req, res) => {
 
     // Invalidate cache
     await PlaidDbService.invalidateAccountSummaryCache(userId);
+
+    /*     // Sync transactions for new accounts
+        try {
+          const { addedCount, modifiedCount, removedCount } = await updateTransactions(plaidItemId);
+          console.log('Synced transactions after account linking:', addedCount, modifiedCount, removedCount);
+        } catch (error) {
+          console.error('Error syncing transactions after account linking:', error);
+          // Continue with response even if sync fails
+        } */
 
     res.json({
       access_token: accessTokenToUse,

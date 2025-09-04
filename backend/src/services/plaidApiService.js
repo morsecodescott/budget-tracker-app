@@ -23,11 +23,12 @@ class PlaidApiService {
                 country_codes: PLAID_COUNTRY_CODES,
                 language: 'en',
                 access_token: accessToken,
-                webhook: webhook,
+                webhook,
             });
 
             return response.data;
         } catch (error) {
+            console.log("CreateLinkToken error:", error.message);
             throw new Error(`Failed to create link token: ${error.message}`);
         }
     }
