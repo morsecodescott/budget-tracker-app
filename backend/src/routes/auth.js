@@ -5,33 +5,46 @@ const passport = require('passport');
 const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const User = require('../models/User');
 
-// Registration page - GET
-router.get('/register', (req, res) => {
-    res.render('register.ejs');
-});
-
-router.post('/register', async (req, res) => {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
-
-    if (password !== confirmPassword) {
-        req.flash('error_msg', 'Passwords do not match.');
-        return res.redirect('/auth/register');
-    }
+router.post('/signup', async (req, res) => {
+    const { firstName, lastName, email, password } = req.body;
 
     try {
         let user = await User.findOne({ email: email.toLowerCase() });
         if (user) {
-            req.flash('error_msg', 'Email already registered.');
-            return res.redirect('/auth/register');
+            return res.status(400).json({ success: false, message: 'Email already registered.' });
         }
 
-        // Hash password, create user, etc...
+        const hashedPassword = await bcrypt.hash(password, 10);
 
-        req.flash('success_msg', 'Registration successful! Please log in.');
-        res.redirect('/auth/login');
+        user = new User({
+            firstName,
+            lastName,
+            email: email.toLowerCase(),
+            password: hashedPassword,
+        });
+
+        await user.save();
+
+        req.logIn(user, (err) => {
+            if (err) {
+                return res.status(500).json({ success: false, message: 'Failed to log in after registration.' });
+            }
+            const token = req.sessionID;
+            return res.status(201).json({
+                success: true,
+                message: 'Registration successful!',
+                user: {
+                    id: user.id,
+                    email: user.email,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    role: user.role
+                },
+                token: token
+            });
+        });
     } catch (error) {
-        req.flash('error_msg', 'An error occurred, please try again.');
-        res.redirect('/auth/register');
+        res.status(500).json({ success: false, message: 'An error occurred, please try again.' });
     }
 });
 

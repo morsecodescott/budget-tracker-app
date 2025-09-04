@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User'); // Corrected path to User model
 
 // GET: List all users
-router.get('/', async (req, res) => { 
+router.get('/', async (req, res) => {
   try {
     const users = await User.find().select('-password'); // Exclude passwords
     res.json(users);
@@ -50,6 +50,32 @@ router.delete('/:id', async (req, res) => {
     res.json({ message: 'User deleted' });
   } catch (error) {
     res.status(400).json({ message: 'Failed to delete user', error });
+  }
+});
+
+// PATCH: Update onboarding status
+router.patch('/:id/onboarding', async (req, res) => {
+  try {
+    const { completed } = req.body;
+    const updatedUser = await User.findByIdAndUpdate(
+      req.params.id,
+      { onboardingCompleted: completed },
+      { new: true }
+    );
+    res.json(updatedUser);
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to update onboarding status', error });
+  }
+});
+
+// GET: Get onboarding status
+router.get('/:id/onboarding', async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select('onboardingCompleted');
+    res.json(user);
+    console.log("GET Onboarding Status Responmse:", user);
+  } catch (error) {
+    res.status(400).json({ message: 'Failed to get onboarding status', error });
   }
 });
 

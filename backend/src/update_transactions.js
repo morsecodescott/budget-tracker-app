@@ -29,8 +29,8 @@ const fetchTransactionUpdates = async (plaidItemId) => {
   } = await retrieveItemByPlaidItemId(
     plaidItemId
   );
-console.log("Plaid Item ID:", plaidItemId);
-  
+  console.log("Plaid Item ID:", plaidItemId);
+
 
 
 
@@ -85,13 +85,13 @@ const updateTransactions = async (plaidItemId) => {
     accessToken
   } = await fetchTransactionUpdates(plaidItemId);
 
-  
+
   const request = {
     access_token: accessToken,
   };
 
-  const {data: {accounts}} = await plaidClient.accountsGet(request);
-  
+  const { data: { accounts } } = await plaidClient.accountsGet(request);
+
   // Update the DB.
   await createAccounts(plaidItemId, accounts);
   await createOrUpdateTransactions(added.concat(modified));

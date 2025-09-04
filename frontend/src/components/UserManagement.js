@@ -11,8 +11,6 @@ import {
   TablePagination,
   Button,
   TextField,
-  Breadcrumbs,
-  Link,
   IconButton,
   CardContent,
   Card,
@@ -20,7 +18,7 @@ import {
   Snackbar,
   Alert,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import Breadcrumbs from "./Breadcrumbs";
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
@@ -30,7 +28,6 @@ import CloseIcon from '@mui/icons-material/Close'; // For close button
 import axios from 'axios';
 
 const UserManagement = () => {
-  const navigate = useNavigate();
 
   // State variables
   const [users, setUsers] = useState([]); // Stores the list of users
@@ -46,15 +43,9 @@ const UserManagement = () => {
 
   // Breadcrumbs for navigation
   const breadcrumbs = [
-    <Link key="home" underline="hover" color="inherit" onClick={() => navigate('/')}>
-      Home
-    </Link>,
-    <Link key="admin" underline="hover" color="inherit" onClick={() => navigate('/admin')}>
-      Admin Dashboard
-    </Link>,
-    <Typography key="users" color="text.primary">
-      Manage Users
-    </Typography>,
+    { label: "Home", path: "/" },
+    { label: "Admin Dashboard", path: "/admin" },
+    { label: "Manage Users", path: "" }
   ];
 
   // Fetch users on component mount
@@ -225,9 +216,7 @@ const UserManagement = () => {
   return (
     <Container maxWidth="md" sx={{ py: 3 }}>
       {/* Breadcrumbs for navigation */}
-      <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 3 }}>
-        {breadcrumbs}
-      </Breadcrumbs>
+      <Breadcrumbs items={breadcrumbs} />
 
       {/* User Table */}
       <Card>

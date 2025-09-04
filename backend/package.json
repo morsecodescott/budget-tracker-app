@@ -10,6 +10,7 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "mongoose": "^8.2.4",
+    "node-cache": "^5.1.2",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "plaid": "^23.0.0",

@@ -1,48 +1,102 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { usePlaidLink } from 'react-plaid-link';
-import Button from '@mui/material/Button';
-import axios from 'axios'; // Import axios
+import { Button, CircularProgress, Typography, Box } from '@mui/material';
+import axios from 'axios';
 
-const PlaidLinkButton = ({ linkToken, accessToken }) => {
-  const onSuccess = async (public_token, metadata) => {
-    console.log('Plaid public token:', public_token);
-    console.log('Access Token:', accessToken)
-    console.log('Account metadata:', metadata);
+const PlaidLinkButton = ({ onSuccess, onExit, accessToken }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [linkToken, setLinkToken] = useState(null);
+  const [shouldOpen, setShouldOpen] = useState(false);
+  const [tokenExpiration, setTokenExpiration] = useState(null);
 
-    // Here you would send the public_token to your server to exchange it for an access token
+  // Clear expired tokens
+  useEffect(() => {
+    const checkTokenExpiration = () => {
+      if (tokenExpiration && Date.now() > tokenExpiration) {
+        setLinkToken(null);
+        setTokenExpiration(null);
+      }
+    };
+
+    const interval = setInterval(checkTokenExpiration, 1000);
+    return () => clearInterval(interval);
+  }, [tokenExpiration]);
+
+  const config = linkToken ? {
+    token: linkToken,
+    onSuccess: async (public_token, metadata) => {
+      try {
+        await axios.post('/plaid/set_access_token', {
+          public_token,
+          accessToken
+        });
+        onSuccess(public_token, metadata);
+      } catch (error) {
+        console.error('Error sending public token to server:', error);
+        onExit(error, metadata);
+      }
+    },
+    onExit: (error, metadata) => {
+      // Don't clear token immediately - keep it valid for 2 minutes
+      setTokenExpiration(Date.now() + 120000);
+      onExit(error, metadata);
+      console.log('Plaid link exit:', error, metadata);
+    }
+  } : null;
+
+  const { open, ready } = usePlaidLink(config || {});
+
+  useEffect(() => {
+    if (shouldOpen && ready && linkToken) {
+      open();
+      setShouldOpen(false);
+    }
+  }, [shouldOpen, ready, linkToken, open]);
+
+  const handleClick = async () => {
     try {
-      const response = await axios.post('/plaid/set_access_token', {
-        public_token: public_token, // Sending public_token to the server
-        accessToken: accessToken
-      });
-      console.log('Server response:', response.data); // Handling the response from the server
+      setIsLoading(true);
+      setError(null);
+
+      // Only create new token if current one is expired or doesn't exist
+      if (!linkToken || (tokenExpiration && Date.now() > tokenExpiration)) {
+        const response = await axios.post('/plaid/create_link_token');
+        const token = response.data.link_token;
+        setLinkToken(token);
+        setTokenExpiration(Date.now() + 120000); // 2 minute expiration
+      }
+
+      setShouldOpen(true);
     } catch (error) {
-      console.error('Error sending public token to server:', error);
+      console.error('Error creating link token:', error);
+      setError('Failed to create link token. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const onExit = () => {
-    console.log('User exited Plaid Link.');
-  };
-
-  const config = {
-    token: linkToken,
-    onSuccess,
-    onExit,
-  };
-
-  const { open, ready } = usePlaidLink(config);
-
   return (
-    <Button
-      variant="contained"
-      color="primary"
-      onClick={() => open()}
-      disabled={!ready}
-      sx={{ mt: 2 }}
-    >
-      Connect a bank account
-    </Button>
+    <Box>
+      <Button
+        variant="contained"
+        color="primary"
+        onClick={handleClick}
+        disabled={isLoading}
+        sx={{ mt: 2 }}
+      >
+        {isLoading ? (
+          <CircularProgress size={24} />
+        ) : (
+          'Connect a bank account'
+        )}
+      </Button>
+      {error && (
+        <Typography color="error" sx={{ mt: 1 }}>
+          {error}
+        </Typography>
+      )}
+    </Box>
   );
 };
 

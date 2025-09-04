@@ -1,6 +1,7 @@
 //backend/src/routes/index.js
 const express = require('express');
-const router = express.Router();
+const publicRouter = express.Router();
+const protectedRouter = express.Router();
 
 const authRoutes = require('./auth');
 const budgetRoutes = require('./budget');
@@ -11,17 +12,16 @@ const plaidCategoryRoutes = require('./plaidCategory');
 const userRoutes = require('./users');
 const healthCheckRoutes = require('./healthCheck');
 
+// Public routes
+publicRouter.use('/auth', authRoutes);
+publicRouter.use('/health-check', healthCheckRoutes);
 
+// Protected routes
+protectedRouter.use('/budget', budgetRoutes);
+protectedRouter.use('/categories', categoryRoutes);
+protectedRouter.use('/plaid', plaidRoutes);
+protectedRouter.use('/services', servicesRoutes);
+protectedRouter.use('/plaid-categories', plaidCategoryRoutes);
+protectedRouter.use('/users', userRoutes);
 
-
-router.use('/auth', authRoutes);
-router.use('/budget', budgetRoutes);
-router.use('/categories', categoryRoutes);
-router.use('/plaid', plaidRoutes);
-router.use('/services', servicesRoutes);
-router.use('/plaid-categories', plaidCategoryRoutes);
-router.use('/users', userRoutes);
-router.use('/health-check', healthCheckRoutes);
-
-
-module.exports = router;
+module.exports = { publicRouter, protectedRouter };
