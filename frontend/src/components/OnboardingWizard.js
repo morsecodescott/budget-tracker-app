@@ -67,7 +67,7 @@ function OnboardingWizard({ onComplete, onSkip, categories, refreshAccountData, 
                             onSuccess={(publicToken, metadata) => {
                                 console.log('Successfully linked account:', metadata);
                                 // Refresh account balances and progress to next step
-                                refreshAccountДata();
+                                refreshAccountData();
                                 handleNext();
                             }}
                             onExit={(error, metadata) => {
