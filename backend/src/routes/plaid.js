@@ -41,8 +41,7 @@ const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',')
  */
 router.post('/create_link_token', async (req, res) => {
   try {
-    const { access_token } = req.body;
-    const userId = req.user.id;
+    const { access_token, userId } = req.body;
     const webhook = process.env.PLAID_WEBHOOK_URL;
 
     // Validate required fields
@@ -54,11 +53,11 @@ router.post('/create_link_token', async (req, res) => {
 
 
     // Create link token using service
-    const linkToken = await PlaidApiService.createLinkToken({
+    const linkToken = await PlaidApiService.createLinkToken(
       userId,
       access_token,
       webhook
-    });
+    );
 
     res.json(linkToken);
   } catch (error) {
