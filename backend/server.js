@@ -13,7 +13,7 @@ const { setupDatabase } = require('./src/config/database');
 const { setupSessionStore } = require('./src/config/sessionStore');
 const passportConfig = require('./src/config/passport');
 const { globalTemplateVariables, ensureAuthenticated } = require('./src/middleware');
-const routes = require('./src/routes');
+const { publicRouter, protectedRouter } = require('./src/routes');
 
 
 // Express app initialization
@@ -55,11 +55,10 @@ passportConfig(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Authentication middleware for protected routes
-app.use(ensureAuthenticated);
-
 // Routing
-app.use(routes);
+app.use(publicRouter);
+app.use(ensureAuthenticated);
+app.use(protectedRouter);
 
 
 // Serve static files from the React app (in production)
