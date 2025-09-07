@@ -16,15 +16,20 @@ class PlaidApiService {
      */
     static async createLinkToken(userId, accessToken, webhook) {
         try {
-            const response = await plaidClient.linkTokenCreate({
+            const config = {
                 user: { client_user_id: userId },
                 client_name: 'ChaChing',
-                products: PLAID_PRODUCTS,
                 country_codes: PLAID_COUNTRY_CODES,
                 language: 'en',
-                access_token: accessToken,
                 webhook,
-            });
+                access_token: accessToken,
+            };
+
+            if (!accessToken) {
+                config.products = PLAID_PRODUCTS;
+            }
+
+            const response = await plaidClient.linkTokenCreate(config);
             console.log("LINK Country CODES:", PLAID_COUNTRY_CODES);
             return response.data;
         } catch (error) {

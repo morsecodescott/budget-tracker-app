@@ -84,6 +84,19 @@ class PlaidDbService {
     }
 
     /**
+     * Retrieves a single Plaid item by its ID
+     * @param {string} itemId - The ID of the item to retrieve
+     * @returns {Promise<Object>} The Plaid item document
+     */
+    static async getItem(itemId) {
+        try {
+            return await PlaidItem.findById(itemId);
+        } catch (error) {
+            throw new Error(`Failed to get item: ${error.message}`);
+        }
+    }
+
+    /**
      * Retrieves Plaid account IDs for a user
      * @param {string} userId - User ID
      * @returns {Promise<Array>} Array of account IDs
