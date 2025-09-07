@@ -10,7 +10,7 @@
 
 const express = require('express');
 const router = express.Router();
-const plaidClient = require('../config/plaidClient');
+const { client: plaidClient } = require('../config/plaidClient');
 const PlaidDbService = require('../services/plaidDbService');
 const PlaidApiService = require('../services/plaidApiService');
 const PlaidItem = require('../models/PlaidItem');
