@@ -10,7 +10,7 @@ const PLAID_ENV = process.env.PLAID_ENV || 'sandbox';
 
 // Supported Plaid products and country codes
 const PLAID_PRODUCTS = [Products.Transactions];
-const PLAID_COUNTRY_CODES = ['US'];
+const PLAID_COUNTRY_CODES = ['CA'];
 
 const configuration = new Configuration({
   basePath: PlaidEnvironments[PLAID_ENV],

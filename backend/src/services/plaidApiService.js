@@ -25,7 +25,7 @@ class PlaidApiService {
                 access_token: accessToken,
                 webhook,
             });
-
+            console.log("LINK Country CODES:", PLAID_COUNTRY_CODES);
             return response.data;
         } catch (error) {
             console.log("CreateLinkToken error:", error.message);
