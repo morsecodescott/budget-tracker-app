@@ -3,12 +3,14 @@ import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListIt
 import MenuIcon from '@mui/icons-material/Menu';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSocket } from '../context/SocketContext';
 
 // Width of the persistent drawer
 const drawerWidth = 240;
 
 const Navdrawer = () => {
   const { user, logout } = useAuth();
+  const { isConnected } = useSocket();
   const navigate = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false); // State to control drawer open/close
 
@@ -48,6 +50,15 @@ const Navdrawer = () => {
           <>
             <ListItem button component={RouterLink} to="/dashboard">
               <ListItemText primary="Dashboard" />
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: '50%',
+                  backgroundColor: isConnected ? 'green' : 'red',
+                  marginLeft: 1,
+                }}
+              />
             </ListItem>
             <ListItem button component={RouterLink} to="/transactions">
               <ListItemText primary="Transactions" />

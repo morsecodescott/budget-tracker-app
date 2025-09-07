@@ -1,0 +1,3 @@
+
+> dev
+> cross-env NODE_ENV=development nodemon -e js server.js

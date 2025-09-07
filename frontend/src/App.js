@@ -1,7 +1,8 @@
 import React, { useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
-import socket from './utils/socket';
+import { useSocket } from './context/SocketContext';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { SocketProvider } from './context/SocketContext';
 import axios from 'axios';
 import Navdrawer from './components/Navdrawer';
 import LandingPage from './components/LandingPage';
@@ -25,60 +26,47 @@ axios.defaults.withCredentials = true;
 
 function App() {
   const { isLoggedIn, user } = useAuth();
+  const { setLastMessage, socket, setIsConnected } = useSocket();
 
   useEffect(() => {
-    let socketInitialized = false;
-
-    const initializeWebSocket = () => {
-      console.log('Initializing WebSocket...');
-      if (socketInitialized) {
-        console.log('WebSocket already initialized');
-        return;
-      }
-
-      const token = localStorage.getItem('token');
-
-      if (token && user) {
+    if (isLoggedIn && user) {
+      if (!socket.connected) {
+        const token = localStorage.getItem('token');
         const { authenticateSocket, setupSocketListeners } = require('./utils/socket');
-        authenticateSocket(token);
-
+        if (token) {
+          authenticateSocket(token);
+        }
         setupSocketListeners({
           onTransactionsUpdate: (data) => {
             console.log('New transactions update:', data);
-            // TODO: Update state with new transactions
+            setLastMessage(data);
           },
           onConnect: () => {
-            console.log('WebSocket connected');
-            // Update connection status in UI
+            setIsConnected(true);
           },
           onDisconnect: () => {
-            console.log('WebSocket disconnected');
-            // Update connection status in UI
-          }
+            setIsConnected(false);
+          },
         });
-
-        socketInitialized = true;
       }
-    };
-
-    // Initialize WebSocket when logged in
-    if (isLoggedIn && user) {
-      initializeWebSocket();
-    }
-
-    return () => {
-      if (socketInitialized) {
+    } else {
+      if (socket.connected) {
         socket.disconnect();
       }
+    }
+    return () => {
+      if (socket.connected) {
+        // To prevent disconnect on re-renders, you might add more logic here
+        // For now, this will disconnect when the App component unmounts
+      }
     };
-  }, [isLoggedIn, user]);
+  }, [isLoggedIn, user, setLastMessage, socket]);
+
   return (
-
-
-
-    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-      <Navdrawer />
-      <Routes>
+    <SocketProvider>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+        <Navdrawer />
+        <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginContainer />} />
         <Route path="/signup" element={<Signup />} />
@@ -92,9 +80,9 @@ function App() {
         <Route path="/plaid-test" element={<PlaidTestPage />} />
         <Route path="/themedemo" element={<ThemeDemo />} />
         <Route path="/linked-accounts" element={<Accounts />} />
-      </Routes>
-    </Router>
-
+        </Routes>
+      </Router>
+    </SocketProvider>
   );
 }
 

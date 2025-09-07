@@ -24,6 +24,7 @@ import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Autocomplete } from "@mui/material";
 import { useLocation } from "react-router-dom";
+import { useSocket } from "../context/SocketContext";
 import axios from "axios";
 
 
@@ -43,8 +44,14 @@ const TransactionsPage = ({ userId }) => {
   const [categories, setCategories] = useState([]);
   const [budgetFilter, setBudgetFilter] = useState("all"); // New state for budget filter
   const isInitialized = useRef(false);
+  const { lastMessage } = useSocket();
 
-
+  useEffect(() => {
+    if (lastMessage) {
+      console.log("New message received in TransactionsPage, refetching data:", lastMessage);
+      fetchTransactions();
+    }
+  }, [lastMessage]);
 
 
   function toLocalDate(date) {
