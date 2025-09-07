@@ -52,7 +52,7 @@ const handleTransactionsWebhook = async (requestBody) => {
       case 'SYNC_UPDATES_AVAILABLE': {
         // Fired when new transactions data becomes available
         const { addedCount, modifiedCount, removedCount } = await updateTransactions(plaidItemId);
-        const { id: itemId } = await retrieveItemByPlaidItemId(plaidItemId);
+        const item = await retrieveItemByPlaidItemId(plaidItemId);
 
         // Log successful update
         await logWebhookEvent({
@@ -69,11 +69,12 @@ const handleTransactionsWebhook = async (requestBody) => {
 
         // Notify client via WebSocket
         if (io) {
-          io.emit('TRANSACTIONS_UPDATE', {
-            itemId,
+          const room = `user-${item.userId}`;
+          io.to(room).emit('TRANSACTIONS_UPDATE', {
+            itemId: item.id,
             addedCount,
             modifiedCount,
-            removedCount
+            removedCount,
           });
         }
         break;

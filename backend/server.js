@@ -9,6 +9,7 @@ require('dotenv').config({
         ? './.env.production'
         : './.env.development'
 });
+
 const { setupDatabase } = require('./src/config/database');
 const { setupSessionStore } = require('./src/config/sessionStore');
 const passportConfig = require('./src/config/passport');
@@ -101,5 +102,23 @@ io.on('connection', (socket) => {
 
 // Make io available to other modules
 app.set('io', io);
+
+// Socket.IO middleware for authentication
+const socketAuthMiddleware = require('./src/middleware/socketAuth');
+io.use(socketAuthMiddleware);
+
+
+// Update WebSocket connection handler to use authenticated user
+io.on('connection', (socket) => {
+    console.log(`Client connected: ${socket.id}, User: ${socket.user.email}`);
+
+    // Join a room for the specific user
+    socket.join(`user-${socket.user.id}`);
+
+    socket.on('disconnect', () => {
+        console.log(`Client disconnected: ${socket.id}, User: ${socket.user.email}`);
+    });
+});
+
 
 module.exports = { app, server, io };
