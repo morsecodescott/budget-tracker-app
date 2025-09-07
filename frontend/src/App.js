@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useSocket } from './context/SocketContext';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import { SocketProvider } from './context/SocketContext';
 import axios from 'axios';
 import Navdrawer from './components/Navdrawer';
 import LandingPage from './components/LandingPage';
@@ -63,10 +62,9 @@ function App() {
   }, [isLoggedIn, user, setLastMessage, socket]);
 
   return (
-    <SocketProvider>
-      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <Navdrawer />
-        <Routes>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <Navdrawer />
+      <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginContainer />} />
         <Route path="/signup" element={<Signup />} />
@@ -80,9 +78,8 @@ function App() {
         <Route path="/plaid-test" element={<PlaidTestPage />} />
         <Route path="/themedemo" element={<ThemeDemo />} />
         <Route path="/linked-accounts" element={<Accounts />} />
-        </Routes>
-      </Router>
-    </SocketProvider>
+      </Routes>
+    </Router>
   );
 }
 
