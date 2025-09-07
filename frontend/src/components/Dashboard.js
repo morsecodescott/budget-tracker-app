@@ -190,7 +190,7 @@ const Dashboard = ({ children }) => {
 
   return (
     <>
-      {showOnboarding && (
+      {showOnboarding && user && (
         <OnboardingWizard
           onComplete={handleOnboardingComplete}
           onSkip={handleOnboardingSkip}
