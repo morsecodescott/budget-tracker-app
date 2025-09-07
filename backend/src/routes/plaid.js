@@ -23,9 +23,9 @@ const Budget = require('../models/Budget');
 const updateTransactions = require('../update_transactions');
 
 
-// Configure Plaid product types and countries from environment variables
+// Configure Plaid product types and countries from environment variables 
 const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || 'transactions').split(',');
-const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'US').split(',');
+const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'CA').split(',');
 
 /**
  * POST /create_link_token

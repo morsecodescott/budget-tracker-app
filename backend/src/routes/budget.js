@@ -10,7 +10,7 @@ function normalizeToFirstOfMonth(date) {
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1, 0, 0, 0, 0));
 }
 
-// Route to list all budget items
+// Route to list all budget items 
 router.get('/', async (req, res) => {
   console.log('GET - /budget ');
   try {
