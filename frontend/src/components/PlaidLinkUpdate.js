@@ -29,7 +29,7 @@ const PlaidLinkUpdate = ({ itemId, onUpdateSuccess, onUpdateExit, children }) =>
     try {
       const response = await axios.post('/plaid/create_link_token', {
         itemId: itemId,
-        userId: user._id,
+        userId: user.id,
       });
       setLinkToken(response.data.link_token);
     } catch (err) {
