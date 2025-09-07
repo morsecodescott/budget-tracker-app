@@ -25,6 +25,7 @@ import {
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Breadcrumbs from "./Breadcrumbs";
 import PlaidLinkButton from './PlaidLinkButton';
+import PlaidLinkUpdate from './PlaidLinkUpdate';
 import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
@@ -40,6 +41,7 @@ const Accounts = () => {
 
 
     const [unlinkSuccess, setUnlinkSuccess] = useState(false);
+    const [reauthSuccess, setReauthSuccess] = useState(false);
 
     const handlePlaidExit = (error, metadata) => {
         if (error) {
@@ -198,6 +200,23 @@ const Accounts = () => {
                                                     <IconButton onClick={() => toggleCollapse(itemId)}>
                                                         {collapsedInstitutions.includes(itemId) ? <ExpandMoreIcon /> : <ExpandLessIcon />}
                                                     </IconButton>
+                                                    <PlaidLinkUpdate
+                                                        itemId={itemId}
+                                                        onUpdateSuccess={() => {
+                                                            fetchAccounts();
+                                                            setReauthSuccess(true);
+                                                        }}
+                                                        onUpdateExit={handlePlaidExit}
+                                                    >
+                                                        <Button
+                                                            variant="outlined"
+                                                            color="primary"
+                                                            size="small"
+                                                            sx={{ ml: 1 }}
+                                                        >
+                                                            Re-authorize
+                                                        </Button>
+                                                    </PlaidLinkUpdate>
                                                     <Button
                                                         variant="outlined"
                                                         color="error"
@@ -319,6 +338,20 @@ const Accounts = () => {
                         sx={{ width: '100%' }}
                     >
                         Accounts successfully unlinked!
+                    </Alert>
+                </Snackbar>
+                <Snackbar
+                    open={reauthSuccess}
+                    autoHideDuration={6000}
+                    onClose={() => setReauthSuccess(false)}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+                >
+                    <Alert
+                        icon={<CheckCircleIcon fontSize="inherit" />}
+                        severity="success"
+                        sx={{ width: '100%' }}
+                    >
+                        Account successfully re-authorized!
                     </Alert>
                 </Snackbar>
             </Box>

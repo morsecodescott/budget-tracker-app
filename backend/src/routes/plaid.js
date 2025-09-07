@@ -41,12 +41,22 @@ const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'CA').split(',')
  */
 router.post('/create_link_token', async (req, res) => {
   try {
-    const { access_token, userId } = req.body;
+    const { itemId, userId } = req.body;
     const webhook = process.env.PLAID_WEBHOOK_URL;
+    let access_token = null;
 
     // Validate required fields
     if (!userId) {
       return res.status(400).json({ error: 'User ID is required' });
+    }
+
+    if (itemId) {
+      const item = await PlaidDbService.getItem(itemId);
+      if (item && item.userId.toString() === userId) {
+        access_token = item.accessToken;
+      } else {
+        return res.status(404).json({ error: 'Item not found or access denied' });
+      }
     }
 
     console.log('Sending Link Token Request:', userId, access_token, webhook);
