@@ -1,6 +1,6 @@
 const PlaidItem = require('../../models/PlaidItem');
 const PlaidAccount = require('../../models/PlaidAccount');
-const plaidClient = require('../../config/plaidClient');
+const { client: plaidClient } = require('../../config/plaidClient');
 const { deleteTransactionsByAccountId } = require('./transactions');
 
 /**

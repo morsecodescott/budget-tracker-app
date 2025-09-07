@@ -3,7 +3,7 @@
  */
 
 //const plaid = require('plaid');
-const plaidClient = require('./config/plaidClient');
+const { client: plaidClient } = require('./config/plaidClient');
 const {
   retrieveItemByPlaidItemId,
   createAccounts,
