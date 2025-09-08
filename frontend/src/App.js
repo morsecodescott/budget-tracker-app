@@ -1,3 +1,9 @@
+/**
+ * @fileoverview This is the root component of the application.
+ * It sets up the main routing and handles WebSocket connections.
+ * @module frontend/src/App
+ */
+
 import React, { useEffect } from 'react';
 import { useAuth } from './context/AuthContext';
 import { useSocket } from './context/SocketContext';
@@ -23,11 +29,17 @@ import Accounts from './components/Accounts';
 
 axios.defaults.withCredentials = true;
 
+/**
+ * The main application component.
+ * It handles routing and WebSocket connections based on authentication status.
+ * @returns {JSX.Element} The rendered application.
+ */
 function App() {
   const { isLoggedIn, user } = useAuth();
   const { setLastMessage, socket, setIsConnected } = useSocket();
 
   useEffect(() => {
+    // Effect to handle WebSocket connection based on user's login status
     if (isLoggedIn && user) {
       if (!socket.connected) {
         const token = localStorage.getItem('token');

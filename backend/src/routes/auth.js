@@ -1,10 +1,20 @@
-// routes/auth.js
+/**
+ * @fileoverview This file contains the authentication routes for the application.
+ * It includes routes for user signup, login, and logout.
+ * @module backend/src/routes/auth
+ */
+
 const express = require('express');
 const router = express.Router();
 const passport = require('passport');
 const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const User = require('../models/User');
 
+/**
+ * @route   POST /auth/signup
+ * @desc    Register a new user
+ * @access  Public
+ */
 router.post('/signup', async (req, res) => {
     const { firstName, lastName, email, password } = req.body;
 
@@ -53,6 +63,11 @@ router.post('/signup', async (req, res) => {
 
 
 
+/**
+ * @route   POST /auth/login
+ * @desc    Authenticate user and get token
+ * @access  Public
+ */
 router.post('/login', (req, res, next) => {
 
     passport.authenticate('local', (err, user, info) => {
@@ -96,6 +111,11 @@ router.post('/login', (req, res, next) => {
 
 
 
+/**
+ * @route   GET /auth/logout
+ * @desc    Logs the user out
+ * @access  Private
+ */
 // Logout route - GET
 router.get('/logout', (req, res) => {
     req.logout(() => {

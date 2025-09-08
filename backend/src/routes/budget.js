@@ -1,16 +1,29 @@
-// routes/budget.js
+/**
+ * @fileoverview This file contains the routes for managing budget items.
+ * It includes routes for listing, adding, updating, and deleting budget items.
+ * @module backend/src/routes/budget
+ */
+
 const express = require('express');
 const router = express.Router();
 const Budget = require('../models/Budget');
 
-// Helper function to normalize date to first of month in UTC
+/**
+ * Normalizes a date to the first day of the month in UTC.
+ * @param {string | Date} date - The date to normalize.
+ * @returns {Date} The normalized date.
+ */
 function normalizeToFirstOfMonth(date) {
   // Parse input date string and create UTC date
   const d = new Date(date);
   return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1, 0, 0, 0, 0));
 }
 
-// Route to list all budget items 
+/**
+ * @route   GET /budget
+ * @desc    Get all budget items for the logged-in user
+ * @access  Private
+ */
 router.get('/', async (req, res) => {
   console.log('GET - /budget ');
   try {
@@ -31,7 +44,11 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Route to add a new budget item
+/**
+ * @route   POST /budget
+ * @desc    Add a new budget item
+ * @access  Private
+ */
 router.post('/', async (req, res) => {
   console.log('POST - /budget ');
   const { period, category, description, amount, frequency, recurrance } = req.body;
@@ -72,7 +89,11 @@ router.post('/', async (req, res) => {
 
 
 
-// Route to update a budget item
+/**
+ * @route   PUT /budget/:id
+ * @desc    Update a budget item
+ * @access  Private
+ */
 router.put('/:id', async (req, res) => {
   console.log('PUT - /budget ');
   const { id } = req.params;
@@ -100,7 +121,11 @@ router.put('/:id', async (req, res) => {
 
 
 
-//Route to delete a budget item.
+/**
+ * @route   DELETE /budget/delete/:id
+ * @desc    Delete a budget item
+ * @access  Private
+ */
 router.delete('/delete/:id', async (req, res) => {
   console.log('DELETE - /budget ');
   const itemId = req.params.id;

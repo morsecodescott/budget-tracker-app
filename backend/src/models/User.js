@@ -1,7 +1,20 @@
-// models/User.js
+/**
+ * @fileoverview This file defines the Mongoose schema for the User model.
+ * @module backend/src/models/User
+ */
 
 const mongoose = require('mongoose');
 
+/**
+ * @typedef {Object} User
+ * @property {string} firstName - The user's first name.
+ * @property {string} lastName - The user's last name.
+ * @property {string} email - The user's email address.
+ * @property {string} role - The user's role (e.g., 'user', 'admin').
+ * @property {string} password - The user's hashed password.
+ * @property {Array<mongoose.Schema.Types.ObjectId>} plaidItems - An array of Plaid item IDs associated with the user.
+ * @property {boolean} onboardingCompleted - A flag indicating if the user has completed the onboarding process.
+ */
 
 const userSchema = new mongoose.Schema({
     firstName: {

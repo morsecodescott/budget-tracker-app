@@ -1,6 +1,16 @@
-//backend/src/middleware/index.js
+/**
+ * @fileoverview This file contains custom middleware for the application.
+ * @module backend/src/middleware/index
+ */
+
 const { ensureAuthenticated, isAdmin } = require('../config/auth');
 
+/**
+ * Sets global variables for use in templates.
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ */
 exports.globalTemplateVariables = (req, res, next) => {
   // Global variables for templates
   res.locals.appName = 'ChaChing';
@@ -11,6 +21,13 @@ exports.globalTemplateVariables = (req, res, next) => {
   next();
 };
 
+/**
+ * A middleware function that ensures that the user is authenticated before accessing a route.
+ * It skips authentication for a predefined list of public routes.
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ */
 exports.ensureAuthenticated = (req, res, next) => {
   // Middleware to protect routes
   if (['/', '/auth/login', '/auth/register', '/test', '/health-check', '/services/webhook'].includes(req.originalUrl)) {

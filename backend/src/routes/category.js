@@ -1,9 +1,20 @@
+/**
+ * @fileoverview This file contains the routes for managing categories.
+ * It includes routes for creating, retrieving, updating, and deleting categories.
+ * It also provides a route to get parent categories and to get all categories in a hierarchical structure.
+ * @module backend/src/routes/category
+ */
+
 const express = require('express');
 const router = express.Router();
 const Category = require('../models/Category');
 const { ensureAuthenticated, isAdmin } = require('../config/auth');
 
-// Create a new category
+/**
+ * @route   POST /categories
+ * @desc    Create a new category
+ * @access  Private
+ */
 router.post('/', ensureAuthenticated, async (req, res) => {
     // Convert 'on' to true, absence to false
     //const isDefault = req.body.isDefault === 'on';
@@ -30,8 +41,11 @@ router.post('/', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// Get all categories
-// Get all categories
+/**
+ * @route   GET /categories
+ * @desc    Get all categories for the user, including default categories, in a hierarchical structure
+ * @access  Private
+ */
 router.get('/', ensureAuthenticated, async (req, res) => {
     try {
         // Fetch all categories relevant to the user or that are defaults
@@ -81,7 +95,11 @@ router.get('/', ensureAuthenticated, async (req, res) => {
 });
 
 
-// get a list of parent categories
+/**
+ * @route   GET /categories/parents
+ * @desc    Get all parent categories for the user, including default parent categories
+ * @access  Private
+ */
 router.get('/parents', ensureAuthenticated, async (req, res) => {
     try {
         const categories = await Category.find({
@@ -101,7 +119,11 @@ router.get('/parents', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// Get a single category by ID
+/**
+ * @route   GET /categories/:id
+ * @desc    Get a single category by ID
+ * @access  Private
+ */
 router.get('/:id', ensureAuthenticated, async (req, res) => {
     try {
         const category = await Category.findById(req.params.id);
@@ -124,7 +146,11 @@ router.get('/:id', ensureAuthenticated, async (req, res) => {
 
 
 
-// Update a category
+/**
+ * @route   PUT /categories/:id
+ * @desc    Update a category
+ * @access  Private
+ */
 router.put('/:id', ensureAuthenticated, async (req, res) => {
     const { id } = req.params;
     const { name, parentCategory } = req.body;
@@ -137,7 +163,11 @@ router.put('/:id', ensureAuthenticated, async (req, res) => {
     }
 });
 
-// Delete a category
+/**
+ * @route   DELETE /categories/:id
+ * @desc    Delete a category
+ * @access  Private
+ */
 router.delete('/:id', ensureAuthenticated, async (req, res) => {
     const { id } = req.params;
 

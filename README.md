@@ -1,22 +1,37 @@
 # ChaChing Budget Tracker
 
-ChaChing is a budget and expense tracking web application designed to help users manage their finances more effectively. With a focus on simplicity and user experience, ChaChing allows users to easily track their income, expenses, and budget categories.
+ChaChing is a modern, full-stack budget and expense tracking web application designed to help users manage their finances effectively. It leverages Plaid for secure bank integration, allowing users to automatically sync their transactions and get a real-time view of their financial health.
 
 ## Features
 
+- **Plaid Integration**: Securely connect your bank accounts to automatically import transactions.
 - **User Authentication**: Secure login and registration system to keep your financial data private.
-- **Budget Management**: Create, update, and delete budget items to track your income and expenses.
-- **Category Management**: Organize your budget items into categories for better tracking and analysis.
-- **Expense Tracking**: Log your daily expenses and compare them against your set budget.
-- **Dashboard Overview**: Get a quick overview of your financial health with the dashboard feature.
+- **Dashboard Overview**: A comprehensive dashboard that provides a quick overview of your account balances, budget summaries, and recent transactions.
+- **Budget Management**: Create, update, and delete monthly and ad-hoc budget items for both income and expenses.
+- **Category Management**: Organize your transactions into customizable categories and subcategories.
+- **Transaction Tracking**: View and filter your transactions by date, category, and type.
+- **Real-time Updates**: Utilizes WebSockets for real-time notifications and data updates.
+- **Onboarding Wizard**: A step-by-step wizard to help new users set up their accounts and link their bank accounts.
 
 ## Technology Stack
 
-- **Front-End**: EJS, CSS, JavaScript
-- **Back-End**: Node.js, Express.js
-- **Database**: MongoDB
-- **Session Management**: express-session with optional Redis for production
+### Frontend
+
+- **Framework**: React
+- **UI Library**: Material-UI
+- **Routing**: React Router
+- **State Management**: React Context API
+- **HTTP Client**: Axios
+- **Real-time Communication**: Socket.IO Client
+
+### Backend
+
+- **Framework**: Node.js, Express.js
+- **Database**: MongoDB with Mongoose
 - **Authentication**: Passport.js
+- **Bank Integration**: Plaid API
+- **Session Management**: express-session with Redis for production
+- **Real-time Communication**: Socket.IO
 
 ## Getting Started
 
@@ -24,32 +39,74 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-- Node.js
+- Node.js (v14 or later)
 - MongoDB
-- Redis (optional for session management in production)
+- Redis (optional, for session management in production)
+- A Plaid API key (for development)
 
-### Installing
+### Backend Setup
 
-1. Clone the repository
-   ```sh
-   git clone https://github.com/yourusername/cha-ching.git
-   cd cha-ching
-   ```
-2. Install NPM packages
+1.  **Clone the repository:**
+    ```sh
+    git clone https://github.com/your-github-username/cha-ching.git
+    cd cha-ching/backend
+    ```
+
+2.  **Install dependencies:**
     ```sh
     npm install
     ```
-3. Set up your environment variables in a .env file at the root of the project:
-    ```sh
-    MONGO_URI=mongodb://localhost:27017/cha-ching
-    REDIS_URL=redis://localhost:6379
+
+3.  **Set up environment variables:**
+
+    Create a `.env.development` file in the `backend` directory and add the following variables:
+
+    ```env
+    # Server Configuration
+    PORT=4000
     NODE_ENV=development
+
+    # MongoDB Configuration
+    MONGO_URI=mongodb://localhost:27017/cha-ching
+
+    # Redis Configuration (optional)
+    REDIS_URL=redis://localhost:6379
+
+    # Plaid API Configuration
+    PLAID_CLIENT_ID=<your_plaid_client_id>
+    PLAID_SECRET=<your_plaid_secret>
+    PLAID_ENV=sandbox
+    PLAID_PRODUCTS=transactions
+    PLAID_COUNTRY_CODES=US
+    PLAID_WEBHOOK_URL=https://your-ngrok-url/plaid/webhook
     ```
-4. Start the application
-    ```sh
-    npm start
-    ```
-5. For development, with hot reload:
+
+4.  **Start the backend server:**
     ```sh
     npm run dev
     ```
+
+    The backend server will be running on `http://localhost:4000`.
+
+### Frontend Setup
+
+1.  **Navigate to the frontend directory:**
+    ```sh
+    cd ../frontend
+    ```
+
+2.  **Install dependencies:**
+    ```sh
+    npm install
+    ```
+
+3.  **Start the frontend development server:**
+    ```sh
+    npm start
+    ```
+
+    The frontend development server will be running on `http://localhost:3000`.
+
+## Contributing
+
+Contributions are welcome! Please feel free to open an issue or submit a pull request.
