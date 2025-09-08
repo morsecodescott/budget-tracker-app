@@ -25,16 +25,9 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "cross-env NODE_ENV=production react-scripts build",
-    "test": "react-scripts test",
     "eject": "react-scripts eject",
     "validate-env": "node scripts/validateEnv.js",
     "generate-env-example": "node scripts/generateEnvExample.js"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
   },
   "browserslist": {
     "production": [
@@ -47,10 +40,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0"
   }
 }
