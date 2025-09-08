@@ -1,9 +1,18 @@
+/**
+ * @fileoverview This file contains the Login component, which provides a form for users to sign in.
+ * @module frontend/src/components/Login
+ */
+
 import React, { useState } from 'react';
 import { TextField, Button, Typography, Container, Box } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext'; // Make sure this path is correct!
 
+/**
+ * A component that renders a login form.
+ * @returns {JSX.Element} The rendered login form.
+ */
 const LoginForm = () => {
   const [credentials, setCredentials] = useState({
     email: '',
@@ -13,6 +22,10 @@ const LoginForm = () => {
   const navigate = useNavigate();
   const { login } = useAuth(); // Use the login function from the auth context
 
+  /**
+   * Handles changes to the form fields.
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The change event.
+   */
   const handleChange = (event) => {
     const { name, value } = event.target;
     setCredentials(prevCredentials => ({
@@ -21,6 +34,10 @@ const LoginForm = () => {
     }));
   };
 
+  /**
+   * Handles the form submission.
+   * @param {React.FormEvent<HTMLFormElement>} event - The form submission event.
+   */
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {

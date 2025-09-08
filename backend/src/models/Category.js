@@ -1,6 +1,17 @@
-// models/Category.js
+/**
+ * @fileoverview This file defines the Mongoose schema for the Category model.
+ * @module backend/src/models/Category
+ */
+
 const mongoose = require('mongoose');
 
+/**
+ * @typedef {Object} Category
+ * @property {string} name - The name of the category.
+ * @property {mongoose.Schema.Types.ObjectId} parentCategory - The parent category of this category.
+ * @property {boolean} isDefault - A flag indicating if this is a default category.
+ * @property {mongoose.Schema.Types.ObjectId} user - The user who owns this category.
+ */
 const categorySchema = new mongoose.Schema({
     name: {
         type: String,

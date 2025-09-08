@@ -1,8 +1,15 @@
-//backend/src/config/database.js
+/**
+ * @fileoverview This file contains the database connection setup.
+ * @module backend/src/config/database
+ */
 
 const mongoose = require('mongoose');
 
-// MongoDB connection
+/**
+ * Sets up the MongoDB connection and handles connection events.
+ * It connects to the MongoDB instance specified in the `MONGO_URI` environment variable.
+ * It also handles graceful shutdown of the connection on process termination.
+ */
 exports.setupDatabase = () => {
     mongoose.connect(process.env.MONGO_URI);
     const db = mongoose.connection;

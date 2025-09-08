@@ -1,4 +1,12 @@
 
+/**
+ * @fileoverview This is the main entry point for the backend server.
+ * It sets up the Express application, configures middleware, initializes the database,
+ * sets up session management, configures Passport for authentication, defines routes,
+ * and starts the server. It also sets up a WebSocket server using Socket.IO.
+ * @module backend/server
+ */
+
 // Essential module imports
 const express = require('express');
 const cors = require('cors');
@@ -13,11 +21,14 @@ require('dotenv').config({
 const { setupDatabase } = require('./src/config/database');
 const { setupSessionStore } = require('./src/config/sessionStore');
 const passportConfig = require('./src/config/passport');
-const { globalTemplateVariables, ensureAuthenticated } = require('./src/middleware');
+const { ensureAuthenticated } = require('./src/middleware');
 const { publicRouter, protectedRouter } = require('./src/routes');
 
 
-// Express app initialization
+/**
+ * Express application instance.
+ * @type {import('express').Application}
+ */
 const app = express();
 const PORT = process.env.PORT || 4000;
 
@@ -56,7 +67,12 @@ passportConfig(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Routing
+/**
+ * @section
+ * App Routes
+ * - Public routes are accessible without authentication.
+ * - Protected routes require authentication.
+ */
 app.use(publicRouter);
 app.use(ensureAuthenticated);
 app.use(protectedRouter);
@@ -72,11 +88,25 @@ if (process.env.NODE_ENV === 'production') {
     });
 }
 
-// Create HTTP server
+/**
+ * HTTP server instance.
+ * @type {import('http').Server}
+ */
 const server = app.listen(PORT, () => console.log(`Server started on port ${PORT}`));
 
-// Set up WebSocket server with conditional CORS
-const { Server } = require('socket.io'); const io = new Server(server, {
+/**
+ * @section
+ * WebSocket (Socket.IO) server setup.
+ * - The server is conditionally configured with CORS for development.
+ * - It uses a custom authentication middleware.
+ * - Authenticated users are added to a room specific to their user ID.
+ */
+const { Server } = require('socket.io');
+/**
+ * Socket.IO server instance.
+ * @type {import('socket.io').Server}
+ */
+const io = new Server(server, {
     cors: process.env.NODE_ENV === 'development' ? {
         origin: ['http://localhost:3000', 'https://creative-kindly-jennet.ngrok-free.app'],
         methods: ['GET', 'POST'],
@@ -121,4 +151,8 @@ io.on('connection', (socket) => {
 });
 
 
+/**
+ * Exports the Express app, HTTP server, and Socket.IO server instances.
+ * @type {{app: import('express').Application, server: import('http').Server, io: import('socket.io').Server}}
+ */
 module.exports = { app, server, io };

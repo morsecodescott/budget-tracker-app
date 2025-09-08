@@ -1,11 +1,8 @@
 /**
- * Plaid API Routes
- * 
- * This file contains all routes related to Plaid integration including:
- * - Link token creation
- * - Item management
- * - Account management
- * - Transaction retrieval
+ * @fileoverview This file contains the routes for Plaid integration.
+ * It includes routes for creating link tokens, exchanging public tokens for access tokens,
+ * and fetching items, accounts, and transactions from Plaid.
+ * @module backend/src/routes/plaid
  */
 
 const express = require('express');
@@ -28,16 +25,12 @@ const PLAID_PRODUCTS = (process.env.PLAID_PRODUCTS || 'transactions').split(',')
 const PLAID_COUNTRY_CODES = (process.env.PLAID_COUNTRY_CODES || 'CA').split(',');
 
 /**
- * POST /create_link_token
- * Creates a Plaid link token for initializing the Plaid Link flow
- * 
- * Request Body:
- * - access_token: Optional existing access token for update mode
- * - webhook: Optional webhook URL for transaction updates
- * 
- * Response:
- * - link_token: Token used to initialize Plaid Link
- * - expiration: Token expiration timestamp
+ * @route   POST /plaid/create_link_token
+ * @desc    Creates a Plaid link token for initializing the Plaid Link flow.
+ *          If an `itemId` is provided, it creates a link token for update mode.
+ * @access  Private
+ * @body    {string} [itemId] - The ID of the item to update.
+ * @body    {string} userId - The ID of the user.
  */
 router.post('/create_link_token', async (req, res) => {
   try {
@@ -83,14 +76,10 @@ router.post('/create_link_token', async (req, res) => {
 
 
 /**
- * GET /items/:userId
- * Retrieves all Plaid items and associated accounts for a specific user
- * 
- * Parameters:
- * - userId: ID of the user to retrieve items for
- * 
- * Response:
- * - items: Array of Plaid items with populated accounts
+ * @route   GET /plaid/items/:userId
+ * @desc    Retrieves all Plaid items and associated accounts for a specific user.
+ * @access  Private
+ * @param   {string} userId - The ID of the user to retrieve items for.
  */
 router.get('/items/:userId', async (req, res) => {
   const { userId } = req.params;
@@ -114,17 +103,11 @@ router.get('/items/:userId', async (req, res) => {
 });
 
 /**
- * POST /set_access_token
- * Exchanges a public token for an access token and retrieves account information
- * 
- * Request Body:
- * - public_token: Temporary token from Plaid Link
- * - accessToken: Optional existing access token for update mode
- * 
- * Response:
- * - access_token: Permanent access token for the item
- * - item_id: Plaid item ID
- * - accounts: Array of associated accounts
+ * @route   POST /plaid/set_access_token
+ * @desc    Exchanges a public token for an access token and retrieves account information.
+ * @access  Private
+ * @body    {string} public_token - The public token from Plaid Link.
+ * @body    {string} [accessToken] - An existing access token for update mode.
  */
 router.post('/set_access_token', async (req, res) => {
   const userId = req.user.id;
@@ -215,15 +198,10 @@ router.post('/set_access_token', async (req, res) => {
 
 
 /**
- * DELETE /items/:itemId
- * Deletes a Plaid item and its associated accounts
- * 
- * Parameters:
- * - itemId: ID of the Plaid item to delete
- * 
- * Response:
- * - message: Success message
- * - error: Error message if deletion fails
+ * @route   DELETE /plaid/items/:itemId
+ * @desc    Deletes a Plaid item and its associated accounts.
+ * @access  Private
+ * @param   {string} itemId - The ID of the Plaid item to delete.
  */
 router.delete('/items/:itemId', async (req, res) => {
   const { itemId } = req.params;
@@ -247,6 +225,12 @@ router.delete('/items/:itemId', async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /plaid/transactions/:accountId
+ * @desc    Retrieves all transactions for a specific account.
+ * @access  Private
+ * @param   {string} accountId - The ID of the account to retrieve transactions for.
+ */
 router.get('/transactions/:accountId', async (req, res) => {
   const { accountId } = req.params;
 
@@ -270,6 +254,13 @@ router.get('/transactions/:accountId', async (req, res) => {
 
 
 
+/**
+ * @route   POST /plaid/create_plaid_item
+ * @desc    Creates a Plaid item and its associated accounts using an access token.
+ *          This is useful for testing or for migrating existing access tokens.
+ * @access  Private
+ * @body    {string} access_token - The Plaid access token.
+ */
 router.post('/create_plaid_item', async (req, res) => {
   const userId = req.user.id;
   const { access_token } = req.body;
@@ -320,6 +311,18 @@ router.post('/create_plaid_item', async (req, res) => {
   }
 });
 
+/**
+ * @route   GET /plaid/transactions
+ * @desc    Retrieves filtered transactions for the user.
+ * @access  Private
+ * @query   {string} [startDate] - The start date for the transaction query.
+ * @query   {string} [endDate] - The end date for the transaction query.
+ * @query   {number} [page] - The page number for pagination.
+ * @query   {number} [rowsPerPage] - The number of rows per page for pagination.
+ * @query   {string} [category] - The category to filter transactions by.
+ * @query   {string} [budgetFilter] - The budget filter to apply.
+ * @query   {string} [transactionType] - The transaction type to filter by (e.g., 'income', 'expense').
+ */
 router.get('/transactions', async (req, res) => {
   const {
     startDate,
@@ -363,7 +366,11 @@ router.get('/transactions', async (req, res) => {
 });
 
 
-// GET /plaid/accounts - Get all linked accounts for a user
+/**
+ * @route   GET /plaid/accounts
+ * @desc    Get all linked accounts for a user.
+ * @access  Private
+ */
 router.get('/accounts', async (req, res) => {
   try {
     const userId = req.user._id;
@@ -402,7 +409,11 @@ router.get('/accounts', async (req, res) => {
   }
 });
 
-// GET /plaid/accounts/summary
+/**
+ * @route   GET /plaid/accounts/summary
+ * @desc    Get a summary of all linked accounts for a user.
+ * @access  Private
+ */
 router.get('/accounts/summary', async (req, res) => {
   try {
     const userId = req.user._id;

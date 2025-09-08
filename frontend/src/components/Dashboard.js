@@ -1,3 +1,10 @@
+/**
+ * @fileoverview This file contains the Dashboard component, which is the main view for authenticated users.
+ * It displays account balances, budget summaries, budget items, and transactions.
+ * It also handles the onboarding process for new users.
+ * @module frontend/src/components/Dashboard
+ */
+
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +26,12 @@ import axios from "axios";
 import BudgetItemForm from "./BudgetItemForm";
 import BudgetSection from "./BudgetSection";
 
+/**
+ * The main dashboard component.
+ * @param {object} props - The component props.
+ * @param {React.ReactNode} props.children - The child components to render.
+ * @returns {JSX.Element} The rendered dashboard component.
+ */
 const Dashboard = ({ children }) => {
   const [selectedPeriod, setSelectedPeriod] = useState("");
   const [actualIncomeSum, setActualIncomeSum] = useState(0);
@@ -28,6 +41,9 @@ const Dashboard = ({ children }) => {
 
   const { user } = useAuth();
 
+  /**
+   * Checks the user's onboarding status and shows the onboarding wizard if not completed.
+   */
   const checkOnboardingStatus = async () => {
     if (!user?.id) return;
     try {
@@ -51,6 +67,9 @@ const Dashboard = ({ children }) => {
     };
   }, [user?.id]);
 
+  /**
+   * Handles the completion of the onboarding process.
+   */
   const handleOnboardingComplete = async () => {
     try {
       await axios.patch(`/users/${user.id}/onboarding`, { completed: true });
@@ -60,6 +79,10 @@ const Dashboard = ({ children }) => {
     }
   };
 
+  /**
+   * Handles skipping the onboarding process.
+   * @param {string} action - The action to take ('complete' or 'remind').
+   */
   const handleOnboardingSkip = (action) => {
     if (action === 'complete') {
       setShowOnboarding(false);
@@ -98,6 +121,11 @@ const Dashboard = ({ children }) => {
     { label: "Dashboard", path: "" }
   ];
 
+  /**
+   * Navigates to the transactions page with the selected category.
+   * @param {string} categoryId - The ID of the category to filter by.
+   * @param {boolean} isParentCategory - Whether the category is a parent category.
+   */
   const handleCategoryClick = (categoryId, isParentCategory = false) => {
     const startDate = new Date(selectedPeriod).toISOString();
     const endDate = new Date(
@@ -115,6 +143,9 @@ const Dashboard = ({ children }) => {
     });
   };
 
+  /**
+   * Navigates to the transactions page with the 'unbudgeted' filter.
+   */
   const handleUnbudgetedClick = () => {
     const startDate = new Date(selectedPeriod).toISOString();
     const endDate = new Date(
@@ -150,6 +181,10 @@ const Dashboard = ({ children }) => {
     }
   }, [selectedPeriod]);
 
+  /**
+   * Deletes a budget item.
+   * @param {string} id - The ID of the budget item to delete.
+   */
   const handleDelete = async (id) => {
     try {
       await axios.delete(`budget/delete/${id}`);
@@ -159,6 +194,10 @@ const Dashboard = ({ children }) => {
     }
   };
 
+  /**
+   * Handles changing the selected period.
+   * @param {string} period - The new period to select.
+   */
   const handlePeriodChange = (period) => {
     setSelectedPeriod(period);
   };

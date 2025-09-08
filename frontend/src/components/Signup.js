@@ -1,9 +1,18 @@
+/**
+ * @fileoverview This file contains the Signup component, which provides a form for users to create a new account.
+ * @module frontend/src/components/Signup
+ */
+
 import React, { useState } from 'react';
 import { TextField, Button, Container, Typography, Box } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
+/**
+ * A component that renders a signup form.
+ * @returns {JSX.Element} The rendered signup form.
+ */
 const Signup = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -16,6 +25,10 @@ const Signup = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
+  /**
+   * Handles changes to the form fields.
+   * @param {React.ChangeEvent<HTMLInputElement>} event - The change event.
+   */
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData(prevState => ({
@@ -24,6 +37,10 @@ const Signup = () => {
     }));
   };
 
+  /**
+   * Handles the form submission.
+   * @param {React.FormEvent<HTMLFormElement>} event - The form submission event.
+   */
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (formData.password !== formData.confirmPassword) {
