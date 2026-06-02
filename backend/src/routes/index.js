@@ -43,3 +43,6 @@ protectedRouter.use('/users', userRoutes);
  * @type {{publicRouter: import('express').Router, protectedRouter: import('express').Router}}
  */
 module.exports = { publicRouter, protectedRouter };
+// Add transactions routes
+const transactionRoutes = require('./transactions');
+protectedRouter.use('/transactions', transactionRoutes);

@@ -5,7 +5,7 @@
 //const plaid = require('plaid');
 const { client: plaidClient } = require('./config/plaidClient');
 const {
-  retrieveItemByPlaidItemId,
+  retrieveItemByItemId,
   createAccounts,
   createOrUpdateTransactions,
   deleteTransactions,
@@ -26,7 +26,7 @@ const fetchTransactionUpdates = async (plaidItemId) => {
   const {
     accessToken: accessToken,
     transactions_cursor: lastCursor,
-  } = await retrieveItemByPlaidItemId(
+  } = await retrieveItemByItemId(
     plaidItemId
   );
   console.log("Plaid Item ID:", plaidItemId);

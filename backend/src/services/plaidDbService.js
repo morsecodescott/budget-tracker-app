@@ -4,9 +4,9 @@
  * Handles all database operations related to Plaid items and accounts
  */
 
-const PlaidItem = require('../models/PlaidItem');
-const PlaidAccount = require('../models/PlaidAccount');
-const PlaidTransaction = require('../models/PlaidTransaction');
+const Item = require('../models/Item');
+const Account = require('../models/Account');
+const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const mongoose = require('mongoose');
 const NodeCache = require('node-cache');
@@ -22,9 +22,9 @@ class PlaidDbService {
      * @param {string} institutionId - Institution ID
      * @returns {Promise<Object>} Created/updated Plaid item
      */
-    static async upsertPlaidItem(plaidItemId, userId, accessToken, institutionName, institutionId, institutionLogoUrl) {
+    static async upsertItem(plaidItemId, userId, accessToken, institutionName, institutionId, institutionLogoUrl) {
         try {
-            return await PlaidItem.findOneAndUpdate(
+            return await Item.findOneAndUpdate(
                 { plaidItemId, userId },
                 {
                     accessToken,
@@ -50,7 +50,7 @@ class PlaidDbService {
     static async createAccountsForItem(plaidItem, accounts) {
         try {
             const accountIds = accounts.map(async (account) => {
-                const newAccount = new PlaidAccount({
+                const newAccount = new Account({
                     plaidItemId: plaidItem._id,
                     plaidAccountId: account.account_id,
                     accountName: account.name,
@@ -77,7 +77,7 @@ class PlaidDbService {
      */
     static async getItemsForUser(userId) {
         try {
-            return await PlaidItem.find({ userId }).populate('accounts');
+            return await Item.find({ userId }).populate('accounts');
         } catch (error) {
             throw new Error(`Failed to get items for user: ${error.message}`);
         }
@@ -90,7 +90,7 @@ class PlaidDbService {
      */
     static async getItem(itemId) {
         try {
-            return await PlaidItem.findById(itemId);
+            return await Item.findById(itemId);
         } catch (error) {
             throw new Error(`Failed to get item: ${error.message}`);
         }
@@ -103,7 +103,7 @@ class PlaidDbService {
      */
     static async getAccountIdsForUser(userId) {
         try {
-            const items = await PlaidItem.find({ userId }).populate('accounts');
+            const items = await Item.find({ userId }).populate('accounts');
             return items.flatMap(item => item.accounts.map(account => account._id));
         } catch (error) {
             throw new Error(`Failed to get account IDs: ${error.message}`);
@@ -123,7 +123,7 @@ class PlaidDbService {
                 return cachedData;
             }
 
-            const result = await PlaidAccount.aggregate([
+            const result = await Account.aggregate([
                 {
                     $lookup: {
                         from: "plaiditems",
@@ -186,7 +186,7 @@ class PlaidDbService {
             const pipeline = [
                 {
                     $match: {
-                        plaidAccountId: { $in: plaidAccountIds },
+                        accountId: { $in: plaidAccountIds },
                         date: { $gte: start, $lte: end },
                     },
                 },
@@ -247,7 +247,7 @@ class PlaidDbService {
                 { $sort: { date: -1 } }
             );
 
-            const allTransactions = await PlaidTransaction.aggregate(pipeline);
+            const allTransactions = await Transaction.aggregate(pipeline);
 
             // Budget filter
             const filteredTransactions = allTransactions.filter((t) =>
@@ -286,10 +286,10 @@ class PlaidDbService {
     static async deleteItem(itemId, userId) {
         try {
             // Delete associated accounts first
-            await PlaidAccount.deleteMany({ plaidItemId: itemId });
+            await Account.deleteMany({ plaidItemId: itemId });
 
             // Then delete the item
-            await PlaidItem.deleteOne({ _id: itemId, userId });
+            await Item.deleteOne({ _id: itemId, userId });
         } catch (error) {
             throw new Error(`Failed to delete item: ${error.message}`);
         }

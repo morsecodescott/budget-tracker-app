@@ -203,7 +203,7 @@ const PlaidTestPage = () => {
                         {transactions
                           .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                           .map((transaction) => (
-                            <TableRow key={transaction.plaidTransactionId}>
+                            <TableRow key={transaction._id}>
                               <TableCell>{new Date(transaction.date).toLocaleDateString('en-CA')}</TableCell>
                               <TableCell>{transaction.name}</TableCell>
                               <TableCell align='right'>{transaction.amount}</TableCell>

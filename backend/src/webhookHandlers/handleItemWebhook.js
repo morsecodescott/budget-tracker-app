@@ -5,7 +5,7 @@
 
 const {
   updateItemStatus,
-  retrieveItemByPlaidItemId,
+  retrieveItemByItemId,
 } = require('../db/queries');
 const { logWebhookEvent } = require('./webhookUtils');
 
@@ -38,7 +38,7 @@ const itemErrorHandler = async (plaidItemId, error) => {
   const { error_code: errorCode } = error;
   switch (errorCode) {
     case 'ITEM_LOGIN_REQUIRED': {
-      const { id: itemId } = await retrieveItemByPlaidItemId(plaidItemId);
+      const { id: itemId } = await retrieveItemByItemId(plaidItemId);
       await updateItemStatus(itemId, 'bad');
       break;
     }
@@ -85,7 +85,7 @@ const handleItemWebhook = async (requestBody, io) => {
       break;
     case 'ERROR': {
       itemErrorHandler(plaidItemId, error);
-      const { id: itemId } = await retrieveItemByPlaidItemId(plaidItemId);
+      const { id: itemId } = await retrieveItemByItemId(plaidItemId);
       await logWebhookEvent({
         type: 'ITEMS',
         code: webhookCode,
@@ -100,7 +100,7 @@ const handleItemWebhook = async (requestBody, io) => {
     }
     case 'PENDING_EXPIRATION':
     case 'PENDING_DISCONNECT': {
-      const { id: itemId } = await retrieveItemByPlaidItemId(plaidItemId);
+      const { id: itemId } = await retrieveItemByItemId(plaidItemId);
       await updateItemStatus(itemId, 'bad');
       await logWebhookEvent({
         type: 'ITEMS',
@@ -112,8 +112,8 @@ const handleItemWebhook = async (requestBody, io) => {
       break;
     }
     case 'ITEM_REMOVED': {
-      const { id: itemId } = await retrieveItemByPlaidItemId(plaidItemId);
-      const { userId } = await retrieveItemByPlaidItemId(plaidItemId);
+      const { id: itemId } = await retrieveItemByItemId(plaidItemId);
+      const { userId } = await retrieveItemByItemId(plaidItemId);
       const { deleteItem } = require('../db/queries');
       await deleteItem(itemId, userId);
       await logWebhookEvent({

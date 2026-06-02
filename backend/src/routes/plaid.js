@@ -10,12 +10,12 @@ const router = express.Router();
 const { client: plaidClient } = require('../config/plaidClient');
 const PlaidDbService = require('../services/plaidDbService');
 const PlaidApiService = require('../services/plaidApiService');
-const PlaidItem = require('../models/PlaidItem');
-const PlaidAccount = require('../models/PlaidAccount');
+const Item = require('../models/Item');
+const Account = require('../models/Account');
 const { deleteItem } = require('../db/queries/items');
 const { retrieveTransactionsByAccountId } = require('../db/queries/transactions');
 const mongoose = require('mongoose');
-const PlaidTransaction = require('../models/PlaidTransaction');
+const Transaction = require('../models/Transaction');
 const Budget = require('../models/Budget');
 const updateTransactions = require('../update_transactions');
 
@@ -144,13 +144,13 @@ router.post('/set_access_token', async (req, res) => {
       });
     }
 
-    console.log('Passing institution logo to upsertPlaidItem:', {
+    console.log('Passing institution logo to upsertItem:', {
       institutionId,
       logoUrl: institutionLogoUrl
     });
 
     // Create/update Plaid item
-    const plaidItem = await PlaidDbService.upsertPlaidItem(
+    const plaidItem = await PlaidDbService.upsertItem(
       plaidItemId,
       userId,
       accessTokenToUse,
@@ -283,7 +283,7 @@ router.post('/create_plaid_item', async (req, res) => {
     }
 
     // Create/update Plaid item
-    const plaidItem = await PlaidDbService.upsertPlaidItem(
+    const plaidItem = await PlaidDbService.upsertItem(
       plaidItemId,
       userId,
       access_token,

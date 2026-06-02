@@ -23,7 +23,7 @@ import Trends from './components/Trends';
 import PlaidTestPage from './components/PlaidTestPage';
 import ThemeDemo from './components/themedemo';
 import Accounts from './components/Accounts';
-
+import UploadDashboard from './components/Upload/UploadDashboard';
 
 
 
@@ -90,6 +90,7 @@ function App() {
         <Route path="/plaid-test" element={<PlaidTestPage />} />
         <Route path="/themedemo" element={<ThemeDemo />} />
         <Route path="/linked-accounts" element={<Accounts />} />
+        <Route path="/upload" element={<UploadDashboard />} />
       </Routes>
     </Router>
   );

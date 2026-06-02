@@ -261,7 +261,7 @@ const TransactionsPage = ({ userId }) => {
                   </TableHead>
                   <TableBody>
                     {transactions.map((transaction) => (
-                      <TableRow key={transaction.plaidTransactionId}>
+                      <TableRow key={transaction._id}>
                         <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
                         <TableCell>{transaction.name}</TableCell>
                         <TableCell>{transaction.category?.name || "Uncategorized"}</TableCell>

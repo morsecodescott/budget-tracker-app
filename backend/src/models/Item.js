@@ -1,15 +1,16 @@
 const mongoose = require('mongoose');
 
-const plaidItemSchema = new mongoose.Schema({
-    plaidItemId: { type: String, required: true },
-    institutionId: { type: String, required: true },
+const itemSchema = new mongoose.Schema({
+    source: { type: String, enum: ['plaid', 'manual'], required: true, default: 'plaid' },
+    plaidItemId: { type: String, required: function() { return this.source === 'plaid'; } },
+    institutionId: { type: String, required: function() { return this.source === 'plaid'; } },
     institutionName: { type: String, required: true },
     institutionLogoUrl: { type: String },
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-    accessToken: { type: String, required: true },
+    accessToken: { type: String, required: function() { return this.source === 'plaid'; } },
     webhook: { type: String, default: null },
     transactions_cursor: { type: String, default: null },
-    accounts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'PlaidAccount' }],
+    accounts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Account' }],
     is_active: { type: Boolean, required: true, default: true },
     last_successful_update: { type: Date, default: null },
     last_failed_update: { type: Date, default: null },
@@ -17,4 +18,4 @@ const plaidItemSchema = new mongoose.Schema({
     last_webhook_code_sent: { type: String, default: null },
 });
 
-module.exports = mongoose.model('PlaidItem', plaidItemSchema);
+module.exports = mongoose.model('Item', itemSchema);

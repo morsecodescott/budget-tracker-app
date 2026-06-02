@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema({
     },
     plaidItems: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'PlaidItem'
+        ref: 'Item'
     }],
     onboardingCompleted: {
         type: Boolean,

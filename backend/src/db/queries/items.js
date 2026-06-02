@@ -1,5 +1,5 @@
-const PlaidItem = require('../../models/PlaidItem');
-const PlaidAccount = require('../../models/PlaidAccount');
+const Item = require('../../models/Item');
+const Account = require('../../models/Account');
 const { client: plaidClient } = require('../../config/plaidClient');
 const { deleteTransactionsByAccountId } = require('./transactions');
 
@@ -18,7 +18,7 @@ const createItem = async (
   plaidItemId,
   userId
 ) => {
-  const newItem = new PlaidItem({
+  const newItem = new Item({
     plaidInstitutionId,
     accessToken: plaidAccessToken,
     plaidItemId,
@@ -37,7 +37,7 @@ const createItem = async (
  * @returns {Object} the item document.
  */
 const retrieveItemById = async itemId => {
-  const item = await PlaidItem.findById(itemId);
+  const item = await Item.findById(itemId);
   if (!item) throw new Error('Item not found');
   return item;
 };
@@ -49,7 +49,7 @@ const retrieveItemById = async itemId => {
  * @returns {Object} the item document.
  */
 const retrieveItemByPlaidAccessToken = async accessToken => {
-  const item = await PlaidItem.findOne({ accessToken });
+  const item = await Item.findOne({ accessToken });
   if (!item) throw new Error('Item not found');
   return item;
 };
@@ -62,7 +62,7 @@ const retrieveItemByPlaidAccessToken = async accessToken => {
  * @returns {Object} the item document.
  */
 const retrieveItemByPlaidInstitutionId = async (plaidInstitutionId, userId) => {
-  const item = await PlaidItem.findOne({ institutionId: plaidInstitutionId, userId });
+  const item = await Item.findOne({ institutionId: plaidInstitutionId, userId });
   if (!item) throw new Error('Item not found');
   return item;
 };
@@ -73,8 +73,8 @@ const retrieveItemByPlaidInstitutionId = async (plaidInstitutionId, userId) => {
  * @param {string} plaidItemId the Plaid ID of the item.
  * @returns {Object} the item document.
  */
-const retrieveItemByPlaidItemId = async plaidItemId => {
-  const item = await PlaidItem.findOne({ plaidItemId });
+const retrieveItemByItemId = async plaidItemId => {
+  const item = await Item.findOne({ plaidItemId });
   if (!item) throw new Error('Item not found');
   return item;
 };
@@ -86,7 +86,7 @@ const retrieveItemByPlaidItemId = async plaidItemId => {
  * @returns {Object[]} an array of item documents.
  */
 const retrieveItemsByUser = async userId => {
-  return await PlaidItem.find({ userId });
+  return await Item.find({ userId });
 };
 
 /**
@@ -96,7 +96,7 @@ const retrieveItemsByUser = async userId => {
  * @param {string} status the new status of the item.
  */
 const updateItemStatus = async (itemId, status) => {
-  const item = await PlaidItem.findByIdAndUpdate(
+  const item = await Item.findByIdAndUpdate(
     itemId,
     { status },
     { new: true }
@@ -112,7 +112,7 @@ const updateItemStatus = async (itemId, status) => {
  * @param {string} transactionsCursor the latest observed transactions cursor.
  */
 const updateItemTransactionsCursor = async (plaidItemId, transactionsCursor) => {
-  const item = await PlaidItem.findOneAndUpdate(
+  const item = await Item.findOneAndUpdate(
     { plaidItemId },
     { transaction_cursor: transactionsCursor },
     { new: true }
@@ -126,7 +126,7 @@ const mongoose = require('mongoose');
 /**
  * Removes a single item by its MongoDB _id, removes it from Plaid, and deletes associated accounts and transactions.
  *
- * @param {string} itemId - The MongoDB ObjectId of the PlaidItem.
+ * @param {string} itemId - The MongoDB ObjectId of the Item.
  * @param {string} userId - The user ID to verify ownership
  * @returns {Object} The deleted item information and operation status
  */
@@ -144,7 +144,7 @@ const deleteItem = async (itemId, userId) => {
   try {
     // Find the item and verify ownership
     console.log("Searching for: ", itemId, userId);
-    item = await PlaidItem.findOne({ _id: itemId, userId });
+    item = await Item.findOne({ _id: itemId, userId });
     if (!item) throw new Error('Item not found');
 
     try {
@@ -166,7 +166,7 @@ const deleteItem = async (itemId, userId) => {
     accountsDeleted = true;
 
     // Delete the item from our database
-    deleteResult = await PlaidItem.deleteOne({ _id: itemId });
+    deleteResult = await Item.deleteOne({ _id: itemId });
 
     return {
       success: true,
@@ -197,12 +197,12 @@ const deleteItem = async (itemId, userId) => {
 /**
  * Deletes all accounts associated with an itemId (MongoDB _id).
  *
- * @param {string} itemId - The MongoDB ObjectId of the PlaidItem.
+ * @param {string} itemId - The MongoDB ObjectId of the Item.
  * @param {Object} [session] - Optional mongoose session for transactions
  */
 const deleteAccountsByItemId = async (itemId, session = null) => {
   const findOptions = session ? { session } : {};
-  const accounts = await PlaidAccount.find({ plaidItemId: itemId }, null, findOptions);
+  const accounts = await Account.find({ plaidItemId: itemId }, null, findOptions);
 
   // Delete all associated transactions for each account
   for (const account of accounts) {
@@ -211,7 +211,7 @@ const deleteAccountsByItemId = async (itemId, session = null) => {
 
   // Now, delete all accounts
   const deleteOptions = session ? { session } : {};
-  const result = await PlaidAccount.deleteMany({ plaidItemId: itemId }, deleteOptions);
+  const result = await Account.deleteMany({ plaidItemId: itemId }, deleteOptions);
   return result;
 };
 
@@ -222,7 +222,7 @@ module.exports = {
   retrieveItemById,
   retrieveItemByPlaidAccessToken,
   retrieveItemByPlaidInstitutionId,
-  retrieveItemByPlaidItemId,
+  retrieveItemByItemId,
   retrieveItemsByUser,
   updateItemStatus,
   updateItemTransactionsCursor,
