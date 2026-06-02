@@ -19,7 +19,7 @@ const MappingTemplates = () => {
 
     const fetchTemplates = async () => {
         try {
-            const response = await axios.get('/api/transactions/templates', { withCredentials: true });
+            const response = await axios.get('/transactions/templates', { withCredentials: true });
             setTemplates(response.data);
         } catch (error) {
             console.error("Error fetching templates", error);
@@ -28,7 +28,7 @@ const MappingTemplates = () => {
 
     const handleSave = async () => {
         try {
-            await axios.post('/api/transactions/templates', newTemplate, { withCredentials: true });
+            await axios.post('/transactions/templates', newTemplate, { withCredentials: true });
             setOpen(false);
             setNewTemplate({ name: '', mapping: { date: '', amount: '', merchant_name: '', name: '' } });
             fetchTemplates();
@@ -39,7 +39,7 @@ const MappingTemplates = () => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`/api/transactions/templates/${id}`, { withCredentials: true });
+            await axios.delete(`/transactions/templates/${id}`, { withCredentials: true });
             fetchTemplates();
         } catch (error) {
             console.error("Error deleting template", error);

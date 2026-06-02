@@ -25,7 +25,7 @@ const CsvUpload = () => {
 
     const fetchTemplates = async () => {
         try {
-            const response = await axios.get('/api/transactions/templates', { withCredentials: true });
+            const response = await axios.get('/transactions/templates', { withCredentials: true });
             setTemplates(response.data);
         } catch (error) {
             console.error("Error fetching templates", error);
@@ -35,7 +35,7 @@ const CsvUpload = () => {
     const fetchAccounts = async () => {
         try {
             // Reusing existing plaid item fetching to get accounts
-            const response = await axios.get('/api/plaid/items', { withCredentials: true });
+            const response = await axios.get('/plaid/items', { withCredentials: true });
             const allAccounts = response.data.flatMap(item => item.accounts.map(acc => ({ ...acc, institutionName: item.institutionName })));
             setAccounts(allAccounts);
         } catch (error) {
@@ -46,7 +46,7 @@ const CsvUpload = () => {
     const handleCreateAccount = async () => {
         setLoading(true);
         try {
-            const response = await axios.post('/api/transactions/manual-account', newAccountInfo, { withCredentials: true });
+            const response = await axios.post('/transactions/manual-account', newAccountInfo, { withCredentials: true });
             setSuccess(`Created manual account: ${response.data.account.accountName}`);
             setIsCreatingAccount(false);
             setNewAccountInfo({ institutionName: '', accountName: '' });
@@ -105,7 +105,7 @@ const CsvUpload = () => {
                 }
 
                 try {
-                    const response = await axios.post('/api/transactions/upload', {
+                    const response = await axios.post('/transactions/upload', {
                         accountId: selectedAccount,
                         templateId: selectedTemplate,
                         transactions
