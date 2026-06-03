@@ -2,6 +2,7 @@
 const Transaction = require('../../models/Transaction');
 const { retrieveAccountByAccountId } = require('./accounts');
 const { mapToInternalCategory } = require('../queries/services');
+const CategoryRule = require('../../models/CategoryRule');
 
 
 
@@ -39,7 +40,43 @@ const createOrUpdateTransactions = async (transactions) => {
     // Retrieve the corresponding MongoDB account document by the accountId
     const account = await retrieveAccountByAccountId(accountId);
 
-    const internalCategoryId = await mapToInternalCategory(plaidCategory);
+    let internalCategoryId = await mapToInternalCategory(plaidCategory);
+
+    // Apply category rules
+    try {
+        const item = await require('../../models/Item').findById(account.itemId || account.plaidItemId);
+        if (item) {
+            const rules = await CategoryRule.find({ userId: item.userId });
+            for (const rule of rules) {
+                const escapedMerchantName = rule.merchantName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                let isMatch = false;
+                const mName = merchant_name || name || "";
+
+                switch (rule.matchType) {
+                    case 'exact':
+                        isMatch = new RegExp(`^${escapedMerchantName}$`, 'i').test(mName);
+                        break;
+                    case 'startsWith':
+                        isMatch = new RegExp(`^${escapedMerchantName}`, 'i').test(mName);
+                        break;
+                    case 'endsWith':
+                        isMatch = new RegExp(`${escapedMerchantName}$`, 'i').test(mName);
+                        break;
+                    case 'contains':
+                    default:
+                        isMatch = new RegExp(escapedMerchantName, 'i').test(mName);
+                        break;
+                }
+
+                if (isMatch) {
+                    internalCategoryId = rule.categoryId;
+                    break; // Apply first matched rule
+                }
+            }
+        }
+    } catch (ruleErr) {
+        console.error('Error applying category rules during sync:', ruleErr);
+    }
 
 
     // Create or update the transaction based on the plaidTransactionId

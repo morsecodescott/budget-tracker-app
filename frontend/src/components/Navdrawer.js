@@ -63,6 +63,9 @@ const Navdrawer = () => {
             <ListItem button component={RouterLink} to="/transactions">
               <ListItemText primary="Transactions" />
             </ListItem>
+            <ListItem button component={RouterLink} to="/category-rules">
+              <ListItemText primary="Category Rules" />
+            </ListItem>
             <ListItem button component={RouterLink} to="/linked-accounts">
               <ListItemText primary="Accounts" />
             </ListItem>

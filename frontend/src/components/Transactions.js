@@ -18,7 +18,18 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  Checkbox,
+  Button,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+  Snackbar,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import Breadcrumbs from "./Breadcrumbs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -43,6 +54,22 @@ const TransactionsPage = ({ userId }) => {
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [categories, setCategories] = useState([]);
   const [budgetFilter, setBudgetFilter] = useState("all"); // New state for budget filter
+  const [selectedTransactionIds, setSelectedTransactionIds] = useState([]);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+
+  // Snackbar / Toast for Category Rules & General Notifications
+  const [toastOpen, setToastOpen] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastAction, setToastAction] = useState(null); // allow optional action on toast
+  const [rulePromptData, setRulePromptData] = useState(null);
+
+  // Dialog for confirmations
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", content: "", onConfirm: null });
+
+  const [ruleDialogOpen, setRuleDialogOpen] = useState(false);
+  const [ruleData, setRuleData] = useState({ merchantName: "", matchType: "contains", categoryId: "" });
+
   const isInitialized = useRef(false);
   const { lastMessage } = useSocket();
 
@@ -101,8 +128,10 @@ const TransactionsPage = ({ userId }) => {
   }, []);
 
   // Fetch transactions whenever filter changes
-  const fetchTransactions = async () => {
-    setLoading(true);
+  const fetchTransactions = async (showLoader = true) => {
+    if (showLoader) {
+      setLoading(true);
+    }
     setError("");
     try {
       const params = {
@@ -120,7 +149,9 @@ const TransactionsPage = ({ userId }) => {
     } catch (err) {
       setError("Failed to fetch transactions.");
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   };
 
@@ -175,6 +206,139 @@ const TransactionsPage = ({ userId }) => {
     setBudgetFilter(event.target.value); // Update budget filter state
   };
 
+  const handleSelectAllClick = (event) => {
+    if (event.target.checked) {
+      const newSelecteds = transactions.map((n) => n._id);
+      setSelectedTransactionIds(newSelecteds);
+      return;
+    }
+    setSelectedTransactionIds([]);
+  };
+
+  const handleClick = (event, id) => {
+    const selectedIndex = selectedTransactionIds.indexOf(id);
+    let newSelected = [];
+
+    if (selectedIndex === -1) {
+      newSelected = newSelected.concat(selectedTransactionIds, id);
+    } else if (selectedIndex === 0) {
+      newSelected = newSelected.concat(selectedTransactionIds.slice(1));
+    } else if (selectedIndex === selectedTransactionIds.length - 1) {
+      newSelected = newSelected.concat(selectedTransactionIds.slice(0, -1));
+    } else if (selectedIndex > 0) {
+      newSelected = newSelected.concat(
+        selectedTransactionIds.slice(0, selectedIndex),
+        selectedTransactionIds.slice(selectedIndex + 1)
+      );
+    }
+
+    setSelectedTransactionIds(newSelected);
+  };
+
+  const isSelected = (id) => selectedTransactionIds.indexOf(id) !== -1;
+
+  const showToast = (message, action = null) => {
+    setToastMessage(message);
+    // Wrap action in a factory function so React stores the function itself
+    setToastAction(() => action ? () => action() : null);
+    setToastOpen(true);
+  };
+
+  const handleMassDelete = () => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Transactions",
+      content: `Are you sure you want to delete ${selectedTransactionIds.length} transactions?`,
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, open: false });
+        try {
+          await axios.delete("/transactions", { data: { transactionIds: selectedTransactionIds } });
+          setSelectedTransactionIds([]);
+          showToast("Transactions deleted successfully");
+          fetchTransactions(false);
+        } catch (err) {
+          showToast("Failed to delete transactions");
+        }
+      }
+    });
+  };
+
+  const handleDeleteSingle = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Transaction",
+      content: "Are you sure you want to delete this transaction?",
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, open: false });
+        try {
+          await axios.delete(`/transactions/${id}`);
+          showToast("Transaction deleted successfully");
+          fetchTransactions(false);
+        } catch (err) {
+          showToast("Failed to delete transaction");
+        }
+      }
+    });
+  };
+
+  const handleEditClick = (transaction) => {
+    setEditingTransaction({
+        ...transaction,
+        categoryId: transaction.category ? transaction.category._id : ""
+    });
+    setEditDialogOpen(true);
+  };
+
+  const handleEditSave = async () => {
+    try {
+      const originalCategoryId = transactions.find(t => t._id === editingTransaction._id)?.category?._id;
+
+      await axios.put(`/transactions/${editingTransaction._id}`, {
+        name: editingTransaction.name,
+        merchant_name: editingTransaction.merchant_name,
+        amount: editingTransaction.amount,
+        date: editingTransaction.date,
+        category: { _id: editingTransaction.categoryId } // send as object with _id
+      });
+
+      // Check if category changed
+      if (editingTransaction.categoryId && editingTransaction.categoryId !== originalCategoryId) {
+        const promptData = {
+          merchantName: editingTransaction.merchant_name || editingTransaction.name,
+          categoryId: editingTransaction.categoryId
+        };
+        setRulePromptData(promptData);
+
+        // Pass the prompt data explicitly to avoid stale closures
+        showToast("Category updated. Create a rule for similar transactions?", () => {
+           setToastOpen(false);
+           setRuleData({
+             merchantName: promptData.merchantName,
+             matchType: "contains",
+             categoryId: promptData.categoryId
+           });
+           setRuleDialogOpen(true);
+        });
+      } else {
+        showToast("Transaction updated successfully");
+      }
+
+      setEditDialogOpen(false);
+      fetchTransactions(false);
+    } catch (err) {
+      showToast("Failed to update transaction");
+    }
+  };
+
+  const handleSaveRule = async () => {
+    try {
+      await axios.post("/category-rules", ruleData);
+      setRuleDialogOpen(false);
+      showToast("Rule created successfully!");
+    } catch (err) {
+      showToast("Failed to create rule");
+    }
+  };
 
 
   return (
@@ -249,25 +413,66 @@ const TransactionsPage = ({ userId }) => {
             <Typography color="error">{error}</Typography>
           ) : (
             <Paper>
+              {selectedTransactionIds.length > 0 && (
+                <Box p={2} display="flex" justifyContent="space-between" alignItems="center" bgcolor="primary.light" color="primary.contrastText">
+                  <Typography variant="subtitle1">
+                    {selectedTransactionIds.length} selected
+                  </Typography>
+                  <Button variant="contained" color="error" onClick={handleMassDelete}>
+                    Delete Selected
+                  </Button>
+                </Box>
+              )}
               <TableContainer>
                 <Table>
                   <TableHead>
                     <TableRow>
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          indeterminate={selectedTransactionIds.length > 0 && selectedTransactionIds.length < transactions.length}
+                          checked={transactions.length > 0 && selectedTransactionIds.length === transactions.length}
+                          onChange={handleSelectAllClick}
+                        />
+                      </TableCell>
                       <TableCell>Date</TableCell>
                       <TableCell>Name</TableCell>
                       <TableCell>Category</TableCell>
                       <TableCell align="right">Amount</TableCell>
+                      <TableCell align="center">Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {transactions.map((transaction) => (
-                      <TableRow key={transaction._id}>
-                        <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                        <TableCell>{transaction.name}</TableCell>
-                        <TableCell>{transaction.category?.name || "Uncategorized"}</TableCell>
-                        <TableCell align="right">${transaction.amount.toFixed(2)}</TableCell>
-                      </TableRow>
-                    ))}
+                    {transactions.map((transaction) => {
+                      const isItemSelected = isSelected(transaction._id);
+                      return (
+                        <TableRow
+                          key={transaction._id}
+                          hover
+                          role="checkbox"
+                          aria-checked={isItemSelected}
+                          selected={isItemSelected}
+                        >
+                          <TableCell padding="checkbox">
+                            <Checkbox
+                              checked={isItemSelected}
+                              onChange={(event) => handleClick(event, transaction._id)}
+                            />
+                          </TableCell>
+                          <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
+                          <TableCell>{transaction.name}</TableCell>
+                          <TableCell>{transaction.category?.name || "Uncategorized"}</TableCell>
+                          <TableCell align="right">${transaction.amount.toFixed(2)}</TableCell>
+                          <TableCell align="center">
+                            <IconButton size="small" onClick={() => handleEditClick(transaction)}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton size="small" color="error" onClick={() => handleDeleteSingle(transaction._id)}>
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -282,6 +487,131 @@ const TransactionsPage = ({ userId }) => {
               />
             </Paper>
           )}
+
+          {/* Edit Dialog */}
+          <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} fullWidth maxWidth="sm">
+            <DialogTitle>Edit Transaction</DialogTitle>
+            <DialogContent>
+              {editingTransaction && (
+                <Box mt={2} display="flex" flexDirection="column" gap={2}>
+                  <LocalizationProvider dateAdapter={AdapterDateFns}>
+                    <DatePicker
+                      label="Date"
+                      value={new Date(editingTransaction.date)}
+                      onChange={(value) => setEditingTransaction({...editingTransaction, date: value})}
+                      TextField={(params) => <TextField {...params} />}
+                    />
+                  </LocalizationProvider>
+                  <TextField
+                    label="Name"
+                    value={editingTransaction.name || ''}
+                    onChange={(e) => setEditingTransaction({...editingTransaction, name: e.target.value})}
+                  />
+                  <TextField
+                    label="Merchant Name"
+                    value={editingTransaction.merchant_name || ''}
+                    onChange={(e) => setEditingTransaction({...editingTransaction, merchant_name: e.target.value})}
+                  />
+                  <TextField
+                    label="Amount"
+                    type="number"
+                    value={editingTransaction.amount || 0}
+                    onChange={(e) => setEditingTransaction({...editingTransaction, amount: parseFloat(e.target.value)})}
+                  />
+                  <FormControl fullWidth>
+                    <InputLabel id="edit-category-label">Category</InputLabel>
+                    <Select
+                      labelId="edit-category-label"
+                      value={editingTransaction.categoryId}
+                      label="Category"
+                      onChange={(e) => setEditingTransaction({...editingTransaction, categoryId: e.target.value})}
+                    >
+                      {categories.map((cat) => (
+                        <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleEditSave} variant="contained" color="primary">Save</Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* Confirmation Dialog */}
+          <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}>
+            <DialogTitle>{confirmDialog.title}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>{confirmDialog.content}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setConfirmDialog({ ...confirmDialog, open: false })}>Cancel</Button>
+              <Button onClick={confirmDialog.onConfirm} color="error" variant="contained" autoFocus>Delete</Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* General Toast */}
+          <Snackbar
+            open={toastOpen}
+            autoHideDuration={6000}
+            onClose={() => setToastOpen(false)}
+            message={toastMessage}
+            action={
+              toastAction ? (
+                <Button color="secondary" size="small" onClick={toastAction}>
+                  Create Rule
+                </Button>
+              ) : null
+            }
+          />
+
+          {/* Create Rule Dialog */}
+          <Dialog open={ruleDialogOpen} onClose={() => setRuleDialogOpen(false)}>
+            <DialogTitle>Create Category Rule</DialogTitle>
+            <DialogContent>
+              <Box mt={2} display="flex" flexDirection="column" gap={2}>
+                <TextField
+                  label="Merchant Name"
+                  value={ruleData.merchantName}
+                  onChange={(e) => setRuleData({ ...ruleData, merchantName: e.target.value })}
+                  fullWidth
+                />
+                <FormControl fullWidth>
+                  <InputLabel id="rule-match-type">Match Type</InputLabel>
+                  <Select
+                    labelId="rule-match-type"
+                    value={ruleData.matchType}
+                    label="Match Type"
+                    onChange={(e) => setRuleData({ ...ruleData, matchType: e.target.value })}
+                  >
+                    <MenuItem value="exact">Exact Match</MenuItem>
+                    <MenuItem value="contains">Contains</MenuItem>
+                    <MenuItem value="startsWith">Starts With</MenuItem>
+                    <MenuItem value="endsWith">Ends With</MenuItem>
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel id="rule-category">Category</InputLabel>
+                  <Select
+                    labelId="rule-category"
+                    value={ruleData.categoryId}
+                    label="Category"
+                    onChange={(e) => setRuleData({ ...ruleData, categoryId: e.target.value })}
+                  >
+                    {categories.map((cat) => (
+                      <MenuItem key={cat._id} value={cat._id}>{cat.name}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </Box>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setRuleDialogOpen(false)}>Cancel</Button>
+              <Button onClick={handleSaveRule} variant="contained" color="primary">Save Rule</Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       )}
     </Container>
