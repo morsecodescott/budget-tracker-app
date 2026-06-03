@@ -128,8 +128,10 @@ const TransactionsPage = ({ userId }) => {
   }, []);
 
   // Fetch transactions whenever filter changes
-  const fetchTransactions = async () => {
-    setLoading(true);
+  const fetchTransactions = async (showLoader = true) => {
+    if (showLoader) {
+      setLoading(true);
+    }
     setError("");
     try {
       const params = {
@@ -147,7 +149,9 @@ const TransactionsPage = ({ userId }) => {
     } catch (err) {
       setError("Failed to fetch transactions.");
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   };
 
@@ -235,7 +239,8 @@ const TransactionsPage = ({ userId }) => {
 
   const showToast = (message, action = null) => {
     setToastMessage(message);
-    setToastAction(action);
+    // Wrap action in an arrow function so React doesn't immediately execute it as a state updater
+    setToastAction(() => action);
     setToastOpen(true);
   };
 
@@ -250,7 +255,7 @@ const TransactionsPage = ({ userId }) => {
           await axios.delete("/transactions", { data: { transactionIds: selectedTransactionIds } });
           setSelectedTransactionIds([]);
           showToast("Transactions deleted successfully");
-          fetchTransactions();
+          fetchTransactions(false);
         } catch (err) {
           showToast("Failed to delete transactions");
         }
@@ -268,7 +273,7 @@ const TransactionsPage = ({ userId }) => {
         try {
           await axios.delete(`/transactions/${id}`);
           showToast("Transaction deleted successfully");
-          fetchTransactions();
+          fetchTransactions(false);
         } catch (err) {
           showToast("Failed to delete transaction");
         }
@@ -308,7 +313,7 @@ const TransactionsPage = ({ userId }) => {
       }
 
       setEditDialogOpen(false);
-      fetchTransactions();
+      fetchTransactions(false);
     } catch (err) {
       showToast("Failed to update transaction");
     }

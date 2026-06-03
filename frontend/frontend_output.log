@@ -45,3 +45,13 @@ See https://nodejs.org/api/errors.html#errors_common_system_errors for more info
 
 Proxy error: Could not proxy request /transactions?startDate=2026-05-04T17:05:48.852Z&endDate=2026-06-03T17:05:48.852Z&page=0&rowsPerPage=25&budgetFilter=all from localhost:3000 to http://localhost:4000.
 See https://nodejs.org/api/errors.html#errors_common_system_errors for more information (ECONNREFUSED).
+
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully
+Compiling...
+Compiled successfully!
+webpack compiled successfully

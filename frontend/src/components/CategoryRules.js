@@ -76,8 +76,10 @@ const CategoryRules = () => {
     return result;
   };
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (showLoader = true) => {
+    if (showLoader) {
+      setLoading(true);
+    }
     try {
       const [rulesRes, catRes] = await Promise.all([
         axios.get("/category-rules"),
@@ -88,7 +90,9 @@ const CategoryRules = () => {
     } catch (err) {
       console.error("Failed to fetch data", err);
     } finally {
-      setLoading(false);
+      if (showLoader) {
+        setLoading(false);
+      }
     }
   };
 
@@ -121,7 +125,7 @@ const CategoryRules = () => {
         setToast({ open: true, message: "Rule created successfully!" });
       }
       setDialogOpen(false);
-      fetchData();
+      fetchData(false);
     } catch (err) {
       setToast({ open: true, message: "Failed to save rule" });
     }
@@ -137,7 +141,7 @@ const CategoryRules = () => {
         try {
           await axios.delete(`/category-rules/${id}`);
           setToast({ open: true, message: "Rule deleted successfully!" });
-          fetchData();
+          fetchData(false);
         } catch (err) {
           setToast({ open: true, message: "Failed to delete rule" });
         }
