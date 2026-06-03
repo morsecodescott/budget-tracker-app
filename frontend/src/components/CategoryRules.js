@@ -16,12 +16,14 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
   TextField,
   FormControl,
   InputLabel,
   Select,
   MenuItem,
   CircularProgress,
+  Snackbar,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -35,6 +37,12 @@ const CategoryRules = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
+
+  // Custom dialog state for confirmations
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", content: "", onConfirm: null });
+
+  // Snackbar toast state
+  const [toast, setToast] = useState({ open: false, message: "" });
 
   const [ruleData, setRuleData] = useState({
     merchantName: "",
@@ -107,37 +115,52 @@ const CategoryRules = () => {
     try {
       if (editingRule) {
         await axios.put(`/category-rules/${editingRule._id}`, ruleData);
+        setToast({ open: true, message: "Rule updated successfully!" });
       } else {
         await axios.post("/category-rules", ruleData);
+        setToast({ open: true, message: "Rule created successfully!" });
       }
       setDialogOpen(false);
       fetchData();
     } catch (err) {
-      alert("Failed to save rule");
+      setToast({ open: true, message: "Failed to save rule" });
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure you want to delete this rule?")) {
-      try {
-        await axios.delete(`/category-rules/${id}`);
-        fetchData();
-      } catch (err) {
-        alert("Failed to delete rule");
-      }
-    }
-  };
-
-  const handleApply = async (id) => {
-    if (window.confirm("Are you sure you want to run this rule against all past transactions?")) {
+  const handleDeleteClick = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Rule",
+      content: "Are you sure you want to delete this rule?",
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, open: false });
         try {
-            const res = await axios.post(`/category-rules/${id}/apply`);
-            alert(res.data.message);
+          await axios.delete(`/category-rules/${id}`);
+          setToast({ open: true, message: "Rule deleted successfully!" });
+          fetchData();
         } catch (err) {
-            alert("Failed to apply rule to past transactions");
+          setToast({ open: true, message: "Failed to delete rule" });
         }
-    }
-  }
+      }
+    });
+  };
+
+  const handleApplyClick = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: "Apply Rule",
+      content: "Are you sure you want to run this rule against all past transactions?",
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, open: false });
+        try {
+          const res = await axios.post(`/category-rules/${id}/apply`);
+          setToast({ open: true, message: res.data.message });
+        } catch (err) {
+          setToast({ open: true, message: "Failed to apply rule to past transactions" });
+        }
+      }
+    });
+  };
 
   return (
     <Container maxWidth="md">
@@ -178,13 +201,13 @@ const CategoryRules = () => {
                         <TableCell>{rule.matchType}</TableCell>
                         <TableCell>{rule.categoryId?.name}</TableCell>
                         <TableCell align="center">
-                          <IconButton size="small" color="primary" onClick={() => handleApply(rule._id)} title="Run on past transactions">
+                          <IconButton size="small" color="primary" onClick={() => handleApplyClick(rule._id)} title="Run on past transactions">
                             <PlayArrowIcon fontSize="small" />
                           </IconButton>
                           <IconButton size="small" onClick={() => handleOpenDialog(rule)} title="Edit">
                             <EditIcon fontSize="small" />
                           </IconButton>
-                          <IconButton size="small" color="error" onClick={() => handleDelete(rule._id)} title="Delete">
+                          <IconButton size="small" color="error" onClick={() => handleDeleteClick(rule._id)} title="Delete">
                             <DeleteIcon fontSize="small" />
                           </IconButton>
                         </TableCell>
@@ -198,6 +221,27 @@ const CategoryRules = () => {
         )}
       </Box>
 
+      {/* Confirmation Dialog */}
+      <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}>
+        <DialogTitle>{confirmDialog.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText>{confirmDialog.content}</DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmDialog({ ...confirmDialog, open: false })}>Cancel</Button>
+          <Button onClick={confirmDialog.onConfirm} color="primary" variant="contained" autoFocus>Confirm</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Snackbar Toast */}
+      <Snackbar
+        open={toast.open}
+        autoHideDuration={4000}
+        onClose={() => setToast({ ...toast, open: false })}
+        message={toast.message}
+      />
+
+      {/* Rule Form Dialog */}
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>{editingRule ? "Edit Rule" : "Create Rule"}</DialogTitle>
         <DialogContent>

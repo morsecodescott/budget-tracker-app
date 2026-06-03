@@ -25,6 +25,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  DialogContentText,
   Snackbar,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -57,10 +58,14 @@ const TransactionsPage = ({ userId }) => {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
 
-  // Snackbar / Toast for Category Rules
+  // Snackbar / Toast for Category Rules & General Notifications
   const [toastOpen, setToastOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
+  const [toastAction, setToastAction] = useState(null); // allow optional action on toast
   const [rulePromptData, setRulePromptData] = useState(null);
+
+  // Dialog for confirmations
+  const [confirmDialog, setConfirmDialog] = useState({ open: false, title: "", content: "", onConfirm: null });
 
   const [ruleDialogOpen, setRuleDialogOpen] = useState(false);
   const [ruleData, setRuleData] = useState({ merchantName: "", matchType: "contains", categoryId: "" });
@@ -228,27 +233,47 @@ const TransactionsPage = ({ userId }) => {
 
   const isSelected = (id) => selectedTransactionIds.indexOf(id) !== -1;
 
-  const handleMassDelete = async () => {
-    if (window.confirm(`Are you sure you want to delete ${selectedTransactionIds.length} transactions?`)) {
-      try {
-        await axios.delete("/transactions", { data: { transactionIds: selectedTransactionIds } });
-        setSelectedTransactionIds([]);
-        fetchTransactions();
-      } catch (err) {
-        alert("Failed to delete transactions");
-      }
-    }
+  const showToast = (message, action = null) => {
+    setToastMessage(message);
+    setToastAction(action);
+    setToastOpen(true);
   };
 
-  const handleDeleteSingle = async (id) => {
-    if (window.confirm("Are you sure you want to delete this transaction?")) {
-      try {
-        await axios.delete(`/transactions/${id}`);
-        fetchTransactions();
-      } catch (err) {
-        alert("Failed to delete transaction");
+  const handleMassDelete = () => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Transactions",
+      content: `Are you sure you want to delete ${selectedTransactionIds.length} transactions?`,
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, open: false });
+        try {
+          await axios.delete("/transactions", { data: { transactionIds: selectedTransactionIds } });
+          setSelectedTransactionIds([]);
+          showToast("Transactions deleted successfully");
+          fetchTransactions();
+        } catch (err) {
+          showToast("Failed to delete transactions");
+        }
       }
-    }
+    });
+  };
+
+  const handleDeleteSingle = (id) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Transaction",
+      content: "Are you sure you want to delete this transaction?",
+      onConfirm: async () => {
+        setConfirmDialog({ ...confirmDialog, open: false });
+        try {
+          await axios.delete(`/transactions/${id}`);
+          showToast("Transaction deleted successfully");
+          fetchTransactions();
+        } catch (err) {
+          showToast("Failed to delete transaction");
+        }
+      }
+    });
   };
 
   const handleEditClick = (transaction) => {
@@ -277,14 +302,15 @@ const TransactionsPage = ({ userId }) => {
           merchantName: editingTransaction.merchant_name || editingTransaction.name,
           categoryId: editingTransaction.categoryId
         });
-        setToastMessage("Category updated. Create a rule for similar transactions?");
-        setToastOpen(true);
+        showToast("Category updated. Create a rule for similar transactions?", handleCreateRulePrompt);
+      } else {
+        showToast("Transaction updated successfully");
       }
 
       setEditDialogOpen(false);
       fetchTransactions();
     } catch (err) {
-      alert("Failed to update transaction");
+      showToast("Failed to update transaction");
     }
   };
 
@@ -304,10 +330,9 @@ const TransactionsPage = ({ userId }) => {
     try {
       await axios.post("/category-rules", ruleData);
       setRuleDialogOpen(false);
-      // Optionally apply to past txs automatically or prompt. For now, just save.
-      alert("Rule created successfully!");
+      showToast("Rule created successfully!");
     } catch (err) {
-      alert("Failed to create rule");
+      showToast("Failed to create rule");
     }
   };
 
@@ -511,16 +536,30 @@ const TransactionsPage = ({ userId }) => {
             </DialogActions>
           </Dialog>
 
-          {/* Category Rule Toast */}
+          {/* Confirmation Dialog */}
+          <Dialog open={confirmDialog.open} onClose={() => setConfirmDialog({ ...confirmDialog, open: false })}>
+            <DialogTitle>{confirmDialog.title}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>{confirmDialog.content}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setConfirmDialog({ ...confirmDialog, open: false })}>Cancel</Button>
+              <Button onClick={confirmDialog.onConfirm} color="error" variant="contained" autoFocus>Delete</Button>
+            </DialogActions>
+          </Dialog>
+
+          {/* General Toast */}
           <Snackbar
             open={toastOpen}
             autoHideDuration={6000}
             onClose={() => setToastOpen(false)}
             message={toastMessage}
             action={
-              <Button color="secondary" size="small" onClick={handleCreateRulePrompt}>
-                Create Rule
-              </Button>
+              toastAction ? (
+                <Button color="secondary" size="small" onClick={toastAction}>
+                  Create Rule
+                </Button>
+              ) : null
             }
           />
 
