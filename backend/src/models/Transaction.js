@@ -9,6 +9,11 @@ const transactionSchema = new mongoose.Schema({
     date: { type: Date, required: true },
     name: { type: String, required: true },
     merchant_name: { type: String, required: true },
+    merchant_reference_number: { type: String },
+    merchant_category_description: { type: String },
+    merchant_city: { type: String },
+    merchant_state_or_province: { type: String },
+    merchant_country_code: { type: String },
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',

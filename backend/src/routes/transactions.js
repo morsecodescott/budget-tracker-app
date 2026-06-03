@@ -182,6 +182,12 @@ router.post('/upload', async (req, res) => {
             const rawMerchant = row[mapping.merchant_name];
             const rawName = mapping.name && row[mapping.name] ? row[mapping.name] : rawMerchant;
 
+            const rawMerchantRef = mapping.merchant_reference_number && row[mapping.merchant_reference_number] ? row[mapping.merchant_reference_number] : undefined;
+            const rawMerchantCategory = mapping.merchant_category_description && row[mapping.merchant_category_description] ? row[mapping.merchant_category_description] : undefined;
+            const rawMerchantCity = mapping.merchant_city && row[mapping.merchant_city] ? row[mapping.merchant_city] : undefined;
+            const rawMerchantState = mapping.merchant_state_or_province && row[mapping.merchant_state_or_province] ? row[mapping.merchant_state_or_province] : undefined;
+            const rawMerchantCountry = mapping.merchant_country_code && row[mapping.merchant_country_code] ? row[mapping.merchant_country_code] : undefined;
+
             if (!rawDate || !rawAmount || !rawMerchant) continue; // Skip invalid rows
 
             // Basic parsing (amount could be negative or have $ signs)
@@ -212,6 +218,11 @@ router.post('/upload', async (req, res) => {
                 date,
                 name: rawName,
                 merchant_name: rawMerchant,
+                merchant_reference_number: rawMerchantRef,
+                merchant_category_description: rawMerchantCategory,
+                merchant_city: rawMerchantCity,
+                merchant_state_or_province: rawMerchantState,
+                merchant_country_code: rawMerchantCountry,
                 // Optional category logic could go here
             });
             await newTx.save();
