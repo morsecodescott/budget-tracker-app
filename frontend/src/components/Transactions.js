@@ -239,8 +239,8 @@ const TransactionsPage = ({ userId }) => {
 
   const showToast = (message, action = null) => {
     setToastMessage(message);
-    // Wrap action in an arrow function so React doesn't immediately execute it as a state updater
-    setToastAction(() => action);
+    // Wrap action in a factory function so React stores the function itself
+    setToastAction(() => action ? () => action() : null);
     setToastOpen(true);
   };
 
@@ -303,11 +303,22 @@ const TransactionsPage = ({ userId }) => {
 
       // Check if category changed
       if (editingTransaction.categoryId && editingTransaction.categoryId !== originalCategoryId) {
-        setRulePromptData({
+        const promptData = {
           merchantName: editingTransaction.merchant_name || editingTransaction.name,
           categoryId: editingTransaction.categoryId
+        };
+        setRulePromptData(promptData);
+
+        // Pass the prompt data explicitly to avoid stale closures
+        showToast("Category updated. Create a rule for similar transactions?", () => {
+           setToastOpen(false);
+           setRuleData({
+             merchantName: promptData.merchantName,
+             matchType: "contains",
+             categoryId: promptData.categoryId
+           });
+           setRuleDialogOpen(true);
         });
-        showToast("Category updated. Create a rule for similar transactions?", handleCreateRulePrompt);
       } else {
         showToast("Transaction updated successfully");
       }
@@ -316,18 +327,6 @@ const TransactionsPage = ({ userId }) => {
       fetchTransactions(false);
     } catch (err) {
       showToast("Failed to update transaction");
-    }
-  };
-
-  const handleCreateRulePrompt = () => {
-    setToastOpen(false);
-    if (rulePromptData) {
-      setRuleData({
-        merchantName: rulePromptData.merchantName,
-        matchType: "contains",
-        categoryId: rulePromptData.categoryId
-      });
-      setRuleDialogOpen(true);
     }
   };
 
