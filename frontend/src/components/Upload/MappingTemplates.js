@@ -10,7 +10,17 @@ const MappingTemplates = () => {
     const [open, setOpen] = useState(false);
     const [newTemplate, setNewTemplate] = useState({
         name: '',
-        mapping: { date: '', amount: '', merchant_name: '', name: '' }
+        mapping: {
+            date: '',
+            amount: '',
+            merchant_name: '',
+            name: '',
+            merchant_reference_number: '',
+            merchant_category_description: '',
+            merchant_city: '',
+            merchant_state_or_province: '',
+            merchant_country_code: ''
+        }
     });
 
     useEffect(() => {
@@ -30,7 +40,20 @@ const MappingTemplates = () => {
         try {
             await axios.post('/transactions/templates', newTemplate, { withCredentials: true });
             setOpen(false);
-            setNewTemplate({ name: '', mapping: { date: '', amount: '', merchant_name: '', name: '' } });
+            setNewTemplate({
+                name: '',
+                mapping: {
+                    date: '',
+                    amount: '',
+                    merchant_name: '',
+                    name: '',
+                    merchant_reference_number: '',
+                    merchant_category_description: '',
+                    merchant_city: '',
+                    merchant_state_or_province: '',
+                    merchant_country_code: ''
+                }
+            });
             fetchTemplates();
         } catch (error) {
             console.error("Error saving template", error);
@@ -102,6 +125,26 @@ const MappingTemplates = () => {
                      <TextField
                         margin="dense" label="Secondary Description CSV Header (Optional)" fullWidth
                         value={newTemplate.mapping.name} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, name: e.target.value } })}
+                    />
+                    <TextField
+                        margin="dense" label="Merchant Reference Number CSV Header (Optional)" fullWidth
+                        value={newTemplate.mapping.merchant_reference_number} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, merchant_reference_number: e.target.value } })}
+                    />
+                    <TextField
+                        margin="dense" label="Merchant Category Description CSV Header (Optional)" fullWidth
+                        value={newTemplate.mapping.merchant_category_description} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, merchant_category_description: e.target.value } })}
+                    />
+                    <TextField
+                        margin="dense" label="Merchant City CSV Header (Optional)" fullWidth
+                        value={newTemplate.mapping.merchant_city} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, merchant_city: e.target.value } })}
+                    />
+                    <TextField
+                        margin="dense" label="Merchant State/Province CSV Header (Optional)" fullWidth
+                        value={newTemplate.mapping.merchant_state_or_province} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, merchant_state_or_province: e.target.value } })}
+                    />
+                    <TextField
+                        margin="dense" label="Merchant Country Code CSV Header (Optional)" fullWidth
+                        value={newTemplate.mapping.merchant_country_code} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, merchant_country_code: e.target.value } })}
                     />
                 </DialogContent>
                 <DialogActions>
