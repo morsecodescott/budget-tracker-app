@@ -7,6 +7,72 @@ const Item = require('../models/Item');
 const CsvMappingTemplate = require('../models/CsvMappingTemplate');
 
 // ----------------------------------------
+// FETCH TRANSACTIONS
+// ----------------------------------------
+
+router.get('/', async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        // Find all items belonging to the user to get their accounts
+        const items = await Item.find({ userId }).populate('accounts');
+
+        if (!items || items.length === 0) {
+            return res.json({ transactions: [], total: 0, totalPages: 0 });
+        }
+
+        // Extract all account IDs
+        const accountIds = items.flatMap(item => item.accounts.map(acc => acc._id));
+
+        // Basic query: all transactions for user's accounts
+        let query = { accountId: { $in: accountIds } };
+
+        // Handle filtering (similar to PlaidDbService.getFilteredTransactions)
+        if (req.query.startDate && req.query.endDate) {
+            query.date = {
+                $gte: new Date(req.query.startDate),
+                $lte: new Date(req.query.endDate)
+            };
+        }
+
+        if (req.query.accountId) {
+             query.accountId = req.query.accountId;
+        }
+
+        if (req.query.categoryId) {
+             query.category = req.query.categoryId;
+        }
+
+        if (req.query.search) {
+             query.merchant_name = { $regex: req.query.search, $options: 'i' };
+        }
+
+        // Pagination
+        const page = parseInt(req.query.page, 10) || 0;
+        const rowsPerPage = parseInt(req.query.rowsPerPage, 10) || 10;
+
+        // Execute query
+        const total = await Transaction.countDocuments(query);
+        const transactions = await Transaction.find(query)
+            .sort({ date: -1 })
+            .skip(page * rowsPerPage)
+            .limit(rowsPerPage)
+            .populate('category')
+            .populate('accountId');
+
+        res.json({
+            transactions,
+            total,
+            totalPages: Math.ceil(total / rowsPerPage)
+        });
+
+    } catch (err) {
+        console.error('Error fetching transactions:', err);
+        res.status(500).json({ error: 'Failed to fetch transactions' });
+    }
+});
+
+// ----------------------------------------
 // MAPPING TEMPLATES
 // ----------------------------------------
 

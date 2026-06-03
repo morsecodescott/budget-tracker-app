@@ -113,7 +113,7 @@ const TransactionsPage = ({ userId }) => {
         category: selectedCategories.length > 0 ? selectedCategories.map((c) => c._id) : undefined,
         budgetFilter, // Include budget filter in API call
       };
-      const { data } = await axios.get("/plaid/transactions", { params });
+      const { data } = await axios.get("/transactions", { params });
       setTransactions(data.transactions);
       setTotalCount(data.total);
 

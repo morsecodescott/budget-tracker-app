@@ -34,10 +34,8 @@ const CsvUpload = () => {
 
     const fetchAccounts = async () => {
         try {
-            // Reusing existing plaid item fetching to get accounts
-            const response = await axios.get('/plaid/items', { withCredentials: true });
-            const allAccounts = response.data.flatMap(item => item.accounts.map(acc => ({ ...acc, institutionName: item.institutionName })));
-            setAccounts(allAccounts);
+            const response = await axios.get('/accounts', { withCredentials: true });
+            setAccounts(response.data);
         } catch (error) {
             console.error("Error fetching accounts", error);
         }

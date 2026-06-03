@@ -90,7 +90,7 @@ const Trends = () => {
     const fetchTransactions = async () => {
         setLoading(true);
         try {
-            const response = await axios.get('/plaid/transactions', {
+            const response = await axios.get('/transactions', {
                 params: {
                     startDate: dateRange.startDate.toISOString(),
                     endDate: dateRange.endDate.toISOString(),

@@ -46,3 +46,7 @@ module.exports = { publicRouter, protectedRouter };
 // Add transactions routes
 const transactionRoutes = require('./transactions');
 protectedRouter.use('/transactions', transactionRoutes);
+
+// Add generic accounts routes
+const accountRoutes = require('./accounts');
+protectedRouter.use('/accounts', accountRoutes);
