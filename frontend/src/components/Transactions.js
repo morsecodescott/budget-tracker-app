@@ -113,7 +113,7 @@ const TransactionsPage = ({ userId }) => {
         category: selectedCategories.length > 0 ? selectedCategories.map((c) => c._id) : undefined,
         budgetFilter, // Include budget filter in API call
       };
-      const { data } = await axios.get("/plaid/transactions", { params });
+      const { data } = await axios.get("/transactions", { params });
       setTransactions(data.transactions);
       setTotalCount(data.total);
 
@@ -261,7 +261,7 @@ const TransactionsPage = ({ userId }) => {
                   </TableHead>
                   <TableBody>
                     {transactions.map((transaction) => (
-                      <TableRow key={transaction.plaidTransactionId}>
+                      <TableRow key={transaction._id}>
                         <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
                         <TableCell>{transaction.name}</TableCell>
                         <TableCell>{transaction.category?.name || "Uncategorized"}</TableCell>

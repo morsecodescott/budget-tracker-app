@@ -3,7 +3,7 @@
  * https://plaid.com/docs/#transactions-webhooks
  */
 
-const { retrieveItemByPlaidItemId } = require('../db/queries');
+const { retrieveItemByItemId } = require('../db/queries');
 const updateTransactions = require('../update_transactions');
 const { logWebhookEvent } = require('./webhookUtils');
 
@@ -52,7 +52,7 @@ const handleTransactionsWebhook = async (requestBody) => {
       case 'SYNC_UPDATES_AVAILABLE': {
         // Fired when new transactions data becomes available
         const { addedCount, modifiedCount, removedCount } = await updateTransactions(plaidItemId);
-        const item = await retrieveItemByPlaidItemId(plaidItemId);
+        const item = await retrieveItemByItemId(plaidItemId);
 
         // Log successful update
         await logWebhookEvent({

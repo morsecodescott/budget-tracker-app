@@ -1,5 +1,5 @@
-const PlaidAccount = require('../../models/PlaidAccount'); // Mongoose model for accounts
-const PlaidItem = require('../../models/PlaidItem'); // Mongoose model for items
+const Account = require('../../models/Account'); // Mongoose model for accounts
+const Item = require('../../models/Item'); // Mongoose model for items
 
 
 /**
@@ -11,8 +11,8 @@ const PlaidItem = require('../../models/PlaidItem'); // Mongoose model for items
  */
 const createAccounts = async (plaidItemId, accounts) => {
     // Find the item by its Plaid item ID
-    const item = await PlaidItem.findOne({ plaidItemId });
-    if (!item) throw new Error('PlaidItem not found');
+    const item = await Item.findOne({ plaidItemId });
+    if (!item) throw new Error('Item not found');
 
     // Array to hold created/updated accounts
     const accountPromises = accounts.map(async (account) => {
@@ -27,7 +27,7 @@ const createAccounts = async (plaidItemId, accounts) => {
         } = account;
 
         // Update or create the account
-        const updatedAccount = await PlaidAccount.findOneAndUpdate(
+        const updatedAccount = await Account.findOneAndUpdate(
             { plaidAccountId },
             {
                 plaidItemId: item._id,
@@ -64,8 +64,8 @@ const createAccounts = async (plaidItemId, accounts) => {
  * @param {string} plaidAccountId the Plaid ID of the account.
  * @returns {Object} a single account document.
  */
-const retrieveAccountByPlaidAccountId = async (plaidAccountId) => {
-    const account = await PlaidAccount.findOne({ plaidAccountId });
+const retrieveAccountByAccountId = async (plaidAccountId) => {
+    const account = await Account.findOne({ plaidAccountId });
     if (!account) throw new Error('Account not found');
     return account;
 };
@@ -77,7 +77,7 @@ const retrieveAccountByPlaidAccountId = async (plaidAccountId) => {
  * @returns {Object[]} an array of accounts.
  */
 const retrieveAccountsByItemId = async (itemId) => {
-    const item = await PlaidItem.findById(itemId).populate('accounts');
+    const item = await Item.findById(itemId).populate('accounts');
     if (!item) throw new Error('Item not found');
     return item.accounts; // Populated array of account documents
 };
@@ -90,7 +90,7 @@ const retrieveAccountsByItemId = async (itemId) => {
  */
 const retrieveAccountsByUserId = async (userId) => {
     // Find all Plaid items associated with the user
-    const items = await PlaidItem.find({ userId }).populate('accounts');
+    const items = await Item.find({ userId }).populate('accounts');
     const accounts = items.reduce((acc, item) => acc.concat(item.accounts), []);
     return accounts;
 };
@@ -101,7 +101,7 @@ const retrieveAccountsByUserId = async (userId) => {
 
 module.exports = {
     createAccounts,
-    retrieveAccountByPlaidAccountId,
+    retrieveAccountByAccountId,
     retrieveAccountsByItemId,
     retrieveAccountsByUserId,
 

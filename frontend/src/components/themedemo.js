@@ -99,7 +99,7 @@ function DemoPage() {
           </TableHead>
           <TableBody>
             {transactions.map((transaction) => (
-              <TableRow key={transaction.plaidTransactionId}>
+              <TableRow key={transaction._id}>
                 <TableCell>{transaction.name}</TableCell>
                 <TableCell>
                   {transaction.category?.name || 'Uncategorized'}

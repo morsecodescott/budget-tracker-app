@@ -1,7 +1,7 @@
 // Export functions from accounts.js
 const { 
   createAccounts,
-  retrieveAccountByPlaidAccountId,
+  retrieveAccountByAccountId,
   retrieveAccountsByItemId,
   retrieveAccountsByUserId,
   deleteAccountsByItemId,
@@ -15,7 +15,7 @@ const {
     retrieveItemById,
     retrieveItemByPlaidAccessToken,
     retrieveItemByPlaidInstitutionId,
-    retrieveItemByPlaidItemId,
+    retrieveItemByItemId,
     retrieveItemsByUser,
     updateItemStatus,
     updateItemTransactionsCursor,
@@ -43,7 +43,7 @@ const {
   module.exports = {
     // Accounts
     createAccounts,
-  retrieveAccountByPlaidAccountId,
+  retrieveAccountByAccountId,
   retrieveAccountsByItemId,
   retrieveAccountsByUserId,
   deleteAccountsByItemId,
@@ -54,7 +54,7 @@ const {
     retrieveItemById,
     retrieveItemByPlaidAccessToken,
     retrieveItemByPlaidInstitutionId,
-    retrieveItemByPlaidItemId,
+    retrieveItemByItemId,
     retrieveItemsByUser,
     updateItemStatus,
     updateItemTransactionsCursor,

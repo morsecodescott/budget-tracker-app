@@ -1,6 +1,6 @@
 // Import the mongoose models
-const PlaidTransaction = require('../../models/PlaidTransaction');
-const { retrieveAccountByPlaidAccountId } = require('./accounts');
+const Transaction = require('../../models/Transaction');
+const { retrieveAccountByAccountId } = require('./accounts');
 const { mapToInternalCategory } = require('../queries/services');
 
 
@@ -14,7 +14,7 @@ const { mapToInternalCategory } = require('../queries/services');
 const createOrUpdateTransactions = async (transactions) => {
   const pendingQueries = transactions.map(async (transaction) => {
     const {
-      account_id: plaidAccountId,
+      account_id: accountId,
       transaction_id: plaidTransactionId,
       personal_finance_category,
       transaction_type: transactionType,
@@ -36,18 +36,18 @@ const createOrUpdateTransactions = async (transactions) => {
     };
 
 
-    // Retrieve the corresponding MongoDB account document by the plaidAccountId
-    const account = await retrieveAccountByPlaidAccountId(plaidAccountId);
+    // Retrieve the corresponding MongoDB account document by the accountId
+    const account = await retrieveAccountByAccountId(accountId);
 
     const internalCategoryId = await mapToInternalCategory(plaidCategory);
 
 
     // Create or update the transaction based on the plaidTransactionId
     try {
-      await PlaidTransaction.findOneAndUpdate(
+      await Transaction.findOneAndUpdate(
         { plaidTransactionId }, // Match by plaidTransactionId
         {
-          plaidAccountId: account._id, // Reference to the account document
+          accountId: account._id, // Reference to the account document
           plaidTransactionId,
           category: internalCategoryId,
           plaidCategory,
@@ -80,7 +80,7 @@ const createOrUpdateTransactions = async (transactions) => {
  */
 const retrieveTransactionsByAccountId = async (accountId) => {
   try {
-    const transactions = await PlaidTransaction.find({ plaidAccountId: accountId })
+    const transactions = await Transaction.find({ accountId: accountId })
       .populate('category')
       .sort({ date: -1 }) // Sort by date in descending order
       .exec();
@@ -99,7 +99,7 @@ const retrieveTransactionsByAccountId = async (accountId) => {
  */
 const retrieveTransactionsByItemId = async (itemId) => {
   try {
-    const transactions = await PlaidTransaction.find({ item_id: itemId }) // Assuming `item_id` is stored in the transaction
+    const transactions = await Transaction.find({ item_id: itemId }) // Assuming `item_id` is stored in the transaction
       .sort({ date: -1 })
       .exec();
     return transactions;
@@ -117,7 +117,7 @@ const retrieveTransactionsByItemId = async (itemId) => {
  */
 const retrieveTransactionsByUserId = async (userId) => {
   try {
-    const transactions = await PlaidTransaction.find({ user_id: userId }) // Assuming `user_id` is stored in the transaction
+    const transactions = await Transaction.find({ user_id: userId }) // Assuming `user_id` is stored in the transaction
       .sort({ date: -1 })
       .exec();
     return transactions;
@@ -134,7 +134,7 @@ const retrieveTransactionsByUserId = async (userId) => {
  */
 const deleteTransactions = async (plaidTransactionIds) => {
   try {
-    await PlaidTransaction.deleteMany({ plaidTransactionId: { $in: plaidTransactionIds } }).exec();
+    await Transaction.deleteMany({ plaidTransactionId: { $in: plaidTransactionIds } }).exec();
   } catch (err) {
     console.error(`Error deleting transactions:`, err);
   }
@@ -147,7 +147,7 @@ const deleteTransactions = async (plaidTransactionIds) => {
  * @param {string} accountId - The MongoDB ObjectId of the account.
  */
 const deleteTransactionsByAccountId = async (accountId) => {
-  const result = await PlaidTransaction.deleteMany({ plaidAccountId: accountId });
+  const result = await Transaction.deleteMany({ accountId: accountId });
   return result;
 };
 

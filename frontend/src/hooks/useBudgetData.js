@@ -46,6 +46,9 @@ export const useBudgetData = () => {
     const fetchAccountBalances = async () => {
         setLoadingAccountBalances(true);
         try {
+            // Note: If you want non-Plaid accounts in the summary,
+            // the /accounts/summary route might also need updating in the backend.
+            // For now, leaving as-is or we can change to use the new accounts list.
             const { data } = await axios.get("/plaid/accounts/summary");
             setAccountBalances(data.summary);
         } catch (error) {
@@ -64,8 +67,13 @@ export const useBudgetData = () => {
                 new Date(period).getMonth() + 2,
                 0
             ).toISOString();
-            const { data } = await axios.get("/plaid/transactions", {
-                params: { startDate, endDate },
+            const { data } = await axios.get("/transactions", {
+                params: {
+                    startDate,
+                    endDate,
+                    page: 0,
+                    rowsPerPage: 1000 // Get a bunch for budget view
+                },
             });
 
             data.transactions.forEach((transaction) => {
