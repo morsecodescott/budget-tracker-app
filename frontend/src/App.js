@@ -19,6 +19,7 @@ import CategoryManagement from './components/CategoryManagement';
 import UserManagement from './components/UserManagement';
 import PlaidCategoryManagement from './components/PlaidCategoryManagement';
 import TransactionsPage from './components/Transactions';
+import CategoryRules from './components/CategoryRules';
 import Trends from './components/Trends';
 import PlaidTestPage from './components/PlaidTestPage';
 import ThemeDemo from './components/themedemo';
@@ -82,6 +83,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/transactions" element={<TransactionsPage />} />
+        <Route path="/category-rules" element={<CategoryRules />} />
         <Route path="/trends" element={<Trends />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/admin/manage-categories" element={<CategoryManagement />} />

@@ -50,3 +50,7 @@ protectedRouter.use('/transactions', transactionRoutes);
 // Add generic accounts routes
 const accountRoutes = require('./accounts');
 protectedRouter.use('/accounts', accountRoutes);
+
+// Add category rules routes
+const categoryRuleRoutes = require('./categoryRules');
+protectedRouter.use('/category-rules', categoryRuleRoutes);

@@ -210,6 +210,41 @@ router.post('/upload', async (req, res) => {
             const existing = await Transaction.findOne({ uniqueId, accountId });
             if (existing) continue;
 
+            let internalCategoryId = undefined;
+            // Apply category rules
+            try {
+                const CategoryRule = require('../models/CategoryRule');
+                const rules = await CategoryRule.find({ userId: req.user._id });
+                for (const rule of rules) {
+                    const escapedMerchantName = rule.merchantName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    let isMatch = false;
+                    const mName = rawMerchant || rawName || "";
+
+                    switch (rule.matchType) {
+                        case 'exact':
+                            isMatch = new RegExp(`^${escapedMerchantName}$`, 'i').test(mName);
+                            break;
+                        case 'startsWith':
+                            isMatch = new RegExp(`^${escapedMerchantName}`, 'i').test(mName);
+                            break;
+                        case 'endsWith':
+                            isMatch = new RegExp(`${escapedMerchantName}$`, 'i').test(mName);
+                            break;
+                        case 'contains':
+                        default:
+                            isMatch = new RegExp(escapedMerchantName, 'i').test(mName);
+                            break;
+                    }
+
+                    if (isMatch) {
+                        internalCategoryId = rule.categoryId;
+                        break; // Apply first matched rule
+                    }
+                }
+            } catch (ruleErr) {
+                console.error('Error applying category rules during csv upload:', ruleErr);
+            }
+
             const newTx = new Transaction({
                 source: 'manual',
                 accountId,
@@ -223,7 +258,7 @@ router.post('/upload', async (req, res) => {
                 merchant_city: rawMerchantCity,
                 merchant_state_or_province: rawMerchantState,
                 merchant_country_code: rawMerchantCountry,
-                // Optional category logic could go here
+                ...(internalCategoryId && { category: internalCategoryId })
             });
             await newTx.save();
             savedTransactions.push(newTx);
@@ -248,5 +283,115 @@ router.post('/upload', async (req, res) => {
         res.status(500).json({ error: 'Failed to process upload' });
     }
 });
+
+// ----------------------------------------
+// EDIT TRANSACTIONS
+// ----------------------------------------
+
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user._id;
+
+        // Verify the transaction belongs to the user by checking the account -> item
+        const transaction = await Transaction.findById(id).populate({
+            path: 'accountId',
+            populate: { path: 'itemId' }
+        });
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        if (transaction.accountId.itemId.userId.toString() !== userId.toString()) {
+            return res.status(403).json({ error: 'Unauthorized to edit this transaction' });
+        }
+
+        // Only allow certain fields to be updated
+        const allowedUpdates = [
+            'amount', 'date', 'name', 'merchant_name', 'merchant_reference_number',
+            'merchant_category_description', 'merchant_city', 'merchant_state_or_province',
+            'merchant_country_code', 'category', 'isoCurrencyCode', 'unofficialCurrencyCode',
+            'pending'
+        ];
+
+        const updates = {};
+        for (const key of Object.keys(req.body)) {
+            if (allowedUpdates.includes(key)) {
+                updates[key] = req.body[key];
+            }
+        }
+
+        // If category is updated, also update category id reference specifically
+        if(updates.category && typeof updates.category === 'object' && updates.category._id) {
+            updates.category = updates.category._id;
+        }
+
+        const updatedTransaction = await Transaction.findByIdAndUpdate(id, updates, { new: true }).populate('category');
+
+        res.json(updatedTransaction);
+    } catch (err) {
+        console.error('Error updating transaction:', err);
+        res.status(500).json({ error: 'Failed to update transaction' });
+    }
+});
+
+// ----------------------------------------
+// DELETE TRANSACTIONS
+// ----------------------------------------
+
+router.delete('/', async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const { transactionIds } = req.body;
+
+        if (!transactionIds || !Array.isArray(transactionIds)) {
+            return res.status(400).json({ error: 'transactionIds array is required' });
+        }
+
+        // We must verify each transaction belongs to the user
+        const items = await Item.find({ userId }).populate('accounts');
+        const accountIds = items.flatMap(item => item.accounts.map(acc => acc._id));
+
+        // Delete where _id is in the array AND accountId belongs to the user
+        const result = await Transaction.deleteMany({
+            _id: { $in: transactionIds },
+            accountId: { $in: accountIds }
+        });
+
+        res.json({ message: `Successfully deleted ${result.deletedCount} transactions`, deletedCount: result.deletedCount });
+    } catch (err) {
+        console.error('Error deleting transactions:', err);
+        res.status(500).json({ error: 'Failed to delete transactions' });
+    }
+});
+
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user._id;
+
+        const transaction = await Transaction.findById(id).populate({
+            path: 'accountId',
+            populate: { path: 'itemId' }
+        });
+
+        if (!transaction) {
+            return res.status(404).json({ error: 'Transaction not found' });
+        }
+
+        if (transaction.accountId.itemId.userId.toString() !== userId.toString()) {
+            return res.status(403).json({ error: 'Unauthorized to delete this transaction' });
+        }
+
+        await Transaction.findByIdAndDelete(id);
+
+        res.json({ message: 'Transaction deleted successfully' });
+    } catch (err) {
+        console.error('Error deleting transaction:', err);
+        res.status(500).json({ error: 'Failed to delete transaction' });
+    }
+});
+
 
 module.exports = router;
