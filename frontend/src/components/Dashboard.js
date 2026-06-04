@@ -269,7 +269,7 @@ const Dashboard = ({ children }) => {
               title="Income"
               total={incomeSum}
               items={budgetItems.filter((item) => {
-                const parentCategoryName = item.category?.parentCategory?.name || item.category?.name;
+                const parentCategoryName = item.category?.parentCategory?.name || item.category?.parentCategoryDetails?.name || item.category?.name;
                 return (
                   parentCategoryName === "Income" &&
                   new Date(item.period).toISOString().split("T")[0] === selectedPeriod
@@ -286,7 +286,7 @@ const Dashboard = ({ children }) => {
               title="Expenses"
               total={expenseSum}
               items={budgetItems.filter((item) => {
-                const parentCategoryName = item.category?.parentCategory?.name || item.category?.name;
+                const parentCategoryName = item.category?.parentCategory?.name || item.category?.parentCategoryDetails?.name || item.category?.name;
                 return (
                   parentCategoryName !== "Income" &&
                   new Date(item.period).toISOString().split("T")[0] === selectedPeriod
