@@ -40,11 +40,13 @@ router.get('/', async (req, res) => {
         }
 
         // Let's support req.query.category which can be an array
-        if (req.query.category) {
-             if (Array.isArray(req.query.category)) {
-                 query.category = { $in: req.query.category };
+        // axios might send it as category[]
+        const categoryQuery = req.query.category || req.query['category[]'];
+        if (categoryQuery) {
+             if (Array.isArray(categoryQuery)) {
+                 query.category = { $in: categoryQuery };
              } else {
-                 query.category = req.query.category;
+                 query.category = categoryQuery;
              }
         }
 
