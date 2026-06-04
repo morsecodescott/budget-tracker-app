@@ -79,6 +79,7 @@ export const useBudgetData = () => {
             data.transactions.forEach((transaction) => {
                 if (
                     transaction.category?.name === "Income" ||
+                    transaction.category?.parentCategory?.name === "Income" ||
                     transaction.category?.parentCategoryDetails?.name === "Income"
                 ) {
                     transaction.amount = transaction.amount * -1;

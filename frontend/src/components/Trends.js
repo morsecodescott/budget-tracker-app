@@ -95,7 +95,9 @@ const Trends = () => {
                     startDate: dateRange.startDate.toISOString(),
                     endDate: dateRange.endDate.toISOString(),
                     category: selectedCategories.length > 0 ? selectedCategories.map((c) => c._id) : undefined,
-                    transactionType: 'Expense'
+                    transactionType: 'Expense',
+                    page: 0,
+                    rowsPerPage: 1000000
                 }
             });
             setTransactions(response.data.transactions);

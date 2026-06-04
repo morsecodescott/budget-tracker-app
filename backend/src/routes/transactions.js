@@ -39,6 +39,15 @@ router.get('/', async (req, res) => {
              query.accountId = req.query.accountId;
         }
 
+        // Let's support req.query.category which can be an array
+        if (req.query.category) {
+             if (Array.isArray(req.query.category)) {
+                 query.category = { $in: req.query.category };
+             } else {
+                 query.category = req.query.category;
+             }
+        }
+
         if (req.query.categoryId) {
              query.category = req.query.categoryId;
         }
@@ -57,7 +66,10 @@ router.get('/', async (req, res) => {
             .sort({ date: -1 })
             .skip(page * rowsPerPage)
             .limit(rowsPerPage)
-            .populate('category')
+            .populate({
+                path: 'category',
+                populate: { path: 'parentCategory' }
+            })
             .populate('accountId');
 
         res.json({

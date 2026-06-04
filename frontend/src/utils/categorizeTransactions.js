@@ -11,6 +11,7 @@ export const categorizeTransactions = (transactions, budgetItems, selectedPeriod
 
         if (
             transaction.category?.name === "Income" ||
+            transaction.category?.parentCategory?.name === "Income" ||
             transaction.category?.parentCategoryDetails?.name === "Income"
         ) {
             acc.income.push(transaction);

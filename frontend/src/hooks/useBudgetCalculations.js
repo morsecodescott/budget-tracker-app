@@ -12,14 +12,14 @@ export const useBudgetCalculations = (budgetItems, selectedPeriod) => {
 
         const newIncomeSum = filteredItems
             .filter((item) => {
-                const parentCategoryName = item.category?.parentCategory?.name || item.category?.name;
+                const parentCategoryName = item.category?.parentCategory?.name || item.category?.parentCategoryDetails?.name || item.category?.name;
                 return parentCategoryName === "Income";
             })
             .reduce((acc, curr) => acc + curr.amount, 0);
 
         const newExpenseSum = filteredItems
             .filter((item) => {
-                const parentCategoryName = item.category?.parentCategory?.name || item.category?.name;
+                const parentCategoryName = item.category?.parentCategory?.name || item.category?.parentCategoryDetails?.name || item.category?.name;
                 return parentCategoryName !== "Income";
             })
             .reduce((acc, curr) => acc + curr.amount, 0);
