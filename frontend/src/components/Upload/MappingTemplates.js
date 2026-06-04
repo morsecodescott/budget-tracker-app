@@ -13,6 +13,8 @@ const MappingTemplates = () => {
         mapping: {
             date: '',
             amount: '',
+            amount_in: '',
+            amount_out: '',
             merchant_name: '',
             name: '',
             merchant_reference_number: '',
@@ -45,6 +47,8 @@ const MappingTemplates = () => {
                 mapping: {
                     date: '',
                     amount: '',
+                    amount_in: '',
+                    amount_out: '',
                     merchant_name: '',
                     name: '',
                     merchant_reference_number: '',
@@ -81,6 +85,7 @@ const MappingTemplates = () => {
                             <TableCell>Template Name</TableCell>
                             <TableCell>Date Column</TableCell>
                             <TableCell>Amount Column</TableCell>
+                            <TableCell>Amount In/Out</TableCell>
                             <TableCell>Merchant Column</TableCell>
                             <TableCell>Actions</TableCell>
                         </TableRow>
@@ -91,6 +96,11 @@ const MappingTemplates = () => {
                                 <TableCell>{template.name}</TableCell>
                                 <TableCell>{template.mapping.date}</TableCell>
                                 <TableCell>{template.mapping.amount}</TableCell>
+                                <TableCell>
+                                    {template.mapping.amount_in || template.mapping.amount_out
+                                        ? `In: ${template.mapping.amount_in || '-'}, Out: ${template.mapping.amount_out || '-'}`
+                                        : '-'}
+                                </TableCell>
                                 <TableCell>{template.mapping.merchant_name}</TableCell>
                                 <TableCell>
                                     <IconButton onClick={() => handleDelete(template._id)} color="error">
@@ -115,8 +125,16 @@ const MappingTemplates = () => {
                         value={newTemplate.mapping.date} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, date: e.target.value } })}
                     />
                     <TextField
-                        margin="dense" label="Amount CSV Header" fullWidth
+                        margin="dense" label="Amount CSV Header (Optional if using In/Out)" fullWidth
                         value={newTemplate.mapping.amount} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, amount: e.target.value } })}
+                    />
+                    <TextField
+                        margin="dense" label="Funds In CSV Header (Optional)" fullWidth
+                        value={newTemplate.mapping.amount_in || ''} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, amount_in: e.target.value } })}
+                    />
+                    <TextField
+                        margin="dense" label="Funds Out CSV Header (Optional)" fullWidth
+                        value={newTemplate.mapping.amount_out || ''} onChange={(e) => setNewTemplate({ ...newTemplate, mapping: { ...newTemplate.mapping, amount_out: e.target.value } })}
                     />
                     <TextField
                         margin="dense" label="Merchant CSV Header" fullWidth
