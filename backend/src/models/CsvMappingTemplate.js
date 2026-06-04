@@ -5,9 +5,11 @@ const csvMappingTemplateSchema = new mongoose.Schema({
     name: { type: String, required: true },
     mapping: {
         date: { type: String, required: true },
-        amount: { type: String, required: true },
+        amount: { type: String }, // Optional if amount_in/amount_out are used
         merchant_name: { type: String, required: true },
         // Optional mappings
+        amount_in: { type: String }, // For Funds In column
+        amount_out: { type: String }, // For Funds Out column
         name: { type: String }, // For secondary description/name
         category: { type: String }, // To map CSV category to our internal categories (advanced)
         merchant_reference_number: { type: String },

@@ -178,7 +178,9 @@ router.post('/upload', async (req, res) => {
         for (const row of transactions) {
             // Apply mapping
             const rawDate = row[mapping.date];
-            const rawAmount = row[mapping.amount];
+            const rawAmount = mapping.amount ? row[mapping.amount] : undefined;
+            const rawAmountIn = mapping.amount_in ? row[mapping.amount_in] : undefined;
+            const rawAmountOut = mapping.amount_out ? row[mapping.amount_out] : undefined;
             const rawMerchant = row[mapping.merchant_name];
             const rawName = mapping.name && row[mapping.name] ? row[mapping.name] : rawMerchant;
 
@@ -188,17 +190,35 @@ router.post('/upload', async (req, res) => {
             const rawMerchantState = mapping.merchant_state_or_province && row[mapping.merchant_state_or_province] ? row[mapping.merchant_state_or_province] : undefined;
             const rawMerchantCountry = mapping.merchant_country_code && row[mapping.merchant_country_code] ? row[mapping.merchant_country_code] : undefined;
 
-            if (!rawDate || !rawAmount || !rawMerchant) continue; // Skip invalid rows
+            if (!rawDate || !rawMerchant) continue; // Skip invalid rows
+            if (!rawAmount && !rawAmountIn && !rawAmountOut) continue; // Must have some amount mapping
 
-            // Basic parsing (amount could be negative or have $ signs)
-            let amountStr = String(rawAmount).replace(/[^\d.-]/g, '');
-            let amount = parseFloat(amountStr);
-            if (isNaN(amount)) continue;
+            let amount;
 
-            // Plaid convention: positive amount is an expense, negative is income/refund
-            // For standard bank CSVs, withdrawals/expenses are often negative. We need to invert it for our DB if so.
-            // Let's assume standard logic: if it's negative in CSV, it's an expense (positive in our DB).
-            amount = -amount;
+            if (rawAmountIn || rawAmountOut) {
+                // Dual column logic
+                let amountIn = rawAmountIn ? parseFloat(String(rawAmountIn).replace(/[^\d.-]/g, '')) : NaN;
+                let amountOut = rawAmountOut ? parseFloat(String(rawAmountOut).replace(/[^\d.-]/g, '')) : NaN;
+
+                // If both are present, we subtract in from out to get net expense.
+                // Usually they are mutually exclusive.
+                if (isNaN(amountIn)) amountIn = 0;
+                if (isNaN(amountOut)) amountOut = 0;
+
+                if (amountIn === 0 && amountOut === 0) continue;
+
+                // Plaid Convention: positive is expense (out), negative is income (in).
+                amount = amountOut - amountIn;
+            } else {
+                // Single column logic
+                let amountStr = String(rawAmount).replace(/[^\d.-]/g, '');
+                amount = parseFloat(amountStr);
+                if (isNaN(amount)) continue;
+
+                // Plaid convention: positive amount is an expense, negative is income/refund
+                // For standard bank CSVs, withdrawals/expenses are often negative. We need to invert it for our DB if so.
+                amount = -amount;
+            }
 
             const date = new Date(rawDate);
 
