@@ -42,10 +42,17 @@ const createOrUpdateTransactions = async (transactions) => {
 
     let internalCategoryId = await mapToInternalCategory(plaidCategory);
 
-    // Apply category rules
+    let finalAmount = amount;
+    let rawAmount = amount;
+
+    // Apply category rules and polarity inversion
     try {
-        const item = await require('../../models/Item').findById(account.itemId || account.plaidItemId);
+        const item = await require('../../models/Item').findById(account.itemId);
         if (item) {
+            if (item.invertTransactions) {
+                finalAmount = rawAmount * -1;
+            }
+
             const rules = await CategoryRule.find({ userId: item.userId });
             for (const rule of rules) {
                 const escapedMerchantName = rule.merchantName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -92,7 +99,8 @@ const createOrUpdateTransactions = async (transactions) => {
           transactionType,
           name,
           merchant_name,
-          amount,
+          amount: finalAmount,
+          rawAmount,
           isoCurrencyCode,
           unofficialCurrencyCode,
           date,

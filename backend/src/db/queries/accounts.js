@@ -30,7 +30,7 @@ const createAccounts = async (plaidItemId, accounts) => {
         const updatedAccount = await Account.findOneAndUpdate(
             { plaidAccountId },
             {
-                plaidItemId: item._id,
+                itemId: item._id,
                 accountName,
                 accountType,
                 accountSubType,
