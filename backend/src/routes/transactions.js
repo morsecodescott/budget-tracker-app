@@ -72,10 +72,22 @@ router.get('/', async (req, res) => {
                 path: 'category',
                 populate: { path: 'parentCategory' }
             })
-            .populate('accountId');
+            .populate({
+                path: 'accountId',
+                populate: { path: 'itemId' }
+            });
+
+        // Apply item inversion logic
+        const formattedTransactions = transactions.map(t => {
+            const obj = t.toObject ? t.toObject() : t;
+            if (obj.accountId && obj.accountId.itemId && obj.accountId.itemId.invertTransactions) {
+                obj.amount = obj.amount * -1;
+            }
+            return obj;
+        });
 
         res.json({
-            transactions,
+            transactions: formattedTransactions,
             total,
             totalPages: Math.ceil(total / rowsPerPage)
         });
