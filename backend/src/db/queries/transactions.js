@@ -44,7 +44,7 @@ const createOrUpdateTransactions = async (transactions) => {
 
     // Apply category rules
     try {
-        const item = await require('../../models/Item').findById(account.itemId || account.plaidItemId);
+        const item = await require('../../models/Item').findById(account.itemId);
         if (item) {
             const rules = await CategoryRule.find({ userId: item.userId });
             for (const rule of rules) {

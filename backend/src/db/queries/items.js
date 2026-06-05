@@ -202,7 +202,7 @@ const deleteItem = async (itemId, userId) => {
  */
 const deleteAccountsByItemId = async (itemId, session = null) => {
   const findOptions = session ? { session } : {};
-  const accounts = await Account.find({ plaidItemId: itemId }, null, findOptions);
+  const accounts = await Account.find({ itemId: itemId }, null, findOptions);
 
   // Delete all associated transactions for each account
   for (const account of accounts) {
@@ -211,7 +211,7 @@ const deleteAccountsByItemId = async (itemId, session = null) => {
 
   // Now, delete all accounts
   const deleteOptions = session ? { session } : {};
-  const result = await Account.deleteMany({ plaidItemId: itemId }, deleteOptions);
+  const result = await Account.deleteMany({ itemId: itemId }, deleteOptions);
   return result;
 };
 

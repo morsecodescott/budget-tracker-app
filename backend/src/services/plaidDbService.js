@@ -156,6 +156,32 @@ class PlaidDbService {
     }
 
     /**
+     * Retrieves transactions for a specific account.
+     * @param {string} accountId - The ID of the account
+     * @returns {Promise<Array>} Array of transactions
+     */
+    static async getTransactionsForAccount(accountId) {
+        try {
+            const account = await Account.findById(accountId).populate('itemId');
+            if (!account) throw new Error('Account not found');
+
+            let transactions = await Transaction.find({ accountId }).sort({ date: -1 });
+
+            // Apply polarity inversion if set on the parent item
+            if (account.itemId && account.itemId.invertTransactions) {
+                transactions = transactions.map(t => {
+                    const obj = t.toObject ? t.toObject() : t;
+                    obj.amount = obj.amount * -1;
+                    return obj;
+                });
+            }
+            return transactions;
+        } catch (error) {
+            throw new Error(`Failed to get transactions for account: ${error.message}`);
+        }
+    }
+
+    /**
      * Retrieves filtered transactions for a user
      * @param {Object} filters - Filter parameters
      * @returns {Promise<Array>} Array of filtered transactions
@@ -192,6 +218,35 @@ class PlaidDbService {
                 },
                 {
                     $lookup: {
+                        from: 'accounts',
+                        localField: 'accountId',
+                        foreignField: '_id',
+                        as: 'accountDetails',
+                    },
+                },
+                { $unwind: { path: '$accountDetails', preserveNullAndEmptyArrays: true } },
+                {
+                    $lookup: {
+                        from: 'items',
+                        localField: 'accountDetails.itemId',
+                        foreignField: '_id',
+                        as: 'itemDetails',
+                    },
+                },
+                { $unwind: { path: '$itemDetails', preserveNullAndEmptyArrays: true } },
+                {
+                    $set: {
+                        amount: {
+                            $cond: {
+                                if: { $eq: ['$itemDetails.invertTransactions', true] },
+                                then: { $multiply: ['$amount', -1] },
+                                else: '$amount'
+                            }
+                        }
+                    }
+                },
+                {
+                    $lookup: {
                         from: 'categories',
                         localField: 'category',
                         foreignField: '_id',
@@ -208,6 +263,12 @@ class PlaidDbService {
                     },
                 },
                 { $unwind: { path: '$category.parentCategoryDetails', preserveNullAndEmptyArrays: true } },
+                {
+                    $project: {
+                        accountDetails: 0,
+                        itemDetails: 0
+                    }
+                }
             ];
 
             if (category) {

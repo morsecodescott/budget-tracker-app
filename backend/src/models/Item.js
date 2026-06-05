@@ -16,6 +16,7 @@ const itemSchema = new mongoose.Schema({
     last_failed_update: { type: Date, default: null },
     last_webhook_sent_at: { type: Date, default: null },
     last_webhook_code_sent: { type: String, default: null },
+    invertTransactions: { type: Boolean, default: false },
 });
 
 module.exports = mongoose.model('Item', itemSchema);
