@@ -6,6 +6,7 @@ const transactionSchema = new mongoose.Schema({
     plaidTransactionId: { type: String, required: function() { return this.source === 'plaid'; } },
     uniqueId: { type: String, required: function() { return this.source === 'manual'; } }, // Hash of manual tx fields
     amount: { type: Number, required: true },
+    rawAmount: { type: Number },
     date: { type: Date, required: true },
     name: { type: String, required: true },
     merchant_name: { type: String, required: true },

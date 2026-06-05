@@ -12,6 +12,7 @@ const PlaidDbService = require('../services/plaidDbService');
 const PlaidApiService = require('../services/plaidApiService');
 const Item = require('../models/Item');
 const Account = require('../models/Account');
+const Transaction = require('../models/Transaction');
 const { deleteItem } = require('../db/queries/items');
 const { retrieveTransactionsByAccountId } = require('../db/queries/transactions');
 const mongoose = require('mongoose');
@@ -462,6 +463,30 @@ router.put('/items/:itemId/invert-transactions', async (req, res) => {
 
     item.invertTransactions = invertTransactions;
     await item.save();
+
+    // Now update all existing transactions
+    // First, find all accounts for this item
+    const accounts = await Account.find({ itemId: item._id });
+    const accountIds = accounts.map(a => a._id);
+
+    // Update transactions where rawAmount doesn't exist
+    await Transaction.updateMany(
+      { accountId: { $in: accountIds }, rawAmount: { $exists: false } },
+      [{ $set: { rawAmount: "$amount" } }]
+    );
+
+    // Now update all amounts to either rawAmount or rawAmount * -1 depending on the flag
+    if (invertTransactions) {
+      await Transaction.updateMany(
+        { accountId: { $in: accountIds } },
+        [{ $set: { amount: { $multiply: ["$rawAmount", -1] } } }]
+      );
+    } else {
+      await Transaction.updateMany(
+        { accountId: { $in: accountIds } },
+        [{ $set: { amount: "$rawAmount" } }]
+      );
+    }
 
     res.status(200).json({ message: 'Item updated successfully', item });
   } catch (error) {

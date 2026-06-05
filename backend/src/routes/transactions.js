@@ -72,22 +72,10 @@ router.get('/', async (req, res) => {
                 path: 'category',
                 populate: { path: 'parentCategory' }
             })
-            .populate({
-                path: 'accountId',
-                populate: { path: 'itemId' }
-            });
-
-        // Apply item inversion logic
-        const formattedTransactions = transactions.map(t => {
-            const obj = t.toObject ? t.toObject() : t;
-            if (obj.accountId && obj.accountId.itemId && obj.accountId.itemId.invertTransactions) {
-                obj.amount = obj.amount * -1;
-            }
-            return obj;
-        });
+            .populate('accountId');
 
         res.json({
-            transactions: formattedTransactions,
+            transactions,
             total,
             totalPages: Math.ceil(total / rowsPerPage)
         });
@@ -246,10 +234,22 @@ router.post('/upload', async (req, res) => {
                 amount = -amount;
             }
 
+            let rawAmountForDb = amount;
+            let finalAmount = amount;
+
+            try {
+                const account = await Account.findById(accountId).populate('itemId');
+                if (account && account.itemId && account.itemId.invertTransactions) {
+                    finalAmount = rawAmountForDb * -1;
+                }
+            } catch (err) {
+                console.error('Error fetching account for inversion check:', err);
+            }
+
             const date = new Date(rawDate);
 
             // Generate unique hash based on fields
-            const hashString = `${accountId}-${date.toISOString()}-${amount}-${rawMerchant}`;
+            const hashString = `${accountId}-${date.toISOString()}-${rawAmountForDb}-${rawMerchant}`;
             const uniqueId = crypto.createHash('sha256').update(hashString).digest('hex');
 
             // Find existing to avoid duplicates
@@ -295,7 +295,8 @@ router.post('/upload', async (req, res) => {
                 source: 'manual',
                 accountId,
                 uniqueId,
-                amount,
+                amount: finalAmount,
+                rawAmount: rawAmountForDb,
                 date,
                 name: rawName,
                 merchant_name: rawMerchant,
