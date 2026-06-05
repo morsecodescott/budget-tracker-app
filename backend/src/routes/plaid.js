@@ -12,7 +12,6 @@ const PlaidDbService = require('../services/plaidDbService');
 const PlaidApiService = require('../services/plaidApiService');
 const Item = require('../models/Item');
 const Account = require('../models/Account');
-const Transaction = require('../models/Transaction');
 const { deleteItem } = require('../db/queries/items');
 const { retrieveTransactionsByAccountId } = require('../db/queries/transactions');
 const mongoose = require('mongoose');
