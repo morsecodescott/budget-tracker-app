@@ -3,13 +3,13 @@ import {
   Box,
   Typography,
   TextField,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
+
+
+
+
+
+
+
   Paper,
   CircularProgress,
   Container,
@@ -34,6 +34,7 @@ import Breadcrumbs from "./Breadcrumbs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Autocomplete } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import axios from "axios";
@@ -56,6 +57,22 @@ const TransactionsPage = ({ userId }) => {
   const [budgetFilter, setBudgetFilter] = useState("all"); // New state for budget filter
   const [selectedTransactionIds, setSelectedTransactionIds] = useState([]);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+
+  const [sortModel, setSortModel] = useState([]);
+  const [filterModel, setFilterModel] = useState({ items: [] });
+  const [columnVisibilityModel, setColumnVisibilityModel] = useState({
+    date: true,
+    name: true,
+    categoryName: true,
+    amount: true,
+    institutionName: false,
+    accountName: false,
+    merchant_name: false,
+    merchant_city: false,
+    merchant_state_or_province: false,
+    merchant_country_code: false,
+    actions: true,
+  });
   const [editingTransaction, setEditingTransaction] = useState(null);
 
   // Snackbar / Toast for Category Rules & General Notifications
@@ -141,6 +158,8 @@ const TransactionsPage = ({ userId }) => {
         rowsPerPage,
         category: selectedCategories.length > 0 ? selectedCategories.map((c) => c._id) : undefined,
         budgetFilter, // Include budget filter in API call
+        sortModel: JSON.stringify(sortModel),
+        filterModel: JSON.stringify(filterModel),
       };
       const { data } = await axios.get("/transactions", { params });
       setTransactions(data.transactions);
@@ -183,19 +202,10 @@ const TransactionsPage = ({ userId }) => {
       }
     }, 500); // Delay of 300ms
     return () => clearTimeout(timeout);
-  }, [dateRange, page, rowsPerPage, selectedCategories, budgetFilter]);
+  }, [dateRange, page, rowsPerPage, selectedCategories, budgetFilter, sortModel, filterModel]);
 
   const handleDateChange = (field, value) => {
     setDateRange((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   const handleCategoryChange = (newValue) => {
@@ -205,37 +215,6 @@ const TransactionsPage = ({ userId }) => {
   const handleBudgetFilterChange = (event) => {
     setBudgetFilter(event.target.value); // Update budget filter state
   };
-
-  const handleSelectAllClick = (event) => {
-    if (event.target.checked) {
-      const newSelecteds = transactions.map((n) => n._id);
-      setSelectedTransactionIds(newSelecteds);
-      return;
-    }
-    setSelectedTransactionIds([]);
-  };
-
-  const handleClick = (event, id) => {
-    const selectedIndex = selectedTransactionIds.indexOf(id);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selectedTransactionIds, id);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selectedTransactionIds.slice(1));
-    } else if (selectedIndex === selectedTransactionIds.length - 1) {
-      newSelected = newSelected.concat(selectedTransactionIds.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selectedTransactionIds.slice(0, selectedIndex),
-        selectedTransactionIds.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelectedTransactionIds(newSelected);
-  };
-
-  const isSelected = (id) => selectedTransactionIds.indexOf(id) !== -1;
 
   const showToast = (message, action = null) => {
     setToastMessage(message);
@@ -423,68 +402,63 @@ const TransactionsPage = ({ userId }) => {
                   </Button>
                 </Box>
               )}
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          indeterminate={selectedTransactionIds.length > 0 && selectedTransactionIds.length < transactions.length}
-                          checked={transactions.length > 0 && selectedTransactionIds.length === transactions.length}
-                          onChange={handleSelectAllClick}
-                        />
-                      </TableCell>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Name</TableCell>
-                      <TableCell>Category</TableCell>
-                      <TableCell align="right">Amount</TableCell>
-                      <TableCell align="center">Actions</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {transactions.map((transaction) => {
-                      const isItemSelected = isSelected(transaction._id);
-                      return (
-                        <TableRow
-                          key={transaction._id}
-                          hover
-                          role="checkbox"
-                          aria-checked={isItemSelected}
-                          selected={isItemSelected}
-                        >
-                          <TableCell padding="checkbox">
-                            <Checkbox
-                              checked={isItemSelected}
-                              onChange={(event) => handleClick(event, transaction._id)}
-                            />
-                          </TableCell>
-                          <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                          <TableCell>{transaction.name}</TableCell>
-                          <TableCell>{transaction.category?.name || "Uncategorized"}</TableCell>
-                          <TableCell align="right">${transaction.amount.toFixed(2)}</TableCell>
-                          <TableCell align="center">
-                            <IconButton size="small" onClick={() => handleEditClick(transaction)}>
-                              <EditIcon fontSize="small" />
-                            </IconButton>
-                            <IconButton size="small" color="error" onClick={() => handleDeleteSingle(transaction._id)}>
-                              <DeleteIcon fontSize="small" />
-                            </IconButton>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-              <TablePagination
-                rowsPerPageOptions={[25, 50, 100]}
-                component="div"
-                count={totalCount}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
+              <Box sx={{ height: 600, width: '100%' }}>
+                <DataGrid
+                  rows={transactions}
+                  columns={[
+                    { field: 'date', headerName: 'Date', width: 120, valueGetter: (value) => value ? new Date(value) : null, type: 'date' },
+                    { field: 'name', headerName: 'Name', width: 200 },
+                    { field: 'categoryName', headerName: 'Category', width: 150, valueGetter: (value, row) => row.category?.name || 'Uncategorized' },
+                    { field: 'amount', headerName: 'Amount', width: 120, type: 'number', valueFormatter: (value) => value ? `$${value.toFixed(2)}` : '$0.00' },
+                    { field: 'institutionName', headerName: 'Institution', width: 150, valueGetter: (value, row) => row.accountId?.itemId?.institutionName || '' },
+                    { field: 'accountName', headerName: 'Account', width: 150, valueGetter: (value, row) => row.accountId?.accountName || '' },
+                    { field: 'merchant_name', headerName: 'Merchant Name', width: 150 },
+                    { field: 'merchant_city', headerName: 'City', width: 120 },
+                    { field: 'merchant_state_or_province', headerName: 'State', width: 100 },
+                    { field: 'merchant_country_code', headerName: 'Country', width: 100 },
+                    {
+                      field: 'actions',
+                      headerName: 'Actions',
+                      width: 100,
+                      sortable: false,
+                      filterable: false,
+                      renderCell: (params) => (
+                        <Box>
+                          <IconButton size="small" onClick={() => handleEditClick(params.row)}>
+                            <EditIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton size="small" color="error" onClick={() => handleDeleteSingle(params.row._id)}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        </Box>
+                      ),
+                    },
+                  ]}
+                  columnVisibilityModel={columnVisibilityModel}
+                  onColumnVisibilityModelChange={(newModel) => setColumnVisibilityModel(newModel)}
+                  pagination
+                  paginationMode="server"
+                  rowCount={totalCount}
+                  paginationModel={{ page, pageSize: rowsPerPage }}
+                  onPaginationModelChange={(model) => {
+                    setPage(model.page);
+                    setRowsPerPage(model.pageSize);
+                  }}
+                  pageSizeOptions={[25, 50, 100]}
+                  sortingMode="server"
+                  sortModel={sortModel}
+                  onSortModelChange={setSortModel}
+                  filterMode="server"
+                  filterModel={filterModel}
+                  onFilterModelChange={setFilterModel}
+                  checkboxSelection
+                  onRowSelectionModelChange={(newSelection) => {
+                    setSelectedTransactionIds(newSelection);
+                  }}
+                  rowSelectionModel={selectedTransactionIds}
+                  disableRowSelectionOnClick
+                />
+              </Box>
             </Paper>
           )}
 
