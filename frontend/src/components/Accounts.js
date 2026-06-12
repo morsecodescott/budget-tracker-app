@@ -21,8 +21,11 @@ import {
     DialogContentText,
     DialogActions,
     Snackbar,
+    Switch,
+    FormControlLabel,
 } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import SettingsIcon from '@mui/icons-material/Settings';
 import Breadcrumbs from "./Breadcrumbs";
 import PlaidLinkButton from './PlaidLinkButton';
 import PlaidLinkUpdate from './PlaidLinkUpdate';
@@ -38,7 +41,9 @@ const Accounts = () => {
     const [collapsedInstitutions, setCollapsedInstitutions] = useState([]);
     const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
     const [itemToUnlink, setItemToUnlink] = useState(null);
-
+    const [settingsDialogOpen, setSettingsDialogOpen] = useState(false);
+    const [itemForSettings, setItemForSettings] = useState(null);
+    const [itemInvertTransactions, setItemInvertTransactions] = useState(false);
 
     const [unlinkSuccess, setUnlinkSuccess] = useState(false);
     const [reauthSuccess, setReauthSuccess] = useState(false);
@@ -106,6 +111,32 @@ const Accounts = () => {
     const handleUnlinkCancel = () => {
         setConfirmDialogOpen(false);
         setItemToUnlink(null);
+    };
+
+    const handleSettingsClick = (itemId, currentInvertTransactions) => {
+        setItemForSettings(itemId);
+        setItemInvertTransactions(currentInvertTransactions || false);
+        setSettingsDialogOpen(true);
+    };
+
+    const handleSettingsClose = () => {
+        setSettingsDialogOpen(false);
+        setItemForSettings(null);
+    };
+
+    const handleSettingsSave = async () => {
+        if (!itemForSettings) return;
+        try {
+            await axios.put(`/plaid/items/${itemForSettings}/invert-transactions`, {
+                invertTransactions: itemInvertTransactions
+            });
+            setSettingsDialogOpen(false);
+            setItemForSettings(null);
+            fetchAccounts();
+        } catch (err) {
+            console.error('Error saving settings:', err);
+            setError('Failed to save settings. Please try again.');
+        }
     };
 
     // Group accounts by itemId
@@ -197,40 +228,47 @@ const Accounts = () => {
                                             }
                                             action={
                                                 <Box>
+                                                    <IconButton onClick={() => handleSettingsClick(itemId, itemAccounts[0]?.invertTransactions)}>
+                                                        <SettingsIcon />
+                                                    </IconButton>
                                                     <IconButton onClick={() => toggleCollapse(itemId)}>
                                                         {collapsedInstitutions.includes(itemId) ? <ExpandMoreIcon /> : <ExpandLessIcon />}
                                                     </IconButton>
-                                                    <PlaidLinkUpdate
-                                                        itemId={itemId}
-                                                        onUpdateSuccess={() => {
-                                                            fetchAccounts();
-                                                            setReauthSuccess(true);
-                                                        }}
-                                                        onUpdateExit={handlePlaidExit}
-                                                    >
-                                                        <Button
-                                                            variant="outlined"
-                                                            color="primary"
-                                                            size="small"
-                                                            sx={{ ml: 1 }}
-                                                        >
-                                                            Re-authorize
-                                                        </Button>
-                                                    </PlaidLinkUpdate>
-                                                    <Button
-                                                        variant="outlined"
-                                                        color="error"
-                                                        size="small"
-                                                        onClick={() => handleUnlinkClick(itemId)}
-                                                        disabled={unlinkingItemId === itemId}
-                                                        sx={{ ml: 1 }}
-                                                    >
-                                                        {unlinkingItemId === itemId ? (
-                                                            <CircularProgress size={20} />
-                                                        ) : (
-                                                            'Unlink'
-                                                        )}
-                                                    </Button>
+                                                    {itemAccounts[0]?.source === 'plaid' && (
+                                                        <>
+                                                            <PlaidLinkUpdate
+                                                                itemId={itemId}
+                                                                onUpdateSuccess={() => {
+                                                                    fetchAccounts();
+                                                                    setReauthSuccess(true);
+                                                                }}
+                                                                onUpdateExit={handlePlaidExit}
+                                                            >
+                                                                <Button
+                                                                    variant="outlined"
+                                                                    color="primary"
+                                                                    size="small"
+                                                                    sx={{ ml: 1 }}
+                                                                >
+                                                                    Re-authorize
+                                                                </Button>
+                                                            </PlaidLinkUpdate>
+                                                            <Button
+                                                                variant="outlined"
+                                                                color="error"
+                                                                size="small"
+                                                                onClick={() => handleUnlinkClick(itemId)}
+                                                                disabled={unlinkingItemId === itemId}
+                                                                sx={{ ml: 1 }}
+                                                            >
+                                                                {unlinkingItemId === itemId ? (
+                                                                    <CircularProgress size={20} />
+                                                                ) : (
+                                                                    'Unlink'
+                                                                )}
+                                                            </Button>
+                                                        </>
+                                                    )}
                                                 </Box>
                                             }
                                         />
@@ -326,6 +364,34 @@ const Accounts = () => {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <Dialog open={settingsDialogOpen} onClose={handleSettingsClose}>
+                    <DialogTitle>Item Settings</DialogTitle>
+                    <DialogContent>
+                        <FormControlLabel
+                            control={
+                                <Switch
+                                    checked={itemInvertTransactions}
+                                    onChange={(e) => setItemInvertTransactions(e.target.checked)}
+                                    color="primary"
+                                />
+                            }
+                            label="Reverse Transaction Polarity"
+                        />
+                        <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 1 }}>
+                            If enabled, all transaction amounts for this item will be inverted (e.g. expenses become positive).
+                        </Typography>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={handleSettingsClose} color="primary">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSettingsSave} color="primary" variant="contained">
+                            Save
+                        </Button>
+                    </DialogActions>
+                </Dialog>
+
                 <Snackbar
                     open={unlinkSuccess}
                     autoHideDuration={6000}

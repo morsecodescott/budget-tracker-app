@@ -391,6 +391,8 @@ router.get('/accounts', async (req, res) => {
         institutionId: item.institutionId,
         institutionName: item.institutionName,
         institutionLogoUrl: item.institutionLogoUrl,
+        invertTransactions: item.invertTransactions,
+        source: item.source,
         accountName: account.accountName,
         accountType: account.accountType,
         accountSubType: account.accountSubType,
@@ -437,5 +439,59 @@ router.get('/accounts/summary', async (req, res) => {
 
 
 
+
+/**
+ * @route   PUT /plaid/items/:itemId/invert-transactions
+ * @desc    Toggles the invertTransactions flag for an item.
+ * @access  Private
+ */
+router.put('/items/:itemId/invert-transactions', async (req, res) => {
+  const { itemId } = req.params;
+  const { invertTransactions } = req.body;
+  const userId = req.user._id;
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
+    const item = await Item.findOne({ _id: itemId, userId });
+    if (!item) {
+      return res.status(404).json({ error: 'Item not found' });
+    }
+
+    item.invertTransactions = invertTransactions;
+    await item.save();
+
+    // Now update all existing transactions
+    // First, find all accounts for this item
+    const accounts = await Account.find({ itemId: item._id });
+    const accountIds = accounts.map(a => a._id);
+
+    // Update transactions where rawAmount doesn't exist
+    await Transaction.updateMany(
+      { accountId: { $in: accountIds }, rawAmount: { $exists: false } },
+      [{ $set: { rawAmount: "$amount" } }]
+    );
+
+    // Now update all amounts to either rawAmount or rawAmount * -1 depending on the flag
+    if (invertTransactions) {
+      await Transaction.updateMany(
+        { accountId: { $in: accountIds } },
+        [{ $set: { amount: { $multiply: ["$rawAmount", -1] } } }]
+      );
+    } else {
+      await Transaction.updateMany(
+        { accountId: { $in: accountIds } },
+        [{ $set: { amount: "$rawAmount" } }]
+      );
+    }
+
+    res.status(200).json({ message: 'Item updated successfully', item });
+  } catch (error) {
+    console.error('Error updating item settings:', error);
+    res.status(500).json({ error: 'Failed to update item settings' });
+  }
+});
 
 module.exports = router;

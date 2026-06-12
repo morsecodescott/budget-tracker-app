@@ -156,6 +156,19 @@ class PlaidDbService {
     }
 
     /**
+     * Retrieves transactions for a specific account.
+     * @param {string} accountId - The ID of the account
+     * @returns {Promise<Array>} Array of transactions
+     */
+    static async getTransactionsForAccount(accountId) {
+        try {
+            return await Transaction.find({ accountId }).sort({ date: -1 });
+        } catch (error) {
+            throw new Error(`Failed to get transactions for account: ${error.message}`);
+        }
+    }
+
+    /**
      * Retrieves filtered transactions for a user
      * @param {Object} filters - Filter parameters
      * @returns {Promise<Array>} Array of filtered transactions
