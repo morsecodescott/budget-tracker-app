@@ -410,7 +410,7 @@ const TransactionsPage = ({ userId }) => {
                   columns={[
                     { field: 'date', headerName: 'Date', width: 120, valueGetter: (value) => value ? new Date(value) : null, type: 'date' },
                     { field: 'name', headerName: 'Name', width: 200 },
-                    { field: 'categoryName', headerName: 'Category', width: 150, valueGetter: (value, row) => row.category?.name || 'Uncategorized' },
+                    { field: 'categoryName', headerName: 'Category', width: 150, type: 'singleSelect', valueOptions: [...categories.map(c => c.name), 'Uncategorized'], valueGetter: (value, row) => row.category?.name || 'Uncategorized' },
                     { field: 'amount', headerName: 'Amount', width: 120, type: 'number', valueFormatter: (value) => value ? `$${value.toFixed(2)}` : '$0.00' },
                     { field: 'institutionName', headerName: 'Institution', width: 150, valueGetter: (value, row) => row.accountId?.itemId?.institutionName || '' },
                     { field: 'accountName', headerName: 'Account', width: 150, valueGetter: (value, row) => row.accountId?.accountName || '' },

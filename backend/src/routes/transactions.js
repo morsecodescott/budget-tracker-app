@@ -113,8 +113,14 @@ router.get('/', async (req, res) => {
                 switch (operator) {
                     case 'contains': condition = { $regex: value, $options: 'i' }; break;
                     case 'equals':
+                    case 'is':
                         if (dbField === 'amount') condition = Number(value);
                         else condition = value;
+                        break;
+                    case 'isAnyOf':
+                        if (Array.isArray(value)) {
+                             condition = { $in: value };
+                        }
                         break;
                     case 'startsWith': condition = { $regex: `^${value}`, $options: 'i' }; break;
                     case 'endsWith': condition = { $regex: `${value}$`, $options: 'i' }; break;
@@ -130,7 +136,19 @@ router.get('/', async (req, res) => {
                     case 'lessThanOrEqual': condition = { $lte: Number(value) }; break;
                 }
 
-                filterMatch[dbField] = condition;
+                if (dbField === 'categoryData.name' && (value === 'Uncategorized' || (Array.isArray(value) && value.includes('Uncategorized')))) {
+                     // If searching for Uncategorized, it might be null or missing
+                     if (operator === 'is') {
+                         filterMatch['$or'] = [ { [dbField]: condition }, { [dbField]: null }, { [dbField]: { $exists: false } } ];
+                     } else if (operator === 'isAnyOf') {
+                         condition.$in.push(null);
+                         filterMatch[dbField] = condition;
+                     } else {
+                         filterMatch[dbField] = condition;
+                     }
+                } else {
+                     filterMatch[dbField] = condition;
+                }
             });
         }
 
