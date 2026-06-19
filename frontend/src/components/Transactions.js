@@ -198,9 +198,10 @@ const TransactionsPage = ({ userId }) => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (isInitialized.current && dateRange.startDate && dateRange.endDate) {
-        fetchTransactions();
+        // Prevent loading spinner logic from completely unmounting DataGrid during rapid filter typing
+        fetchTransactions(false);
       }
-    }, 500); // Delay of 300ms
+    }, 500); // Delay of 500ms
     return () => clearTimeout(timeout);
   }, [dateRange, page, rowsPerPage, selectedCategories, budgetFilter, sortModel, filterModel]);
 
