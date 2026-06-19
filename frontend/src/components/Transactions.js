@@ -199,11 +199,12 @@ const TransactionsPage = ({ userId }) => {
     const timeout = setTimeout(() => {
       if (isInitialized.current && dateRange.startDate && dateRange.endDate) {
         // Prevent loading spinner logic from completely unmounting DataGrid during rapid filter typing
-        fetchTransactions(false);
+        fetchTransactions(transactions.length === 0);
       }
     }, 500); // Delay of 500ms
     return () => clearTimeout(timeout);
   }, [dateRange, page, rowsPerPage, selectedCategories, budgetFilter, sortModel, filterModel]);
+
 
   const handleDateChange = (field, value) => {
     setDateRange((prev) => ({ ...prev, [field]: value }));
