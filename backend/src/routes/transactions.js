@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const crypto = require('crypto');
+const mongoose = require('mongoose');
 const Transaction = require('../models/Transaction');
 const Account = require('../models/Account');
 const Item = require('../models/Item');
@@ -24,55 +25,222 @@ router.get('/', async (req, res) => {
         // Extract all account IDs
         const accountIds = items.flatMap(item => item.accounts.map(acc => acc._id));
 
-        // Basic query: all transactions for user's accounts
-        let query = { accountId: { $in: accountIds } };
+        let pipeline = [];
 
-        // Handle filtering (similar to PlaidDbService.getFilteredTransactions)
+        // Basic query: all transactions for user's accounts
+        let initialMatch = { accountId: { $in: accountIds } };
+
+        // Handle filtering
         if (req.query.startDate && req.query.endDate) {
-            query.date = {
+            initialMatch.date = {
                 $gte: new Date(req.query.startDate),
                 $lte: new Date(req.query.endDate)
             };
         }
 
         if (req.query.accountId) {
-             query.accountId = req.query.accountId;
+             initialMatch.accountId = new mongoose.Types.ObjectId(req.query.accountId);
         }
 
-        // Let's support req.query.category which can be an array
-        // axios might send it as category[]
         const categoryQuery = req.query.category || req.query['category[]'];
         if (categoryQuery) {
              if (Array.isArray(categoryQuery)) {
-                 query.category = { $in: categoryQuery };
+                 initialMatch.category = { $in: categoryQuery.map(id => new mongoose.Types.ObjectId(id)) };
              } else {
-                 query.category = categoryQuery;
+                 initialMatch.category = new mongoose.Types.ObjectId(categoryQuery);
              }
         }
 
         if (req.query.categoryId) {
-             query.category = req.query.categoryId;
+             initialMatch.category = new mongoose.Types.ObjectId(req.query.categoryId);
+        }
+
+        pipeline.push({ $match: initialMatch });
+
+        // Lookups to support searching, sorting, and filtering on related data
+        pipeline.push({
+            $lookup: {
+                from: 'accounts',
+                localField: 'accountId',
+                foreignField: '_id',
+                as: 'accountData'
+            }
+        });
+        pipeline.push({ $unwind: { path: '$accountData', preserveNullAndEmptyArrays: true } });
+
+        pipeline.push({
+            $lookup: {
+                from: 'items',
+                localField: 'accountData.itemId',
+                foreignField: '_id',
+                as: 'itemData'
+            }
+        });
+        pipeline.push({ $unwind: { path: '$itemData', preserveNullAndEmptyArrays: true } });
+
+        pipeline.push({
+            $lookup: {
+                from: 'categories',
+                localField: 'category',
+                foreignField: '_id',
+                as: 'categoryData'
+            }
+        });
+        pipeline.push({ $unwind: { path: '$categoryData', preserveNullAndEmptyArrays: true } });
+
+        // Data Grid filters
+        let filterModel = null;
+        if (req.query.filterModel) {
+            try {
+                filterModel = JSON.parse(req.query.filterModel);
+            } catch (e) {
+                console.error("Invalid filterModel", e);
+            }
+        }
+
+        let filterMatch = {};
+        if (filterModel && filterModel.items && filterModel.items.length > 0) {
+            filterModel.items.forEach(filter => {
+                const { field, operator, value } = filter;
+                if (value === undefined && operator !== 'isEmpty' && operator !== 'isNotEmpty') return;
+
+                let dbField = field;
+                if (field === 'accountName') dbField = 'accountData.accountName';
+                else if (field === 'institutionName') dbField = 'itemData.institutionName';
+                else if (field === 'categoryName') dbField = 'categoryData.name';
+
+                let condition = {};
+                switch (operator) {
+                    case 'contains': condition = { $regex: value, $options: 'i' }; break;
+                    case 'equals':
+                    case 'is':
+                        if (dbField === 'amount') condition = Number(value);
+                        else if (dbField === 'date') condition = new Date(value);
+                        else condition = value;
+                        break;
+                    case 'not':
+                        if (dbField === 'date') condition = { $ne: new Date(value) };
+                        break;
+                    case 'isAnyOf':
+                        if (Array.isArray(value)) {
+                             condition = { $in: value };
+                        }
+                        break;
+                    case 'isBetween':
+                        if (dbField === 'date' && Array.isArray(value) && value.length === 2) {
+                             const endDate = new Date(value[1]);
+                             endDate.setUTCHours(23, 59, 59, 999);
+                             condition = { $gte: new Date(value[0]), $lte: endDate };
+                        }
+                        break;
+                    case 'startsWith': condition = { $regex: `^${value}`, $options: 'i' }; break;
+                    case 'endsWith': condition = { $regex: `${value}$`, $options: 'i' }; break;
+                    case 'isEmpty': condition = { $in: [null, ""] }; break;
+                    case 'isNotEmpty': condition = { $nin: [null, ""] }; break;
+                    case '>':
+                    case 'after':
+                    case 'greaterThan':
+                        if (dbField === 'date') condition = { $gt: new Date(value) };
+                        else condition = { $gt: Number(value) };
+                        break;
+                    case '<':
+                    case 'before':
+                    case 'lessThan':
+                        if (dbField === 'date') condition = { $lt: new Date(value) };
+                        else condition = { $lt: Number(value) };
+                        break;
+                    case '>=':
+                    case 'onOrAfter':
+                    case 'greaterThanOrEqual':
+                        if (dbField === 'date') condition = { $gte: new Date(value) };
+                        else condition = { $gte: Number(value) };
+                        break;
+                    case '<=':
+                    case 'onOrBefore':
+                    case 'lessThanOrEqual':
+                        if (dbField === 'date') condition = { $lte: new Date(value) };
+                        else condition = { $lte: Number(value) };
+                        break;
+                }
+
+                if (dbField === 'categoryData.name' && (value === 'Uncategorized' || (Array.isArray(value) && value.includes('Uncategorized')))) {
+                     // If searching for Uncategorized, it might be null or missing
+                     if (operator === 'is') {
+                         filterMatch['$or'] = [ { [dbField]: condition }, { [dbField]: null }, { [dbField]: { $exists: false } } ];
+                     } else if (operator === 'isAnyOf') {
+                         condition.$in.push(null);
+                         filterMatch[dbField] = condition;
+                     } else {
+                         filterMatch[dbField] = condition;
+                     }
+                } else {
+                     filterMatch[dbField] = condition;
+                }
+            });
         }
 
         if (req.query.search) {
-             query.merchant_name = { $regex: req.query.search, $options: 'i' };
+             filterMatch['merchant_name'] = { $regex: req.query.search, $options: 'i' };
         }
+
+        if (Object.keys(filterMatch).length > 0) {
+            pipeline.push({ $match: filterMatch });
+        }
+
+        // Data Grid Sort
+        let sortModel = [];
+        if (req.query.sortModel) {
+            try {
+                sortModel = JSON.parse(req.query.sortModel);
+            } catch (e) {
+                console.error("Invalid sortModel", e);
+            }
+        }
+
+        let sortStage = {};
+        if (sortModel && sortModel.length > 0) {
+            sortModel.forEach(sort => {
+                let dbField = sort.field;
+                if (sort.field === 'accountName') dbField = 'accountData.accountName';
+                else if (sort.field === 'institutionName') dbField = 'itemData.institutionName';
+                else if (sort.field === 'categoryName') dbField = 'categoryData.name';
+
+                sortStage[dbField] = sort.sort === 'asc' ? 1 : -1;
+            });
+        } else {
+            sortStage = { date: -1 };
+        }
+        pipeline.push({ $sort: sortStage });
 
         // Pagination
         const page = parseInt(req.query.page, 10) || 0;
         const rowsPerPage = parseInt(req.query.rowsPerPage, 10) || 10;
 
-        // Execute query
-        const total = await Transaction.countDocuments(query);
-        const transactions = await Transaction.find(query)
-            .sort({ date: -1 })
-            .skip(page * rowsPerPage)
-            .limit(rowsPerPage)
-            .populate({
-                path: 'category',
-                populate: { path: 'parentCategory' }
-            })
-            .populate('accountId');
+        // Total count and Pagination via $facet
+        pipeline.push({
+            $facet: {
+                metadata: [ { $count: "total" } ],
+                data: [ { $skip: page * rowsPerPage }, { $limit: rowsPerPage } ]
+            }
+        });
+
+        const result = await Transaction.aggregate(pipeline);
+        const total = result[0].metadata[0] ? result[0].metadata[0].total : 0;
+
+        // Reconstruct the expected object structure for the frontend
+        const transactions = result[0].data.map(tx => {
+            tx.id = tx._id;
+            if (tx.categoryData) {
+                tx.category = tx.categoryData;
+            }
+            if (tx.accountData) {
+                tx.accountId = tx.accountData;
+                if (tx.itemData) {
+                    tx.accountId.itemId = tx.itemData;
+                }
+            }
+            return tx;
+        });
 
         res.json({
             transactions,
