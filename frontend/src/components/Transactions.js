@@ -34,11 +34,68 @@ import Breadcrumbs from "./Breadcrumbs";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { Autocomplete } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, getGridDateOperators } from "@mui/x-data-grid";
 import { useLocation } from "react-router-dom";
 import { useSocket } from "../context/SocketContext";
 import axios from "axios";
 
+
+const DateRangeFilterInput = (props) => {
+  const { item, applyValue, focusElementRef } = props;
+
+  const handleStartDateChange = (newValue) => {
+    applyValue({ ...item, value: [newValue, item.value ? item.value[1] : null] });
+  };
+
+  const handleEndDateChange = (newValue) => {
+    applyValue({ ...item, value: [item.value ? item.value[0] : null, newValue] });
+  };
+
+  return (
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 1 }}>
+      <LocalizationProvider dateAdapter={AdapterDateFns}>
+        <DatePicker
+          label="Start Date"
+          value={item.value ? item.value[0] : null}
+          onChange={handleStartDateChange}
+          inputRef={focusElementRef}
+          slotProps={{ textField: { variant: 'standard' } }}
+        />
+        <DatePicker
+          label="End Date"
+          value={item.value ? item.value[1] : null}
+          onChange={handleEndDateChange}
+          slotProps={{ textField: { variant: 'standard' } }}
+        />
+      </LocalizationProvider>
+    </Box>
+  );
+};
+
+const customDateOperators = [
+  ...getGridDateOperators(),
+  {
+    label: 'is between',
+    value: 'isBetween',
+    getApplyFilterFn: (filterItem) => {
+      if (!Array.isArray(filterItem.value) || filterItem.value.length !== 2) {
+        return null;
+      }
+      if (filterItem.value[0] == null || filterItem.value[1] == null) {
+        return null;
+      }
+      return (params) => {
+        if (!params.value) return false;
+        const cellDate = new Date(params.value);
+        const startDate = new Date(filterItem.value[0]);
+        const endDate = new Date(filterItem.value[1]);
+        endDate.setHours(23, 59, 59, 999);
+        return cellDate >= startDate && cellDate <= endDate;
+      };
+    },
+    InputComponent: DateRangeFilterInput,
+  },
+];
 
 const TransactionsPage = ({ userId }) => {
   const location = useLocation();
@@ -408,7 +465,7 @@ const TransactionsPage = ({ userId }) => {
                 <DataGrid
                   rows={transactions}
                   columns={[
-                    { field: 'date', headerName: 'Date', width: 120, valueGetter: (value) => value ? new Date(value) : null, type: 'date' },
+                    { field: 'date', headerName: 'Date', width: 120, valueGetter: (value) => value ? new Date(value) : null, type: 'date', filterOperators: customDateOperators },
                     { field: 'name', headerName: 'Name', width: 200 },
                     { field: 'categoryName', headerName: 'Category', width: 150, type: 'singleSelect', valueOptions: [...categories.map(c => c.name), 'Uncategorized'], valueGetter: (value, row) => row.category?.name || 'Uncategorized' },
                     { field: 'amount', headerName: 'Amount', width: 120, type: 'number', valueFormatter: (value) => value ? `$${value.toFixed(2)}` : '$0.00' },

@@ -115,11 +115,22 @@ router.get('/', async (req, res) => {
                     case 'equals':
                     case 'is':
                         if (dbField === 'amount') condition = Number(value);
+                        else if (dbField === 'date') condition = new Date(value);
                         else condition = value;
+                        break;
+                    case 'not':
+                        if (dbField === 'date') condition = { $ne: new Date(value) };
                         break;
                     case 'isAnyOf':
                         if (Array.isArray(value)) {
                              condition = { $in: value };
+                        }
+                        break;
+                    case 'isBetween':
+                        if (dbField === 'date' && Array.isArray(value) && value.length === 2) {
+                             const endDate = new Date(value[1]);
+                             endDate.setUTCHours(23, 59, 59, 999);
+                             condition = { $gte: new Date(value[0]), $lte: endDate };
                         }
                         break;
                     case 'startsWith': condition = { $regex: `^${value}`, $options: 'i' }; break;
@@ -127,13 +138,29 @@ router.get('/', async (req, res) => {
                     case 'isEmpty': condition = { $in: [null, ""] }; break;
                     case 'isNotEmpty': condition = { $nin: [null, ""] }; break;
                     case '>':
-                    case 'greaterThan': condition = { $gt: Number(value) }; break;
+                    case 'after':
+                    case 'greaterThan':
+                        if (dbField === 'date') condition = { $gt: new Date(value) };
+                        else condition = { $gt: Number(value) };
+                        break;
                     case '<':
-                    case 'lessThan': condition = { $lt: Number(value) }; break;
+                    case 'before':
+                    case 'lessThan':
+                        if (dbField === 'date') condition = { $lt: new Date(value) };
+                        else condition = { $lt: Number(value) };
+                        break;
                     case '>=':
-                    case 'greaterThanOrEqual': condition = { $gte: Number(value) }; break;
+                    case 'onOrAfter':
+                    case 'greaterThanOrEqual':
+                        if (dbField === 'date') condition = { $gte: new Date(value) };
+                        else condition = { $gte: Number(value) };
+                        break;
                     case '<=':
-                    case 'lessThanOrEqual': condition = { $lte: Number(value) }; break;
+                    case 'onOrBefore':
+                    case 'lessThanOrEqual':
+                        if (dbField === 'date') condition = { $lte: new Date(value) };
+                        else condition = { $lte: Number(value) };
+                        break;
                 }
 
                 if (dbField === 'categoryData.name' && (value === 'Uncategorized' || (Array.isArray(value) && value.includes('Uncategorized')))) {
